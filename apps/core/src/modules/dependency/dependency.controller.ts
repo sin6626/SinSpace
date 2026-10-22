@@ -1,0 +1,57 @@
+import { readFile } from 'node:fs/promises'
+import path from 'node:path'
+import { Get, Query, Sse } from '@nestjs/common'
+import { ApiController } from '~/common/decorators/api-controller.decorator'
+import { Auth } from '~/common/decorators/auth.decorator'
+import { HTTPDecorators } from '~/common/decorators/http.decorator'
+import { BizException } from '~/common/exceptions/biz.exception'
+import { ErrorCodeEnum } from '~/constants/error-code.constant'
+import { DATA_DIR } from '~/constants/path.constant'
+import { installPKG } from '~/utils/system.util'
+import pc from 'picocolors'
+import { Observable } from 'rxjs'
+
+@ApiController('dependencies')
+@Auth()
+export class DependencyController {
+  @Get('/graph')
+  @HTTPDecorators.Bypass
+  async getDependencyGraph() {
+    return {
+      dependencies:
+        JSON.safeParse(
+          await readFile(path.join(DATA_DIR, 'package.json'), 'utf8'),
+        )?.dependencies || {},
+    }
+  }
+
+  @Sse('/install_deps')
+  async installDepsPty(@Query() query: any): Promise<Observable<string>> {
+    const { packageNames } = query
+
+    if (typeof packageNames !== 'string') {
+      throw new BizException(
+        ErrorCodeEnum.InvalidParameter,
+        'packageNames must be string',
+      )
+    }
+
+    const pty = await installPKG(packageNames.split(',').join(' '), DATA_DIR)
+    const observable = new Observable<string>((subscriber) => {
+      pty.onData((data) => {
+        subscriber.next(data)
+      })
+
+      pty.onExit(async ({ exitCode }) => {
+        if (exitCode !== 0) {
+          subscriber.next(pc.red(`Error: Exit code: ${exitCode}\n`))
+        }
+
+        subscriber.next(pc.green('任务完成，可关闭此窗口。'))
+        subscriber.complete()
+      })
+    })
+
+    return observable
+  }
+}

@@ -1,0 +1,52 @@
+import type {
+  ModelWithLiked,
+  ModelWithTranslation,
+  TextBaseModel,
+} from './base'
+import type { TopicModel } from './topic'
+
+export type NoteModel = TextBaseModel & {
+  isPublished: boolean
+  count: {
+    read: number
+    like: number
+  }
+
+  mood?: string
+  weather?: string
+  bookmark?: boolean
+
+  publicAt?: Date
+  password?: string | null
+  nid: number
+  slug?: string
+
+  location?: string
+
+  coordinates?: Coordinate
+  topic?: TopicModel
+  topicId?: string
+}
+
+export interface Coordinate {
+  latitude: number
+  longitude: number
+}
+
+export interface NoteWrappedPayload {
+  data: NoteModel
+  next?: Partial<NoteModel>
+  prev?: Partial<NoteModel>
+}
+
+export interface NoteWrappedWithLikedPayload {
+  data: ModelWithLiked<NoteModel>
+  next?: Partial<NoteModel>
+  prev?: Partial<NoteModel>
+}
+
+export interface NoteWrappedWithLikedAndTranslationPayload {
+  data: ModelWithLiked<ModelWithTranslation<NoteModel>>
+  next?: Partial<NoteModel>
+  prev?: Partial<NoteModel>
+}

@@ -1,0 +1,584 @@
+import fs, { mkdir, stat } from 'node:fs/promises'
+import path from 'node:path'
+
+import { parseAsync, transformAsync } from '@babel/core'
+import * as t from '@babel/types'
+import type { OnModuleDestroy, OnModuleInit } from '@nestjs/common'
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common'
+import { isPlainObject } from 'es-toolkit/compat'
+import { Types } from 'mongoose'
+import qs from 'qs'
+
+import { BizException } from '~/common/exceptions/biz.exception'
+import {
+  EventScope,
+  SERVERLESS_EVENT_PREFIX,
+} from '~/constants/business-event.constant'
+import { RedisKeys } from '~/constants/cache.constant'
+import {
+  OWNER_PROFILE_COLLECTION_NAME,
+  READER_COLLECTION_NAME,
+  SERVERLESS_STORAGE_COLLECTION_NAME,
+} from '~/constants/db.constant'
+import { ErrorCodeEnum } from '~/constants/error-code.constant'
+import { DATA_DIR, NODE_REQUIRE_PATH } from '~/constants/path.constant'
+import { isDev } from '~/global/env.global'
+import { DatabaseService } from '~/processors/database/database.service'
+import { AssetService } from '~/processors/helper/helper.asset.service'
+import { EventManagerService } from '~/processors/helper/helper.event.service'
+import { RedisService } from '~/processors/redis/redis.service'
+import { InjectModel } from '~/transformers/model.transformer'
+import { EncryptUtil } from '~/utils/encrypt.util'
+import { getRedisKey } from '~/utils/redis.util'
+import type { SandboxResult } from '~/utils/sandbox'
+import { SandboxService } from '~/utils/sandbox'
+import { safePathJoin } from '~/utils/tool.util'
+
+import { ConfigsService } from '../configs/configs.service'
+import { SnippetModel, SnippetType } from '../snippet/snippet.model'
+import type {
+  BuiltInFunctionObject,
+  FunctionContextRequest,
+  FunctionContextResponse,
+} from './function.types'
+import { allBuiltInSnippetPack as builtInSnippets } from './pack'
+import { complieTypeScriptBabelOptions } from './serverless.util'
+import { ServerlessLogModel } from './serverless-log.model'
+
+type ScopeContext = {
+  req: FunctionContextRequest
+  res: FunctionContextResponse
+  isAuthenticated: boolean
+}
+
+@Injectable()
+export class ServerlessService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger: Logger
+  private readonly sandboxService: SandboxService
+
+  constructor(
+    @InjectModel(SnippetModel)
+    private readonly snippetModel: MongooseModel<SnippetModel>,
+    @InjectModel(ServerlessLogModel)
+    private readonly logModel: MongooseModel<ServerlessLogModel>,
+    private readonly assetService: AssetService,
+    private readonly databaseService: DatabaseService,
+
+    private readonly redisService: RedisService,
+    private readonly configService: ConfigsService,
+
+    private readonly eventService: EventManagerService,
+  ) {
+    this.logger = new Logger(ServerlessService.name)
+    this.sandboxService = this.createSandboxService()
+  }
+
+  async onModuleDestroy() {
+    await this.sandboxService.shutdown()
+  }
+
+  private createSandboxService(): SandboxService {
+    return new SandboxService({
+      maxWorkers: 4,
+      defaultTimeout: 30000,
+      requireBasePath: NODE_REQUIRE_PATH,
+      bridgeHandlers: {
+        'storage.cache.get': (key: string) => this.mockStorageCache.get(key),
+        'storage.cache.set': (key: string, value: unknown, ttl?: number) =>
+          this.mockStorageCache.set(
+            key,
+            value as object | string,
+            ttl?.toString(),
+          ),
+        'storage.cache.del': (key: string) =>
+          this.mockStorageCache.del(key).then(() => {}),
+        'storage.db.get': (namespace: string, key: string) =>
+          this.mockDb(namespace).get(key),
+        'storage.db.find': (namespace: string, condition: unknown) =>
+          this.mockDb(namespace).find(condition as KV),
+        'storage.db.set': (namespace: string, key: string, value: unknown) =>
+          this.mockDb(namespace).set(key, value),
+        'storage.db.insert': (namespace: string, key: string, value: unknown) =>
+          this.mockDb(namespace).insert(key, value),
+        'storage.db.update': (namespace: string, key: string, value: unknown) =>
+          this.mockDb(namespace).update(key, value),
+        'storage.db.del': (namespace: string, key: string) =>
+          this.mockDb(namespace).del(key),
+        getOwner: () => this.mockGetOwner(),
+        'config.get': (key: string) => this.configService.get(key as any),
+        broadcast: (type: string, data: unknown) => {
+          this.eventService.broadcast(
+            `${SERVERLESS_EVENT_PREFIX}${type}`,
+            data,
+            {
+              scope: EventScope.TO_VISITOR_ADMIN,
+            },
+          )
+        },
+        writeAsset: async (path: string, data: unknown, options?: unknown) => {
+          await this.assetService.writeUserCustomAsset(
+            safePathJoin(path),
+            data as Parameters<typeof fs.writeFile>[1],
+            options as Parameters<typeof fs.writeFile>[2],
+          )
+        },
+        readAsset: (path: string, options?: unknown) =>
+          this.assetService.getAsset(
+            safePathJoin(path),
+            options as Parameters<typeof fs.readFile>[1],
+          ),
+      },
+    })
+  }
+
+  async onModuleInit() {
+    mkdir(NODE_REQUIRE_PATH, { recursive: true }).then(async () => {
+      const pkgPath = path.join(DATA_DIR, 'package.json')
+
+      const isPackageFileExist = await stat(pkgPath)
+        .then(() => true)
+        .catch(() => false)
+
+      if (!isPackageFileExist) {
+        await fs.writeFile(
+          pkgPath,
+          JSON.stringify({ name: 'modules' }, null, 2),
+        )
+      }
+    })
+
+    await this.pourBuiltInFunctions()
+  }
+
+  public get model() {
+    return this.snippetModel
+  }
+
+  private mockStorageCache = Object.freeze({
+    get: async (key: string) => {
+      const client = this.redisService.getClient()
+      return client
+        .get(getRedisKey(RedisKeys.ServerlessStorage, key))
+        .then((string) => {
+          if (!string) return null
+          return JSON.safeParse(string)
+        })
+    },
+    set: async (key: string, value: object | string, ttl?: string) => {
+      const client = this.redisService.getClient()
+      const cacheKey = getRedisKey(RedisKeys.ServerlessStorage, key)
+      await client.set(cacheKey, JSON.stringify(value))
+      await client.expire(cacheKey, ttl || 60 * 60 * 24 * 7)
+    },
+    del: async (key: string) => {
+      const client = this.redisService.getClient()
+      return client.hdel(getRedisKey(RedisKeys.ServerlessStorage), key)
+    },
+  })
+  private async mockGetOwner() {
+    const owner = await this.databaseService.db
+      .collection(READER_COLLECTION_NAME)
+      .find({ role: 'owner' })
+      .sort({ createdAt: 1, _id: 1 })
+      .limit(1)
+      .next()
+
+    if (!owner?._id) {
+      return null
+    }
+
+    const ownerProfile = await this.databaseService.db
+      .collection(OWNER_PROFILE_COLLECTION_NAME)
+      .findOne({
+        readerId:
+          Types.ObjectId.isValid(owner._id?.toString?.()) && owner._id
+            ? new Types.ObjectId(owner._id.toString())
+            : owner._id,
+      })
+
+    return {
+      id: owner._id.toString(),
+      _id: owner._id,
+      username: owner.username ?? owner.handle ?? '',
+      name: owner.name,
+      introduce: ownerProfile?.introduce,
+      avatar: owner.image,
+      mail: ownerProfile?.mail ?? owner.email,
+      url: ownerProfile?.url,
+      lastLoginTime: ownerProfile?.lastLoginTime,
+      lastLoginIp: ownerProfile?.lastLoginIp,
+      socialIds: ownerProfile?.socialIds,
+    }
+  }
+
+  private mockDb(namespace: string) {
+    const db = this.databaseService.db
+    const collection = db.collection(SERVERLESS_STORAGE_COLLECTION_NAME)
+
+    const checkRecordIsExist = async (key: string) => {
+      const count = await collection.countDocuments({ namespace, key })
+      return count > 0
+    }
+
+    const updateKey = async (key: string, value: any) => {
+      if (!(await checkRecordIsExist(key))) {
+        throw new InternalServerErrorException('key not exist')
+      }
+
+      return collection.updateOne(
+        {
+          namespace,
+          key,
+        },
+        {
+          $set: {
+            value,
+          },
+        },
+      )
+    }
+
+    return {
+      async get(key: string) {
+        return collection
+          .findOne({
+            namespace,
+            key,
+          })
+          .then((doc) => {
+            return doc?.value ?? null
+          })
+      },
+      async find(condition: KV) {
+        if (typeof condition !== 'object') {
+          throw new InternalServerErrorException('condition must be object')
+        }
+
+        condition.namespace = namespace
+
+        return collection
+          .aggregate([
+            { $match: condition },
+            {
+              $project: {
+                value: 1,
+                key: 1,
+                _id: 1,
+              },
+            },
+          ])
+          .toArray()
+      },
+      async set(key: string, value: any) {
+        if (typeof key !== 'string') {
+          throw new InternalServerErrorException('key must be string')
+        }
+
+        if (await checkRecordIsExist(key)) {
+          return updateKey(key, value)
+        }
+
+        return collection.insertOne({
+          namespace,
+          key,
+          value,
+        })
+      },
+      async insert(key: string, value: any) {
+        if (await checkRecordIsExist(key)) {
+          throw new InternalServerErrorException('key already exists')
+        }
+
+        return collection.insertOne({
+          namespace,
+          key,
+          value,
+        })
+      },
+      update: updateKey,
+      del(key: string) {
+        return collection.deleteOne({
+          namespace,
+          key,
+        })
+      },
+    } as const
+  }
+
+  async injectContextIntoServerlessFunctionAndCall(
+    model: SnippetModel,
+    context: ScopeContext,
+  ): Promise<any> {
+    const { raw: functionString } = model
+    const scope = `${model.reference}/${model.name}`
+
+    let compiledCode = model.compiledCode
+    if (!compiledCode) {
+      compiledCode =
+        (await this.compileTypescriptCode(functionString)) ?? undefined
+      if (compiledCode) {
+        this.snippetModel
+          .updateOne({ _id: model.id }, { compiledCode })
+          .catch((error) => {
+            this.logger.error(
+              `Backfill compiledCode failed for ${scope}: ${error.message}`,
+            )
+          })
+      }
+    }
+
+    if (!compiledCode) {
+      throw new InternalServerErrorException(
+        'Compile serverless function code failed',
+      )
+    }
+
+    const secretObj = model.secret
+      ? qs.parse(EncryptUtil.decrypt(model.secret))
+      : {}
+
+    if (!isPlainObject(secretObj)) {
+      throw new InternalServerErrorException(
+        `secret parsing error, must be object, got ${typeof secretObj}`,
+      )
+    }
+
+    const serializableReq = {
+      query: context.req.query,
+      headers: Object.fromEntries(
+        Object.entries(context.req.headers || {}).filter(
+          ([, v]) => typeof v !== 'function',
+        ),
+      ),
+      params: context.req.params,
+      method: context.req.method,
+      url: context.req.url,
+      ip: context.req.ip,
+      body: context.req.body,
+    }
+
+    const sandboxContext = {
+      req: serializableReq,
+      res: {},
+      isAuthenticated: context.isAuthenticated,
+      secret: secretObj as Record<string, unknown>,
+      model: {
+        id: model.id,
+        name: model.name,
+        reference: model.reference,
+      },
+    }
+
+    const result = await this.sandboxService.execute(
+      compiledCode,
+      sandboxContext,
+      {
+        timeout: 30000,
+        namespace: scope,
+      },
+    )
+
+    this.saveInvocationLog(model, context, result).catch((error) => {
+      this.logger.error(`Save invocation log failed: ${error.message}`)
+    })
+
+    if (!result.success) {
+      this.logger.error(
+        `Serverless function error [${scope}]: ${result.error?.message}`,
+        result.error?.stack,
+      )
+      throw new BizException(
+        ErrorCodeEnum.ServerlessError,
+        result.error?.message || 'Unknown error, please check log',
+      )
+    }
+
+    return result.data
+  }
+
+  async compileTypescriptCode(
+    code: string,
+  ): Promise<string | null | undefined> {
+    const res = await transformAsync(code, complieTypeScriptBabelOptions)
+    if (!res) {
+      throw new InternalServerErrorException('convert code error')
+    }
+
+    return res.code
+  }
+
+  private async saveInvocationLog(
+    model: SnippetModel,
+    context: ScopeContext,
+    result: SandboxResult,
+  ) {
+    await this.logModel.create({
+      functionId: model.id || (model as any)._id?.toString(),
+      reference: model.reference,
+      name: model.name,
+      method: context.req.method,
+      ip: context.req.ip,
+      status: result.success ? 'success' : 'error',
+      executionTime: result.executionTime,
+      logs: result.logs || [],
+      error: result.error,
+    })
+  }
+
+  async getInvocationLogs(
+    functionId: string,
+    options: { page: number; size: number; status?: 'success' | 'error' },
+  ) {
+    const { page, size, status } = options
+    const condition: Record<string, unknown> = { functionId }
+    if (status) condition.status = status
+
+    const [data, total] = await Promise.all([
+      this.logModel
+        .find(condition)
+        .sort({ created: -1 })
+        .skip((page - 1) * size)
+        .limit(size)
+        .select('-logs')
+        .lean({ getters: true }),
+      this.logModel.countDocuments(condition),
+    ])
+
+    const totalPage = Math.ceil(total / size)
+    return {
+      data,
+      pagination: {
+        total,
+        size,
+        currentPage: page,
+        totalPage,
+        hasNextPage: page < totalPage,
+        hasPrevPage: page > 1,
+      },
+    }
+  }
+
+  async getInvocationLogDetail(id: string) {
+    return this.logModel.findById(id).lean({ getters: true })
+  }
+
+  async isValidServerlessFunction(raw: string) {
+    try {
+      const ast = (await parseAsync(
+        raw,
+        complieTypeScriptBabelOptions,
+      )) as t.File
+
+      const { body } = ast.program as t.Program
+
+      const hasEntryFunction = body.some(
+        (node: t.Declaration) =>
+          (node.type == 'ExportDefaultDeclaration' &&
+            isHandlerFunction(node.declaration)) ||
+          isHandlerFunction(node),
+      )
+
+      return hasEntryFunction
+    } catch (error) {
+      if (isDev) {
+        console.error(error.message)
+      }
+      return error.message?.split('\n').at(0)
+    }
+  }
+
+  private async pourBuiltInFunctions() {
+    const paths = [] as string[]
+    const references = new Set<string>()
+    const pathCodeMap = new Map<string, BuiltInFunctionObject>()
+    for (const s of builtInSnippets) {
+      paths.push(s.path)
+      pathCodeMap.set(s.path, s)
+      if (s.reference) {
+        references.add(s.reference)
+      }
+    }
+
+    const result = await this.model.find({
+      name: {
+        $in: paths,
+      },
+      reference: {
+        $in: ['built-in'].concat(Array.from(references.values())),
+      },
+      type: SnippetType.Function,
+    })
+
+    const migrationTasks = [] as Promise<any>[]
+    for (const doc of result) {
+      pathCodeMap.delete(doc.name)
+
+      if (!doc.builtIn) {
+        migrationTasks.push(doc.updateOne({ builtIn: true }))
+      }
+    }
+    await Promise.all(migrationTasks)
+
+    for (const [path, { code, method, name, reference }] of pathCodeMap) {
+      this.logger.log(`pour built-in function: ${name}`)
+      const compiledCode = await this.compileTypescriptCode(code)
+      await this.model.create({
+        type: SnippetType.Function,
+        name: path,
+        reference: reference || 'built-in',
+        raw: code,
+        compiledCode: compiledCode ?? undefined,
+        method: method || 'get',
+        enable: true,
+        private: false,
+        builtIn: true,
+      })
+    }
+  }
+
+  async isBuiltInFunction(id: string) {
+    const document = await this.model.findById(id).lean()
+    if (!document) return false
+    const isBuiltin = document.type == SnippetType.Function && document.builtIn
+    return isBuiltin
+      ? {
+          name: document.name,
+          reference: document.reference || 'built-in',
+        }
+      : false
+  }
+
+  async resetBuiltInFunction(model: { name: string; reference: string }) {
+    const { name, reference } = model
+    const builtInSnippet = builtInSnippets.find(
+      (s) => s.path === name && s.reference === reference,
+    )
+    if (!builtInSnippet) {
+      throw new InternalServerErrorException('built-in function not found')
+    }
+
+    const compiledCode = await this.compileTypescriptCode(builtInSnippet.code)
+    await this.model.updateOne(
+      {
+        name,
+      },
+      { raw: builtInSnippet.code, compiledCode: compiledCode ?? undefined },
+    )
+  }
+}
+
+function isHandlerFunction(
+  node:
+    | t.Declaration
+    | t.FunctionDeclaration
+    | t.ClassDeclaration
+    | t.TSDeclareFunction
+    | t.Expression,
+): boolean {
+  // @ts-expect-error
+  return t.isFunction(node) && node?.id?.name === 'handler'
+}

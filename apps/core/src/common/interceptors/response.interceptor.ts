@@ -1,0 +1,55 @@
+import type {
+  CallHandler,
+  ExecutionContext,
+  NestInterceptor,
+} from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
+import { Reflector } from '@nestjs/core'
+import { HTTP_RES_TRANSFORM_PAGINATE } from '~/constants/meta.constant'
+import * as SYSTEM from '~/constants/system.constant'
+import { transformDataToPaginate } from '~/transformers/paginate.transformer'
+import { isArrayLike } from 'es-toolkit/compat'
+import { Observable } from 'rxjs'
+import { map } from 'rxjs/operators'
+
+export interface Response<T> {
+  data: T
+}
+
+@Injectable()
+export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
+  constructor(private readonly reflector: Reflector) {}
+
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Observable<Response<T>> {
+    if (!context.switchToHttp().getRequest()) {
+      return next.handle()
+    }
+
+    const handler = context.getHandler()
+    const bypass = this.reflector.getAllAndOverride<boolean>(
+      SYSTEM.RESPONSE_PASSTHROUGH_METADATA,
+      [context.getClass(), handler],
+    )
+    if (bypass) {
+      return next.handle()
+    }
+
+    return next.handle().pipe(
+      map((data) => {
+        if (typeof data === 'undefined') {
+          context.switchToHttp().getResponse().status(204)
+          return data
+        }
+
+        if (this.reflector.get(HTTP_RES_TRANSFORM_PAGINATE, handler)) {
+          return transformDataToPaginate(data)
+        }
+
+        return isArrayLike(data) ? { data } : data
+      }),
+    )
+  }
+}

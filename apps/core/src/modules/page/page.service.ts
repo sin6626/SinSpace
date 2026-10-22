@@ -1,0 +1,197 @@
+import { forwardRef, Inject, Injectable } from '@nestjs/common'
+import { omit } from 'es-toolkit/compat'
+import slugify from 'slugify'
+
+import { BizException } from '~/common/exceptions/biz.exception'
+import { NoContentCanBeModifiedException } from '~/common/exceptions/no-content-canbe-modified.exception'
+import { BusinessEvents, EventScope } from '~/constants/business-event.constant'
+import { ErrorCodeEnum } from '~/constants/error-code.constant'
+import { FileReferenceType } from '~/modules/file/file-reference.model'
+import { FileReferenceService } from '~/modules/file/file-reference.service'
+import { EventManagerService } from '~/processors/helper/helper.event.service'
+import { ImageService } from '~/processors/helper/helper.image.service'
+import { LexicalService } from '~/processors/helper/helper.lexical.service'
+import { InjectModel } from '~/transformers/model.transformer'
+import { isLexical } from '~/utils/content.util'
+import { dbTransforms } from '~/utils/db-transform.util'
+import { scheduleManager } from '~/utils/schedule.util'
+import { isDefined } from '~/utils/validator.util'
+
+import { DraftRefType } from '../draft/draft.model'
+import { DraftService } from '../draft/draft.service'
+import { PageModel } from './page.model'
+
+@Injectable()
+export class PageService {
+  constructor(
+    @InjectModel(PageModel)
+    private readonly pageModel: MongooseModel<PageModel>,
+    private readonly imageService: ImageService,
+    private readonly fileReferenceService: FileReferenceService,
+    private readonly eventManager: EventManagerService,
+    private readonly lexicalService: LexicalService,
+    @Inject(forwardRef(() => DraftService))
+    private readonly draftService: DraftService,
+  ) {}
+
+  public get model() {
+    return this.pageModel
+  }
+
+  public async create(doc: PageModel & { draftId?: string }) {
+    this.lexicalService.populateText(doc)
+
+    const { draftId } = doc
+    const count = await this.model.countDocuments({})
+    if (count >= 10) {
+      throw new BizException(ErrorCodeEnum.MaxCountLimit)
+    }
+    // `0` or `undefined` or `null`
+    if (!doc.order) {
+      doc.order = count + 1
+    }
+    const res = await this.model.create({
+      ...doc,
+      slug: slugify(doc.slug),
+      created: new Date(),
+      meta: doc.meta
+        ? (dbTransforms.json(doc.meta) as unknown as PageModel['meta'])
+        : undefined,
+    })
+
+    // 处理草稿：标记为已发布，并关联到新创建的页面
+    if (draftId) {
+      // Release draft's file references first, they will be re-associated to the page
+      await this.fileReferenceService.removeReferencesForDocument(
+        draftId,
+        FileReferenceType.Draft,
+      )
+      await this.draftService.linkToPublished(draftId, res.id)
+      await this.draftService.markAsPublished(draftId)
+    }
+
+    scheduleManager.schedule(async () => {
+      // Track file references
+      await this.fileReferenceService.activateReferences(
+        res,
+        res.id,
+        FileReferenceType.Page,
+      )
+
+      if (!isLexical(res)) {
+        this.imageService.saveImageDimensionsFromMarkdownText(
+          res.text,
+          res.images,
+          async (images) => {
+            res.images = images
+            await res.save()
+            this.eventManager.broadcast(BusinessEvents.PAGE_UPDATE, res, {
+              scope: EventScope.TO_SYSTEM,
+            })
+          },
+        )
+      }
+    })
+
+    this.eventManager.emit(
+      BusinessEvents.PAGE_CREATE,
+      { id: res.id },
+      {
+        scope: EventScope.TO_SYSTEM_VISITOR,
+      },
+    )
+
+    return res
+  }
+
+  public async updateById(
+    id: string,
+    doc: Partial<PageModel> & { draftId?: string },
+  ) {
+    const oldDoc = await this.model.findById(id).lean()
+    if (!oldDoc) {
+      throw new NoContentCanBeModifiedException()
+    }
+    this.lexicalService.populateText(doc, oldDoc)
+
+    const { draftId } = doc
+
+    if (['text', 'title', 'subtitle'].some((key) => isDefined(doc[key]))) {
+      doc.modified = new Date()
+    }
+    if (doc.slug) {
+      doc.slug = slugify(doc.slug)
+    }
+
+    const newDoc = await this.model
+      .findOneAndUpdate(
+        { _id: id },
+        {
+          ...omit(doc, PageModel.protectedKeys),
+          ...(doc.meta !== undefined
+            ? { meta: dbTransforms.json(doc.meta) }
+            : {}),
+        },
+        { new: true },
+      )
+      .lean({ getters: true })
+
+    if (!newDoc) {
+      throw new NoContentCanBeModifiedException()
+    }
+
+    // 处理草稿：标记为已发布
+    if (draftId) {
+      await this.draftService.markAsPublished(draftId)
+    }
+
+    scheduleManager.schedule(async () => {
+      // Update file references
+      await this.fileReferenceService.updateReferencesForDocument(
+        newDoc,
+        newDoc.id,
+        FileReferenceType.Page,
+      )
+
+      await Promise.all([
+        !isLexical(newDoc) &&
+          this.imageService.saveImageDimensionsFromMarkdownText(
+            newDoc.text,
+            newDoc.images,
+            (images) => {
+              return this.model
+                .updateOne({ _id: id }, { $set: { images } })
+                .exec()
+            },
+          ),
+        this.eventManager.emit(
+          BusinessEvents.PAGE_UPDATE,
+          { id: newDoc.id },
+          {
+            scope: EventScope.TO_SYSTEM_VISITOR,
+          },
+        ),
+      ])
+    })
+  }
+
+  async deleteById(id: string) {
+    await Promise.all([
+      this.model.deleteOne({
+        _id: id,
+      }),
+      this.draftService.deleteByRef(DraftRefType.Page, id),
+      this.fileReferenceService.removeReferencesForDocument(
+        id,
+        FileReferenceType.Page,
+      ),
+    ])
+    this.eventManager.emit(
+      BusinessEvents.PAGE_DELETE,
+      { id },
+      {
+        scope: EventScope.TO_SYSTEM_VISITOR,
+      },
+    )
+  }
+}
