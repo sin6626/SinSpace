@@ -40,6 +40,14 @@
 
 先用中性色验证层级。品牌色留给用户设计，不预先指定蓝色、紫色或 Adobe 品牌色。表中的十六进制值用于阅读和评审，未来 CSS 的颜色表示方式服从选定版本的 shadcn 约定。
 
+先看下面的色板，再对照变量表。左右分别固定显示浅色和深色模式，下方展示文字放在对应背景上的实际效果；不是只有孤立的颜色值。
+
+[![浅色与深色色板，以及主要文字、次要文字、主操作的背景配对](./assets/color-palette.png)](./assets/color-palette.png)
+
+在 VS Code 中打开本文，按 **Cmd+Shift+V** 查看 Markdown 预览；需要左右对照源码时，先按 **Cmd+K**，松开后按 **V**。也可以直接打开[色板图片](./assets/color-palette.png)放大查看，不需要安装插件。[VS Code 预览说明](https://code.visualstudio.com/docs/languages/markdown#_markdown-preview)
+
+图片由下表色值生成，可编辑源图为 [color-palette.svg](./assets/color-palette.svg)。色值调整时同步更新源图和 PNG，并与表格核对。图中的细描边只是色块边界辅助，不是新增的界面配色。
+
 | 用途 | shadcn 语义变量 | 浅色 | 深色 |
 | --- | --- | --- | --- |
 | 页面背景 | `--background` | `#FAFAFA` | `#09090B` |

@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="980" viewBox="0 0 1080 980" role="img" aria-labelledby="title description">
+  <title id="title">设计系统 v0.1：浅色、深色色板与文字配对</title>
+  <desc id="description">直接使用 design-system.md 核心颜色表的十组颜色，固定展示浅色与深色模式。下方比较主要文字、次要文字及主操作背景和文字。</desc>
+  <rect x="0" y="0" width="1080" height="980" fill="#FFFFFF" rx="0" />
+  <text x="36" y="45" fill="#18181B" font-size="28" font-weight="600" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">设计系统 v0.1 · 颜色实样</text>
+  <text x="36" y="76" fill="#52525B" font-size="16" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">目前是中性色基线。左右两栏固定展示各自主题，不跟随编辑器主题变色。</text>
+  <rect x="36" y="104" width="492" height="826" fill="#FAFAFA" rx="14" stroke="#E4E4E7" />
+  <text x="60" y="143" fill="#18181B" font-size="23" font-weight="600" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">浅色模式</text>
+  <rect x="60" y="174" width="52" height="29" fill="#FAFAFA" rx="5" data-theme="light" data-token="--background" data-value="#FAFAFA" stroke="#71717A" />
+  <text x="127" y="195" fill="#18181B" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">页面背景</text>
+  <text x="407" y="195" fill="#52525B" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#FAFAFA</text>
+  <rect x="60" y="218" width="52" height="29" fill="#18181B" rx="5" data-theme="light" data-token="--foreground" data-value="#18181B" stroke="#71717A" />
+  <text x="127" y="239" fill="#18181B" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">主要文字</text>
+  <text x="407" y="239" fill="#52525B" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#18181B</text>
+  <rect x="60" y="262" width="52" height="29" fill="#FFFFFF" rx="5" data-theme="light" data-token="--card" data-value="#FFFFFF" stroke="#71717A" />
+  <text x="127" y="283" fill="#18181B" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">卡片表面</text>
+  <text x="407" y="283" fill="#52525B" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#FFFFFF</text>
+  <rect x="60" y="306" width="52" height="29" fill="#18181B" rx="5" data-theme="light" data-token="--card-foreground" data-value="#18181B" stroke="#71717A" />
+  <text x="127" y="327" fill="#18181B" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">卡片文字</text>
+  <text x="407" y="327" fill="#52525B" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#18181B</text>
+  <rect x="60" y="350" width="52" height="29" fill="#FFFFFF" rx="5" data-theme="light" data-token="--popover" data-value="#FFFFFF" stroke="#71717A" />
+  <text x="127" y="371" fill="#18181B" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">浮层表面</text>
+  <text x="407" y="371" fill="#52525B" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#FFFFFF</text>
+  <rect x="60" y="394" width="52" height="29" fill="#18181B" rx="5" data-theme="light" data-token="--popover-foreground" data-value="#18181B" stroke="#71717A" />
+  <text x="127" y="415" fill="#18181B" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">浮层文字</text>
+  <text x="407" y="415" fill="#52525B" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#18181B</text>
+  <rect x="60" y="438" width="52" height="29" fill="#F4F4F5" rx="5" data-theme="light" data-token="--muted" data-value="#F4F4F5" stroke="#71717A" />
+  <text x="127" y="459" fill="#18181B" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">弱强调表面</text>
+  <text x="407" y="459" fill="#52525B" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#F4F4F5</text>
+  <rect x="60" y="482" width="52" height="29" fill="#52525B" rx="5" data-theme="light" data-token="--muted-foreground" data-value="#52525B" stroke="#71717A" />
+  <text x="127" y="503" fill="#18181B" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">次要文字</text>
+  <text x="407" y="503" fill="#52525B" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#52525B</text>
+  <rect x="60" y="526" width="52" height="29" fill="#18181B" rx="5" data-theme="light" data-token="--primary" data-value="#18181B" stroke="#71717A" />
+  <text x="127" y="547" fill="#18181B" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">主操作背景</text>
+  <text x="407" y="547" fill="#52525B" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#18181B</text>
+  <rect x="60" y="570" width="52" height="29" fill="#FAFAFA" rx="5" data-theme="light" data-token="--primary-foreground" data-value="#FAFAFA" stroke="#71717A" />
+  <text x="127" y="591" fill="#18181B" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">主操作文字</text>
+  <text x="407" y="591" fill="#52525B" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#FAFAFA</text>
+  <text x="60" y="654" fill="#18181B" font-size="18" font-weight="500" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">放在实际背景上的阅读效果</text>
+  <rect x="60" y="676" width="444" height="62" fill="#FAFAFA" rx="8" stroke="#E4E4E7" />
+  <text x="75" y="701" fill="#18181B" font-size="20" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">把技术写清楚。</text>
+  <text x="75" y="723" fill="#18181B" font-size="12" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">主要文字  #18181B / #FAFAFA</text>
+  <rect x="60" y="754" width="444" height="62" fill="#F4F4F5" rx="8" />
+  <text x="75" y="779" fill="#52525B" font-size="20" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">2026 年 10 月 22 日</text>
+  <text x="75" y="801" fill="#52525B" font-size="12" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">次要文字  #52525B / #F4F4F5</text>
+  <rect x="60" y="832" width="444" height="62" fill="#18181B" rx="8" />
+  <text x="75" y="857" fill="#FAFAFA" font-size="20" font-weight="500" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">继续阅读</text>
+  <text x="75" y="879" fill="#FAFAFA" font-size="12" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">主操作  #FAFAFA / #18181B</text>
+  <rect x="552" y="104" width="492" height="826" fill="#09090B" rx="14" stroke="#27272A" />
+  <text x="576" y="143" fill="#FAFAFA" font-size="23" font-weight="600" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">深色模式</text>
+  <rect x="576" y="174" width="52" height="29" fill="#09090B" rx="5" data-theme="dark" data-token="--background" data-value="#09090B" stroke="#71717A" />
+  <text x="643" y="195" fill="#FAFAFA" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">页面背景</text>
+  <text x="923" y="195" fill="#A1A1AA" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#09090B</text>
+  <rect x="576" y="218" width="52" height="29" fill="#FAFAFA" rx="5" data-theme="dark" data-token="--foreground" data-value="#FAFAFA" stroke="#71717A" />
+  <text x="643" y="239" fill="#FAFAFA" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">主要文字</text>
+  <text x="923" y="239" fill="#A1A1AA" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#FAFAFA</text>
+  <rect x="576" y="262" width="52" height="29" fill="#18181B" rx="5" data-theme="dark" data-token="--card" data-value="#18181B" stroke="#71717A" />
+  <text x="643" y="283" fill="#FAFAFA" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">卡片表面</text>
+  <text x="923" y="283" fill="#A1A1AA" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#18181B</text>
+  <rect x="576" y="306" width="52" height="29" fill="#FAFAFA" rx="5" data-theme="dark" data-token="--card-foreground" data-value="#FAFAFA" stroke="#71717A" />
+  <text x="643" y="327" fill="#FAFAFA" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">卡片文字</text>
+  <text x="923" y="327" fill="#A1A1AA" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#FAFAFA</text>
+  <rect x="576" y="350" width="52" height="29" fill="#18181B" rx="5" data-theme="dark" data-token="--popover" data-value="#18181B" stroke="#71717A" />
+  <text x="643" y="371" fill="#FAFAFA" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">浮层表面</text>
+  <text x="923" y="371" fill="#A1A1AA" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#18181B</text>
+  <rect x="576" y="394" width="52" height="29" fill="#FAFAFA" rx="5" data-theme="dark" data-token="--popover-foreground" data-value="#FAFAFA" stroke="#71717A" />
+  <text x="643" y="415" fill="#FAFAFA" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">浮层文字</text>
+  <text x="923" y="415" fill="#A1A1AA" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#FAFAFA</text>
+  <rect x="576" y="438" width="52" height="29" fill="#27272A" rx="5" data-theme="dark" data-token="--muted" data-value="#27272A" stroke="#71717A" />
+  <text x="643" y="459" fill="#FAFAFA" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">弱强调表面</text>
+  <text x="923" y="459" fill="#A1A1AA" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#27272A</text>
+  <rect x="576" y="482" width="52" height="29" fill="#A1A1AA" rx="5" data-theme="dark" data-token="--muted-foreground" data-value="#A1A1AA" stroke="#71717A" />
+  <text x="643" y="503" fill="#FAFAFA" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">次要文字</text>
+  <text x="923" y="503" fill="#A1A1AA" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#A1A1AA</text>
+  <rect x="576" y="526" width="52" height="29" fill="#FAFAFA" rx="5" data-theme="dark" data-token="--primary" data-value="#FAFAFA" stroke="#71717A" />
+  <text x="643" y="547" fill="#FAFAFA" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">主操作背景</text>
+  <text x="923" y="547" fill="#A1A1AA" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#FAFAFA</text>
+  <rect x="576" y="570" width="52" height="29" fill="#18181B" rx="5" data-theme="dark" data-token="--primary-foreground" data-value="#18181B" stroke="#71717A" />
+  <text x="643" y="591" fill="#FAFAFA" font-size="17" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">主操作文字</text>
+  <text x="923" y="591" fill="#A1A1AA" font-size="16" font-weight="400" font-family="SFMono-Regular,Consolas,monospace">#18181B</text>
+  <text x="576" y="654" fill="#FAFAFA" font-size="18" font-weight="500" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">放在实际背景上的阅读效果</text>
+  <rect x="576" y="676" width="444" height="62" fill="#09090B" rx="8" stroke="#27272A" />
+  <text x="591" y="701" fill="#FAFAFA" font-size="20" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">把技术写清楚。</text>
+  <text x="591" y="723" fill="#FAFAFA" font-size="12" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">主要文字  #FAFAFA / #09090B</text>
+  <rect x="576" y="754" width="444" height="62" fill="#27272A" rx="8" />
+  <text x="591" y="779" fill="#A1A1AA" font-size="20" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">2026 年 10 月 22 日</text>
+  <text x="591" y="801" fill="#A1A1AA" font-size="12" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">次要文字  #A1A1AA / #27272A</text>
+  <rect x="576" y="832" width="444" height="62" fill="#FAFAFA" rx="8" />
+  <text x="591" y="857" fill="#18181B" font-size="20" font-weight="500" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">继续阅读</text>
+  <text x="591" y="879" fill="#18181B" font-size="12" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">主操作  #18181B / #FAFAFA</text>
+  <text x="36" y="958" fill="#52525B" font-size="15" font-weight="400" font-family="-apple-system,BlinkMacSystemFont,PingFang SC,Microsoft YaHei,sans-serif">色值取自文档。色块细描边仅用于辨认边界，不是新增的界面颜色规范。</text>
+</svg>
