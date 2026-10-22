@@ -6,10 +6,12 @@ import { connect, createServer } from 'node:net'
 import { dirname, join, resolve } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
 import { fileURLToPath } from 'node:url'
+import { loadEnvFile } from 'node:process'
 import { createDevLifecycle } from './dev-lifecycle.mjs'
 import { getResourceViolation, sampleResourceUsage, validateResourceBudget } from './resource-budget.mjs'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
+if (existsSync(join(root, '.env.local'))) loadEnvFile(join(root, '.env.local'))
 const testing = process.argv.includes('--test')
 const coreOnly = process.argv.includes('--core-only')
 const webOnly = process.argv.includes('--web-only')

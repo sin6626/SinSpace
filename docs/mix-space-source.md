@@ -4,7 +4,7 @@
 
 - `apps/core` 对应原 `apps/mix-space/apps/core`，保留现有升级和本地修复。
 - `packages/api-client` 对应原 `apps/mix-space/packages/api-client`，版本 2.4.2，作为 workspace SDK 使用。
-- Core 许可证保留于 `apps/core/LICENSE`（AGPLv3）；SDK 的原 package 声明为 MIT，作者均保留。根项目不覆盖这些许可证。
+- Core 许可证保留于 `apps/core/LICENSE`（AGPLv3），其引用的 `ADDITIONAL_TERMS.md` 同目录原样保留；SDK 的原 package 声明为 MIT，作者均保留。根项目不覆盖这些许可证。
 - 原 Lexical 补丁保留于 `patches/`。未复制 `.env`、数据库、媒体、依赖、编译产物、后台或 Shiro 前端。
 - 适配仅涉及 package 命令、SDK 构建版本/导出路径与源码位置；未修改 Core 业务源码。
 

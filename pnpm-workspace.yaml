@@ -13,3 +13,11 @@ allowBuilds:
 
 patchedDependencies:
   "@lexical/code@0.41.0": patches/@lexical__code@0.41.0.patch
+
+overrides:
+  'get-pixels@^3>request': './apps/core/external/request'
+  'pino': './apps/core/external/pino'
+  'semver': '7.7.4'
+  'typescript': '5.9.3'
+  'whatwg-url': '14.1.1'
+  'eslint-plugin-react-compiler>zod': '3.24.2'

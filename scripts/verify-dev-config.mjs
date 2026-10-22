@@ -10,7 +10,7 @@ const directory = mkdtempSync(join(tmpdir(), 'sin-dev-config-'))
 const databaseFile = join(directory, 'database')
 writeFileSync(databaseFile, 'shrio-import-20261014')
 const config = (args = [], env = {}) => JSON.parse(execFileSync(process.execPath, [launcher, '--print-config', ...args], {
-  env: { ...process.env, MIX_SPACE_DATA_ROOT: directory, ...env }, encoding: 'utf8',
+  env: { ...process.env, MIX_SPACE_DATA_ROOT: directory, ...env }, encoding: 'utf8', stdio: 'pipe',
 }))
 try {
   const normal = config([], { SIN_VERIFY: '1', SIN_MAX_RSS_MIB: '1' })
