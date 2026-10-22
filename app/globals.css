@@ -105,13 +105,66 @@ a:focus-visible,
   gap: 0.5rem;
   min-height: 2.75rem;
   padding: 0.625rem 0.75rem;
-  border-radius: 0.5rem;
   text-align: left;
 }
 
-.navigation-home {
-  background: var(--muted);
+.navigation-item[data-active],
+.navigation-item[data-popup-open] {
   font-weight: 600;
+}
+
+.navigation-item:hover:not(:disabled),
+.navigation-subitem:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+
+.navigation-item:focus-visible,
+.navigation-retry:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: -2px;
+}
+
+.navigation-caret {
+  color: var(--muted-foreground);
+}
+
+.navigation-positioner {
+  z-index: 2;
+  width: var(--positioner-width);
+  height: var(--positioner-height);
+}
+
+.navigation-popup {
+  width: 14rem;
+  max-width: var(--available-width);
+  max-height: var(--available-height);
+  overflow-y: auto;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+
+.navigation-submenu {
+  padding: 0.5rem;
+}
+
+.navigation-subitem {
+  display: block;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.navigation-message {
+  padding: 0.75rem;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+
+.navigation-retry {
+  color: var(--foreground);
+  text-decoration: underline;
 }
 
 .navigation-item:disabled {

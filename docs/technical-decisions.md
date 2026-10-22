@@ -19,13 +19,13 @@
 | 字体 | 布局已引入 Geist、Geist Mono | 模板字体基础；中文使用系统回退 |
 | Next 功能 | 已配置 `cacheComponents`、`partialPrefetching`、`experimental.agentFeedback` | 保留已有配置，实际涉及时先阅读当前安装版本的本地文档 |
 
-当前已有三栏布局骨架，没有业务 API 接入。`app/layout.tsx` 提供导航、唯一的主内容区域与补充信息栏，`app/page.tsx` 只填充中间内容。根布局保留服务端组件；新增小型客户端容器，桌面使用 react-resizable-panels 4.14.8，窄屏保留 CSS Grid。拖动宽度仅由组件库临时管理，不保存、不折叠。`body` 已使用 Geist 和中文系统字体回退；背景与文字保留模板颜色，新增分隔线和弱强调语义变量，尚未完整应用设计系统 v0.1。
+当前已有三栏布局骨架与导航，通过公开聚合接口读取分类、独立页面，尚未接入正文。`app/layout.tsx` 提供导航、唯一的主内容区域与补充信息栏，`app/page.tsx` 只填充中间内容。根布局保留服务端组件；新增小型客户端容器，桌面使用 react-resizable-panels 4.14.8，窄屏保留 CSS Grid。拖动宽度仅由组件库临时管理，不保存、不折叠。`body` 已使用 Geist 和中文系统字体回退；背景与文字保留模板颜色，新增分隔线和弱强调语义变量，尚未完整应用设计系统 v0.1。
 
-## 已确认、尚未引入的依赖
+## 组件与动画依赖
 
 ### Base UI 为主，样式自己设计
 
-2026-10-22 用户调整了组件方向：直接以 Base UI 为交互基础，样式由项目设计，不采用 shadcn/ui 的默认外观。Base UI 是无样式组件库，可以使用现有 Tailwind CSS 或普通 CSS 定义样式，当前尚未安装。[Base UI 样式说明](https://base-ui.com/react/handbook/styling)
+2026-10-22 用户调整了组件方向：直接以 Base UI 为交互基础，样式由项目设计，不采用 shadcn/ui 的默认外观。Base UI 是无样式组件库，可以使用现有 Tailwind CSS 或普通 CSS 定义样式，已安装 `@base-ui/react` 1.9.0，导航使用 Navigation Menu。[Base UI 样式说明](https://base-ui.com/react/handbook/styling)
 
 各层的职责是：
 
@@ -78,4 +78,4 @@ Base UI 负责组件行为，但不会替项目决定视觉风格；自行添加
 - 引入依赖前先说明实际需求、职责、替代方案和维护影响，再在用户确认的学习单元中实施。
 - 安装时记录实际版本并更新对应锁文件，不因示例使用 `latest` 就长期依赖浮动版本。
 - 两个项目保留各自的 pnpm 版本和锁文件，不复制或链接依赖目录，不改造为新的 monorepo。
-- 布局阶段仅实现框架，不安装 shadcn/ui、Base UI、Motion 或 GSAP；有实际交互需求时再引入。
+- 仅按实际交互需求引入依赖。目前已引入 react-resizable-panels 和 Base UI；未安装 shadcn/ui、Motion 或 GSAP。

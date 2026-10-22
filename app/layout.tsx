@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Link from "next/link";
+import Navigation from "./navigation";
 import ResizableLayout from "./resizable-layout";
 import "./globals.css";
 
@@ -35,23 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <span className="site-brand-name">Sin</span>
               <span className="site-brand-description">Personal Space</span>
             </div>
-            <nav aria-label="主导航">
-              <ul className="navigation-list">
-                <li>
-                  <Link className="navigation-item navigation-home" href="/">
-                    首页
-                  </Link>
-                </li>
-                {["文稿", "作品", "手记"].map((label) => (
-                  <li key={label}>
-                    <button className="navigation-item" type="button" disabled>
-                      {label}
-                      <span className="navigation-status">未开放</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </nav>
+            <Navigation />
           </header>
           <main className="site-content" id="main-content" tabIndex={-1}>
             {children}

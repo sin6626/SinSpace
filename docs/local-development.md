@@ -57,6 +57,8 @@ SinPersonalSpace 的 `package.json` 当前只有以下命令：
 
 ## 数据和接口配置
 
+导航已读取 `GET /aggregate` 的 `categories` 与 `page_meta`。服务端环境变量 `MIX_SPACE_API_URL` 默认是 `https://sin6626.me/api/v2`，仅请求公开数据，不带凭据、不写数据。需要切换到本地 Core 时，在 `.env.local` 设置 `MIX_SPACE_API_URL=http://127.0.0.1:2333` 并重启前端；本地开发基址不加 `/api/v2`。请求不缓存，8 秒超时后显示失败与重试，首页仍可用。此配置不负责启动 Core。
+
 - 复用旧项目已有的本地数据库选择文件、MongoDB 目录和按库名划分的 Redis 目录；不复制、不迁移、不清空。
 - Core 的开发 API 基址为上述 2333 地址，旧项目文档注明开发模式没有 `/api/v2` 前缀。生产地址与前缀在部署阶段另行核对，不由本地地址推导。
 - 管理后台沿用 `VITE_APP_BASE_API`、`VITE_APP_GATEWAY` 和 `VITE_APP_WEB_URL` 的既有用途，分别指向上述 Core 和新前端地址。
