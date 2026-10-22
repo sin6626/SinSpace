@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import ResizableLayout from "./resizable-layout";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -28,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <a className="skip-link" href="#main-content">
           跳到主要内容
         </a>
-        <div className="site-shell">
+        <ResizableLayout>
           <header className="site-navigation">
             <div className="site-brand">
               <span className="site-brand-name">Sin</span>
@@ -59,7 +60,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <h2 id="details-heading">补充信息</h2>
             <p>这里将展示与当前内容相关的信息。</p>
           </aside>
-        </div>
+        </ResizableLayout>
       </body>
     </html>
   );

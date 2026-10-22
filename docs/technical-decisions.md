@@ -19,7 +19,7 @@
 | 字体 | 布局已引入 Geist、Geist Mono | 模板字体基础；中文使用系统回退 |
 | Next 功能 | 已配置 `cacheComponents`、`partialPrefetching`、`experimental.agentFeedback` | 保留已有配置，实际涉及时先阅读当前安装版本的本地文档 |
 
-当前已有三栏布局骨架，没有业务 API 接入。`app/layout.tsx` 提供导航、唯一的主内容区域与补充信息栏，`app/page.tsx` 只填充中间内容。使用服务端组件、原生 HTML 与 CSS Grid，没有增加客户端状态或依赖。`body` 已使用 Geist 和中文系统字体回退；背景与文字保留模板颜色，新增分隔线和弱强调语义变量，尚未完整应用设计系统 v0.1。
+当前已有三栏布局骨架，没有业务 API 接入。`app/layout.tsx` 提供导航、唯一的主内容区域与补充信息栏，`app/page.tsx` 只填充中间内容。根布局保留服务端组件；新增小型客户端容器，桌面使用 react-resizable-panels 4.14.8，窄屏保留 CSS Grid。拖动宽度仅由组件库临时管理，不保存、不折叠。`body` 已使用 Geist 和中文系统字体回退；背景与文字保留模板颜色，新增分隔线和弱强调语义变量，尚未完整应用设计系统 v0.1。
 
 ## 已确认、尚未引入的依赖
 
