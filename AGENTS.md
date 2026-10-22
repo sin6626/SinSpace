@@ -26,3 +26,6 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - 2026-10-22：apps/admin 已导入现有 mx-admin，dev:admin 仅启动后台，dev:all 联合启动。Webhook 校验原始体 HMAC，文章三事件使 posts/categories 缓存立即过期；隔离库真实 CRUD/健康检查/重发验证通过，测试记录已清理，不写日常文章。通知栏仅计划，见 docs/notification-center-plan.md。后台浏览器冷启动两次超资源预算并清理，尚无登录/表单成功证据；不得重复重型尝试或提高预算。用户已授权测试后恢复日常前后端服务。
 - 本轮收尾已恢复普通 `pnpm dev` 日常前后端，使用原本机 shrio-import-20261014 库，公开列表仍为13篇。隔离服务和测试浏览器已关闭；后台按需用 dev:admin 启动，不自动常驻。
+
+- 2026-10-22：通知改为 Base UI 官方 Toast，文案/时长集中 apps/web/lib/notification-copy.ts，样式 notifications.css。复用 Core /web Socket.IO，公开新文章全站提示，修改/删除仅对应文章房间。无已读/历史/新管理员入口，不公开后台投递记录。Webhook缓存失效与访客消息独立，不声称弹窗代表缓存已刷新。
+- Toast 本轮实际浏览器使用协议替身通过显示/悬停/关闭/超时/手机/文章房间进出，真实 Core 网关握手通过；未做日常文章写入。新增依赖后曾遇旧 Next 进程持续热更新，重启后通过。浏览器已关闭，日常服务已恢复。

@@ -55,6 +55,7 @@ export async function getPost(category: string, slug: string) {
   const post = await getApiClient().post.getPost(category, slug);
   cacheTag(`blog:post:${post.id}`);
   return {
+    id: post.id,
     title: post.title,
     text: post.text,
     contentFormat: post.contentFormat,

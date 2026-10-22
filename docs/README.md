@@ -67,4 +67,4 @@
 
 2026-10-22：公开导航、分类、列表与详情采用 Next 缓存；整体宽度上限改为 84rem，正文上限 48rem。参数位置与 webhook 调研见 [缓存与阅读宽度调整](./cache-and-layout.md)。发布通知现已接通，日常后台仍需配置。
 
-2026-10-22：导入本仓库 mx-admin，新增 `dev:admin` / `dev:all`。签名 Webhook 与真实隔离库缓存失效已验证。见[配置说明](./webhook-local.md)、[后台来源](./admin-source.md)、[通知栏计划](./notification-center-plan.md)。通知栏尚未实现。
+2026-10-22：导入本仓库 mx-admin，新增 `dev:admin` / `dev:all`。签名 Webhook 与真实隔离库缓存失效已验证。见[配置说明](./webhook-local.md)、[后台来源](./admin-source.md)、[通知栏计划](./notification-center-plan.md)。后续已接入 Base UI Toast，文案和范围见通知文档。

@@ -14,7 +14,7 @@ const post = { title: '测试', created: '2026-10-22T00:00:00Z', category: { nam
 const module = { exports: {} }
 vm.runInNewContext(code, {
   module, exports: module.exports,
-  require: (id) => id.endsWith('.css') ? {} : id === '../lib/blog-data' ? { getPost: async (...args) => { request = args; if (failure) throw failure; return post } } : require(id),
+  require: (id) => id.endsWith('.css') ? {} : id === './notifications' ? { ArticleNotifications: () => null } : id === '../lib/blog-data' ? { getPost: async (...args) => { request = args; if (failure) throw failure; return post } } : require(id),
 })
 const render = (category = 'study%26think', slug = 'test') => module.exports.default({ params: Promise.resolve({ category, slug }) })
 const html = renderToStaticMarkup(await render())

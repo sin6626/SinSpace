@@ -1,3 +1,4 @@
+import { ArticleNotifications } from "./notifications";
 import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
 import Markdown from "react-markdown";
@@ -29,6 +30,7 @@ export default async function PostDetail({ params }: {
 
   return (
     <article className="post-detail">
+      <ArticleNotifications id={post.id} />
       <header className="page-heading">
         <Link href="/posts">返回文章列表</Link>
         <h1 className="post-detail-title">{post.title}</h1>
