@@ -32,7 +32,7 @@ export default async function PostList({ searchParams, params }: PostListProps) 
     if (route && !category) notFound();
     result = await api.post.getList(page, 10, {
       categoryIds: category ? [category.id] : undefined,
-      select: ["title", "summary", "created", "categoryId"],
+      select: ["title", "summary", "created", "categoryId", "slug"],
     });
     if (page > Math.max(1, result.pagination.totalPage)) notFound();
   } catch (error) {
@@ -61,7 +61,9 @@ export default async function PostList({ searchParams, params }: PostListProps) 
             {posts.map((post) => (
               <li key={post.id}>
                 <article>
-                  <h2>{post.title}</h2>
+                  <h2>{post.category && post.slug ? (
+                    <Link href={`/posts/${encodeURIComponent(post.category.slug)}/${encodeURIComponent(post.slug)}`}>{post.title}</Link>
+                  ) : post.title}</h2>
                   <div className="post-meta">
                     <time dateTime={post.created}>
                       {new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Asia/Shanghai" }).format(new Date(post.created))}

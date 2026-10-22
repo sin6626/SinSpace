@@ -16,7 +16,7 @@
     "lint": "pnpm --filter @sin/web lint",
     "typecheck": "pnpm --filter @sin/web exec tsc --noEmit",
     "typecheck:core": "pnpm --filter @mx-space/core typecheck",
-    "verify": "node scripts/verify-dev-config.mjs && node scripts/verify-api.mjs && node scripts/verify-post-list.mjs"
+    "verify": "node scripts/verify-dev-config.mjs && node scripts/verify-api.mjs && node scripts/verify-post-list.mjs && node scripts/verify-post-detail.mjs"
   },
   "devDependencies": {
     "mongodb-memory-server": "11.0.1",

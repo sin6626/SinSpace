@@ -42,6 +42,8 @@ try {
     categoryIds: ['000000000000000000000001', '000000000000000000000002'],
   })
   assert.equal(posts.pagination.currentPage, 2)
+  globalThis.fetch = async () => Response.json({ ok: 0, message: 'not found' }, { status: 404 })
+  await assert.rejects(getApiClient().post.getPost('category', 'missing'), (error) => error.status === 404)
   const control = Object.assign(new Error('redirect'), { digest: 'NEXT_REDIRECT;replace;/;307;' })
   globalThis.fetch = async () => { throw control }
   await assert.rejects(getApiClient().aggregate.getAggregateData(), (error) => error === control)

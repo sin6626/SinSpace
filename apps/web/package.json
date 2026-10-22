@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
+    "@mx-space/api-client": "workspace:*",
     "next": "16.4.2",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "react-markdown": "^10.1.0",
     "react-resizable-panels": "^4.14.8",
-    "@mx-space/api-client": "workspace:*",
+    "remark-gfm": "^4.0.1",
     "server-only": "0.0.1"
   },
   "devDependencies": {

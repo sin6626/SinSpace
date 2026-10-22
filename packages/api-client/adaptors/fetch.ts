@@ -22,6 +22,7 @@ const jsonDataAttachResponse = async (response: Response) => {
 
   const nextResponse = Object.assign({}, response, {
     data,
+    status: response.status,
   })
 
   if (response.ok) {
