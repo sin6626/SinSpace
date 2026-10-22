@@ -1,9 +1,8 @@
-import type { PostModel } from "@mx-space/api-client";
 import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { getApiClient } from "../lib/api";
+import { getPost } from "../lib/blog-data";
 import "./post-detail.css";
 
 export default async function PostDetail({ params }: {
@@ -19,9 +18,9 @@ export default async function PostDetail({ params }: {
     notFound();
   }
   const href = `/posts/${category}/${slug}`;
-  let post: PostModel;
+  let post: Awaited<ReturnType<typeof getPost>>;
   try {
-    post = await getApiClient().post.getPost(category, slug);
+    post = await getPost(category, slug);
   } catch (error) {
     unstable_rethrow(error);
     if (typeof error === "object" && error !== null && "status" in error && error.status === 404) notFound();

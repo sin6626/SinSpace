@@ -1,7 +1,7 @@
-import type { CategoryModel, PaginateResult, PostListItem } from "@mx-space/api-client";
+import type { CategoryModel } from "@mx-space/api-client";
 import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
-import { getApiClient } from "../lib/api";
+import { getCategories, getPosts } from "../lib/blog-data";
 
 type PostListProps = {
   searchParams: Promise<{ page?: string | string[] }>;
@@ -24,16 +24,12 @@ export default async function PostList({ searchParams, params }: PostListProps) 
 
   let categories: CategoryModel[];
   let category: CategoryModel | undefined;
-  let result: PaginateResult<PostListItem>;
+  let result: Awaited<ReturnType<typeof getPosts>>;
   try {
-    const api = getApiClient();
-    ({ data: categories } = await api.category.getAllCategories());
+    categories = await getCategories();
     category = route ? categories.find((item) => item.slug === slug) : undefined;
     if (route && !category) notFound();
-    result = await api.post.getList(page, 10, {
-      categoryIds: category ? [category.id] : undefined,
-      select: ["title", "summary", "created", "categoryId", "slug"],
-    });
+    result = await getPosts(page, category?.id);
     if (page > Math.max(1, result.pagination.totalPage)) notFound();
   } catch (error) {
     unstable_rethrow(error);

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { unstable_rethrow } from "next/navigation";
-import { getApiClient } from "../lib/api";
+import { getNavigationData } from "../lib/blog-data";
 import NavigationMenu, { type NavigationState } from "./navigation-menu";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -24,7 +24,7 @@ function links(value: unknown, labelKey: "name" | "title", prefix: string) {
 async function NavigationData() {
   let state: NavigationState;
   try {
-    const data = await getApiClient().aggregate.getAggregateData();
+    const data = await getNavigationData();
     state = {
       status: "ready",
       articles: links(data.categories, "name", "/categories/"),
