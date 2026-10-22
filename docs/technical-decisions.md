@@ -19,7 +19,7 @@
 | 字体 | 布局已引入 Geist、Geist Mono | 模板字体基础；中文使用系统回退 |
 | Next 功能 | 已配置 `cacheComponents`、`partialPrefetching`、`experimental.agentFeedback` | 保留已有配置，实际涉及时先阅读当前安装版本的本地文档 |
 
-当前已有三栏布局骨架与导航，通过公开聚合接口读取分类、独立页面，尚未接入正文。`app/layout.tsx` 提供导航、唯一的主内容区域与补充信息栏，`app/page.tsx` 只填充中间内容。根布局保留服务端组件；新增小型客户端容器，桌面使用 react-resizable-panels 4.14.8，窄屏保留 CSS Grid。拖动宽度仅由组件库临时管理，不保存、不折叠。`body` 已使用 Geist 和中文系统字体回退；背景与文字保留模板颜色，新增分隔线和弱强调语义变量，尚未完整应用设计系统 v0.1。
+当前已有三栏布局骨架与导航，通过公开聚合接口读取分类、独立页面，尚未接入正文。`apps/web/app/layout.tsx` 提供导航、唯一的主内容区域与补充信息栏，`apps/web/app/page.tsx` 只填充中间内容。根布局保留服务端组件；新增小型客户端容器，桌面使用 react-resizable-panels 4.14.8，窄屏保留 CSS Grid。拖动宽度仅由组件库临时管理，不保存、不折叠。`body` 已使用 Geist 和中文系统字体回退；背景与文字保留模板颜色，新增分隔线和弱强调语义变量，尚未完整应用设计系统 v0.1。
 
 ## 组件与动画依赖
 
@@ -44,13 +44,13 @@ Base UI 负责组件行为，但不会替项目决定视觉风格；自行添加
 
 ### Motion 与 GSAP
 
-业务动效默认使用 Motion for React。当前尚未安装。GSAP 只在出现明确的复杂时间线、滚动联动或精细编排需求后单独评估，不提前加入依赖。[Motion 官方文档](https://motion.dev/docs/react)
+业务动效默认使用 Motion for React。当前尚未安装。导航的基础开合和尺寸过渡采用 Base UI 官方状态属性与 CSS transition，避免两套动画机制控制相同属性。GSAP 只在出现明确的复杂时间线、滚动联动或精细编排需求后单独评估，不提前加入依赖。[Motion 官方文档](https://motion.dev/docs/react)
 
 保留组件自带的基本状态过渡。同一元素的同一属性由一个动画机制控制。动效必须能被打断，不能依赖播放完毕才能操作。具体规范见[动效与无障碍](./design-system.md#8-动效规范)。
 
 ### 数据请求与状态
 
-初期使用 Next.js 与原生 `fetch`，组件内交互使用 React 自身状态能力。暂不引入全局状态库、额外请求缓存库或新的接口代理层。
+公开 API 使用本地 workspace SDK `@mx-space/api-client`，客户端模块基于其原生 fetch 适配器设置超时与 Next 缓存规则；接口地址单独读取环境配置。组件内交互使用 React 自身状态能力。暂不引入全局状态库、额外请求缓存库或新的接口代理层。
 
 数据缓存规则在首次接入真实读取接口时单独学习和确认。不能把鉴权内容按公开内容缓存。接口字段、枚举、分页和错误格式以 Mix Space 当前源码及文档为准，缺失时先明确问题，不猜测 DTO。
 
@@ -58,8 +58,8 @@ Base UI 负责组件行为，但不会替项目决定视觉风格；自行添加
 
 | 部分 | 所属位置 | 决策 |
 | --- | --- | --- |
-| 新前端 | SinPersonalSpace | 独立开发公开内容与阅读体验 |
-| Core | 相邻 ShrioRenovation 中的 Mix Space | 复用既有 NestJS 后端，不复制到新项目 |
+| 新前端 | SinPersonalSpace/apps/web | 独立开发公开内容与阅读体验 |
+| Core | SinPersonalSpace/apps/core | 已按用户新决定复制既有后端源码，保留原有修复 |
 | 管理后台 | ShrioRenovation 中的 mx-admin | 继续负责内容管理，不重做后台 |
 | MongoDB、Redis | 旧项目管理的本地数据目录 | 复用已有启动与存储配置，不复制数据 |
 | 旧 Shiro 前端 | 旧项目中保留 | 不修改，不随新前端启动 |
@@ -77,5 +77,5 @@ Base UI 负责组件行为，但不会替项目决定视觉风格；自行添加
 - 现有依赖、标准能力和已选组件能解决时，不增加新包。
 - 引入依赖前先说明实际需求、职责、替代方案和维护影响，再在用户确认的学习单元中实施。
 - 安装时记录实际版本并更新对应锁文件，不因示例使用 `latest` 就长期依赖浮动版本。
-- 两个项目保留各自的 pnpm 版本和锁文件，不复制或链接依赖目录，不改造为新的 monorepo。
+- 新项目使用一个 pnpm workspace 与锁文件管理前后端和 SDK。旧项目仍独立保留；不复制其依赖或数据目录。
 - 仅按实际交互需求引入依赖。目前已引入 react-resizable-panels 和 Base UI；未安装 shadcn/ui、Motion 或 GSAP。

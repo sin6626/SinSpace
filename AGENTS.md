@@ -10,13 +10,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## 项目文档与协作
 
-- 先阅读 [docs/README.md](docs/README.md)，技术决策、设计系统和本地开发规划以其链接的文档为入口。文档中的设计基线与计划功能不代表已经实现或得到最终视觉批准。
-- 本项目用于学习。每次先讲清概念、取舍与影响，在用户确认的小步骤内做最小修改，再共同验证；不要自动扩展为大范围改动或整站 UI 生成。已明确授权的同一事项无需重复确认。
-- 当前技术方向是直接使用 Base UI 提供交互基础，样式由项目自己设计，配合 Tailwind CSS 和 Motion。shadcn/ui 仅按需参考或选用，不作为默认样式和组件清单；缺少的组件不为凑齐体系而补造。后端与后台复用旧目录中的 Mix Space，旧 Shiro 前端保留。
-- 2026-10-22 已按用户授权完成 X 式三栏布局骨架：根布局负责左右栏与主内容容器，页面通过 children 填入中间。仅首页可导航，其余栏目为禁用占位。ESLint、类型检查、八档宽度、吸顶和键盘跳转已验证，测试资源已关闭。尚未安装组件或动画依赖、接入后端或实现跨目录启动；继续按用户指定局部推进。
-
-- 2026-10-22 增加 react-resizable-panels 4.14.8，仅桌面两条分隔线可拖动，窄屏保留原布局；不保存宽度、不折叠。小型客户端容器接收三块服务端内容，跨桌面断点会重新挂载，未来接入有状态内容时再评估保留状态。鼠标、键盘、最小宽度、刷新恢复、响应式与吸顶验证通过；复用用户 localhost:3000，测试浏览器已关闭，用户服务保留。
-
-- 2026-10-22 导航使用 Base UI Navigation Menu，文字式悬浮子菜单，桌面左侧优先且允许翻右，手机下方弹出；closeDelay=500，移入保持打开。服务端公开 GET aggregate 读取分类与独立页面，默认线上公开基址，MIX_SPACE_API_URL 可覆盖，8 秒超时/no-store/Suspense，失败可重试。不创建目标页面，链接仍可能进入尚未实现路由的 404。已验证真实数据、左右定位、延迟关闭、键盘与手机点击；未启动后台/数据库。
-
-- 导航关闭延迟直接修改 app/navigation-menu.tsx 的 closeDelay（毫秒），当前 500。SDK 与 API 地址管理已进入调研，用户尚未授权本轮迁移；不要把导航组件内的线上地址回退当成最终请求层设计。
+- 中文沟通，先阅读 docs/README.md；学习项目按用户授权的小单元推进，不自动生成整站页面。
+- 当前为 pnpm workspace：apps/web（Next）、apps/core（Mix Space）、packages/api-client（本地 SDK）。根安装依赖、维护单一锁文件；不复制 node_modules。Next 本地文档以 apps/web/node_modules/next/dist/docs 为准，保留自动生成说明。
+- UI 使用 Base UI，自定义样式。导航采用官方状态驱动的 CSS 过渡；复杂业务动画以后使用 Motion。菜单文字统一左对齐、箭头独立在左；closeDelay=500 位于 apps/web/app/navigation-menu.tsx。
+- API 基址仅通过 apps/web/lib/config.ts 读取环境配置，统一客户端在 lib/api.ts；SDK 异常回调必须保留 Next 内部控制异常。不要重新在组件内硬编码域名。
+- pnpm dev 构建 SDK 后启动新前端、Core、MongoDB、Redis，不启动旧 Shiro 或 mx-admin。数据继续引用旧 .local，媒体引用旧 Core tmp；未获另行授权不搬迁、清空或写入真实内容。
+- 默认本地提交，Conventional Commits 中文说明；不推送或部署。禁止批量删除；测试只开一套必要服务和一个独立无头浏览器，及时关闭自启资源，不干扰其他进程。普通 dev 不启用 Agent 内存预算。
+- 2026-10-22：用户授权停止旧的本项目 Next 服务以迁移。SDK 构建、前后端类型、配置与 SDK 控制异常回归通过；真实联合启动与本地聚合读取通过。完整联调批次触发系统内存保护后已清理，未记为整批通过；后续单前端完成菜单动画/对齐/移动端检查，单 Mongo 复核四类内容指纹不变。结束时测试服务保持停止。详情 docs/workspace-migration.md。

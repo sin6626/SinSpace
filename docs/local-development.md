@@ -1,100 +1,53 @@
-# 本地开发方案
+# 本地开发
 
-更新日期：2026-10-22。状态：命令编排已完成规划，尚未实现。
+更新日期：2026-10-22。已采用 pnpm workspace，参见[技术决策](./technical-decisions.md)与[迁移记录](./workspace-migration.md)。
 
-文档入口：[项目文档](./README.md)。架构职责见[技术决策](./technical-decisions.md)，组件与阅读规则见[设计系统](./design-system.md)。
+## 目录与依赖
 
-## 当前可以运行什么
+- `apps/web`：Next.js 新前端。
+- `apps/core`：从旧项目复制的 Mix Space 后端源码，保留已有修复。
+- `packages/api-client`：同源 Mix Space SDK，通过 `workspace:*` 被前端引用。
+- 根 `pnpm-workspace.yaml`、`pnpm-lock.yaml` 统一管理依赖。只在根目录安装；不复制旧项目 node_modules。
 
-SinPersonalSpace 的 `package.json` 当前只有以下命令：
+使用 Node.js 24.21.0 或更高的 Node.js 24 LTS，pnpm 12.6.0。首次运行 `pnpm install --frozen-lockfile`。本机还需已有 Redis 8.10.2；MongoDB 7.0.45 使用现有缓存的二进制与数据目录。
 
-| 命令 | 当前实际行为 |
+## 命令
+
+| 命令 | 实际行为 |
 | --- | --- |
-| `pnpm dev` | 执行 `next dev`，只运行当前新前端，不启动 Core 或后台，也未配置规划中的 2323 端口 |
-| `pnpm build` | 执行 `next build` |
-| `pnpm start` | 执行 `next start`，需要已有生产构建 |
-| `pnpm lint` | 执行 `eslint` |
+| `pnpm dev` | 构建 SDK，启动 MongoDB、Redis、本仓库 Core 与新前端 |
+| `pnpm dev:web` | 构建 SDK，只启动新前端；Core 需已运行或设置其他 API 基址 |
+| `pnpm dev:core` | 只启动 MongoDB、Redis 与本仓库 Core |
+| `pnpm dev:check` | 检查依赖、端口和共享数据路径，不启动服务 |
+| `pnpm build:sdk` | 构建 workspace SDK 的运行文件与类型 |
+| `pnpm build` | 依次构建 SDK、新前端；不启动或构建后台 |
+| `pnpm lint` / `pnpm typecheck` | 新前端静态检查 |
+| `pnpm typecheck:core` | Core 类型检查 |
+| `pnpm verify` | 启动配置与 SDK 请求边界的轻量回归，无真实服务 |
 
-本轮没有运行上述命令。
+`pnpm dev` 不启动旧 Shiro 或 mx-admin。Core 仍保留其已有后台相关接口，但不会启动后台开发进程。
 
-旧项目 ShrioRenovation 已有 `pnpm dev --core-only`，它启动 MongoDB、Redis 和 Core，不启动 mx-admin，也不启动 Shiro。旧项目默认 `pnpm dev` 则会同时启动管理后台和 Shiro，不能把它直接用作新前端的后端入口。
+## 地址和配置
 
-## 规划中的命令
+| 服务 | 地址 |
+| --- | --- |
+| 新前端 | `http://127.0.0.1:2323` |
+| Core | `http://127.0.0.1:2333`，开发模式无 `/api/v2` 前缀 |
+| MongoDB | `127.0.0.1:27018` |
+| Redis | `127.0.0.1:6380` |
 
-以下命令是目标契约。除现有的 `pnpm dev` 名称外，新项目尚未创建这些入口；现有 `pnpm dev` 也尚未改变行为。
+启动器读取根目录 `.env.local`，可参考根 `.env.example`。进程已设置的环境变量优先。
 
-| 命令 | 将来的职责 | 不应发生的行为 |
-| --- | --- | --- |
-| `pnpm dev` | 在旧目录启动 Core、MongoDB、Redis，等待 Core 就绪，再启动 SinPersonalSpace | 不启动旧 Shiro，不自动启动管理后台 |
-| `pnpm dev:web` | 只启动新前端，供纯前端学习或已运行后端的场景使用 | 不创建、接管或停止数据库 |
-| `pnpm dev:core` | 跨目录调用旧项目的 `--core-only` 模式 | 不复制后端源码或另建数据目录 |
-| `pnpm dev:admin` | 先确认 Core 可用，再用旧目录自身的 Vite CLI 启动 mx-admin | 不启动旧 Shiro，不自动打开系统浏览器，不顺带新建一套 Core |
+- `MIX_SPACE_API_URL`：前端服务端请求地址。联合启动强制注入本次启动的本地 Core 地址；`dev:web` 可用此变量指定其他地址，默认本地 Core。部署时必须显式配置，不再默认访问线上博客。
+- `MIX_SPACE_DATA_ROOT`：默认相邻 `ShrioRenovation/.local`。复用其中的 `database`、`mongo/`、按库分目录的 `redis/`、`jwt-secret`。
+- `MIX_SPACE_MEDIA_ROOT`：默认旧 `ShrioRenovation/apps/mix-space/apps/core/tmp`，复用上传文件及认证附属文件。
 
-这样安排可以在日常开发时只启动必要服务，需要管理内容时再开后台。只做设计系统学习时，将来可以使用 `dev:web`。
+生产环境在部署平台设置环境变量，直接部署 `apps/web` 时也可使用该应用的环境文件。接口基址由 `apps/web/lib/config.ts` 校验，SDK 由 `apps/web/lib/api.ts` 创建。导航调用 SDK 聚合方法；公开读取不携带管理凭据，8 秒超时，当前不缓存。
 
-## 地址与路径
+## 共享数据和退出
 
-| 服务 | 规划地址或端口 | 归属 |
-| --- | --- | --- |
-| 新前端 | `http://127.0.0.1:2323` | SinPersonalSpace |
-| Core | `http://127.0.0.1:2333` | ShrioRenovation |
-| mx-admin | `http://127.0.0.1:9528` | ShrioRenovation |
-| MongoDB | `127.0.0.1:27018` | 旧项目日常本地环境 |
-| Redis | `127.0.0.1:6380` | 旧项目日常本地环境 |
+这是共享同一份本机数据，不是复制数据库。旧目录仍需保留；迁移数据位置必须单独操作。禁止两个项目同时启动这套服务。端口占用或原数据目录缺失时，启动器报错退出，不接管已有服务，也不悄悄创建替代日常库。
 
-新前端沿用旧前台地址，可以复用 Core 已配置的来源以及后台的预览链接。不要混用 `localhost` 与 `127.0.0.1` 后再假定来源、Cookie 或回跳行为完全相同。旧 Shiro 与新前端不能同时占用 2323；本方案保持旧 Shiro 不启动。
+Ctrl+C、子进程异常或启动器退出时，watchdog 清理本命令创建的进程。不会清空数据库、删除媒体或关闭其他项目。日志位于新项目 `.local/logs/`。
 
-`MIX_SPACE_ROOT` 是拟新增的本地路径配置，**当前尚未被脚本读取**。默认值为从 SinPersonalSpace 项目根解析的相邻 `../ShrioRenovation`，不依赖执行命令时的任意工作目录。
-
-本机对应路径：
-
-- 新前端：`/Users/sin/Documents/Project/SinProject/SinPersonalSpace`
-- 旧项目：`/Users/sin/Documents/Project/SinProject/ShrioRenovation`
-
-未来入口检查旧路径中的启动器、Core 和后台依赖是否存在；缺失时说明需要准备哪一项，不自动复制工程或重新安装整套依赖。
-
-两个项目保留各自的包管理器约定：SinPersonalSpace 声明 pnpm 12.6.0，旧项目根声明 pnpm 10.28.2。跨目录调用旧启动器或该目录的本地 CLI，不让新项目的 pnpm 覆盖旧锁文件。旧启动器要求 Node.js 24.21.0 或更高的 Node.js 24 LTS，未来联合入口需要检查此兼容要求。
-
-## 数据和接口配置
-
-导航已读取 `GET /aggregate` 的 `categories` 与 `page_meta`。服务端环境变量 `MIX_SPACE_API_URL` 默认是 `https://sin6626.me/api/v2`，仅请求公开数据，不带凭据、不写数据。需要切换到本地 Core 时，在 `.env.local` 设置 `MIX_SPACE_API_URL=http://127.0.0.1:2333` 并重启前端；本地开发基址不加 `/api/v2`。请求不缓存，8 秒超时后显示失败与重试，首页仍可用。此配置不负责启动 Core。
-
-- 复用旧项目已有的本地数据库选择文件、MongoDB 目录和按库名划分的 Redis 目录；不复制、不迁移、不清空。
-- Core 的开发 API 基址为上述 2333 地址，旧项目文档注明开发模式没有 `/api/v2` 前缀。生产地址与前缀在部署阶段另行核对，不由本地地址推导。
-- 管理后台沿用 `VITE_APP_BASE_API`、`VITE_APP_GATEWAY` 和 `VITE_APP_WEB_URL` 的既有用途，分别指向上述 Core 和新前端地址。
-- 本阶段不修改后端 API、鉴权配置或数据库结构。实际内容接入时逐项核对字段、正文格式、可见性和错误处理。
-- 新前端不复制凭据到可公开的环境变量。诊断日志不输出密钥、Cookie、Authorization 或真实文章正文。
-- 后续自动化写入检查使用旧项目已有的隔离测试环境，不写日常文章；本轮不启动任何数据库，也不执行数据操作。
-
-## 进程与退出规则
-
-启动脚本只负责检查、编排、日志和收尾，不承担业务逻辑。
-
-| 场景 | 预期行为 | 原因 |
-| --- | --- | --- |
-| 路径或依赖缺失 | 启动前报出具体问题，停止当前启动 | 避免启动一半后留下资源 |
-| 端口占用 | 明确报错，不杀进程、不自动换端口或接管未知服务 | 地址与后端配置要保持一致，现有进程可能属于用户 |
-| Core 启动失败或未就绪 | 不启动新前端，清理本命令已经启动的资源 | 不留下半套服务 |
-| 新前端启动失败 | 清理同一个联合命令创建的后端和数据库 | 资源归属以实际创建关系为准 |
-| 联合命令 Ctrl+C | 停止它创建的前端、Core、数据库及子进程，保留数据 | 不能只结束父进程 |
-| 后台命令退出 | 只停止该命令创建的后台进程 | 不连带终止另一个命令启动的 Core 或前端 |
-| 用户已单独运行 Core | 使用未来的 `dev:web` 启动前端，联合命令不自动接管 Core | 明确进程归属，避免误关闭用户服务 |
-
-任何自动复用逻辑都不能只凭“端口有响应”认定服务属于本任务。默认采用明确报错和独立命令，不预建复杂的自动发现机制。
-
-同一时间最多一套必要服务，构建、类型检查和浏览器检查串行。Agent 自启资源记录 PID 与端口，结束、失败或中断后清理并核验退出。浏览器只用独立 Playwright Chromium，不接用户 profile。
-
-不把 Agent 的测试内存预算或超限停机规则强加给用户日常 `pnpm dev`。测试需要额外保护时，在隔离验证入口中单独处理。
-
-## 将来的启动单元验收
-
-实现启动脚本时才执行这些检查，本轮没有运行：
-
-1. 校验路径与依赖，再确认端口冲突能在启动前明确退出。
-2. 联合命令只运行新前端、Core、MongoDB、Redis，没有旧 Shiro 或 mx-admin。
-3. `dev:web` 不改变已经运行的后端；`dev:admin` 不打开系统浏览器。
-4. 检查 Core 失败、前端失败、Ctrl+C 等路径，只清理本命令创建的进程。
-5. 检查子孙进程和监听端口实际退出，数据目录与数据库选择保持不变。
-6. 真实 API 接入单元再验证跨域、后台预览链接与实际内容读取，不用启动成功代替业务验收。
-
-启动脚本和页面开发分别提交，完成启动单元不自动进入 UI 或数据写入开发。
+Agent 验证使用外部资源监控或显式 `--test` + `SIN_VERIFY=1`，普通 `pnpm dev` 不采样内存或超限停机。`--test` 使用新项目 `.local/verification` 与独立端口，不连接日常库。
