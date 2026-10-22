@@ -17,4 +17,6 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - 2026-10-22 增加 react-resizable-panels 4.14.8，仅桌面两条分隔线可拖动，窄屏保留原布局；不保存宽度、不折叠。小型客户端容器接收三块服务端内容，跨桌面断点会重新挂载，未来接入有状态内容时再评估保留状态。鼠标、键盘、最小宽度、刷新恢复、响应式与吸顶验证通过；复用用户 localhost:3000，测试浏览器已关闭，用户服务保留。
 
-- 2026-10-22 导航使用 Base UI Navigation Menu，文字式悬浮子菜单，桌面左侧优先且允许翻右，手机下方弹出；closeDelay=750，移入保持打开。服务端公开 GET aggregate 读取分类与独立页面，默认线上公开基址，MIX_SPACE_API_URL 可覆盖，8 秒超时/no-store/Suspense，失败可重试。不创建目标页面，链接仍可能进入尚未实现路由的 404。已验证真实数据、左右定位、延迟关闭、键盘与手机点击；未启动后台/数据库。
+- 2026-10-22 导航使用 Base UI Navigation Menu，文字式悬浮子菜单，桌面左侧优先且允许翻右，手机下方弹出；closeDelay=500，移入保持打开。服务端公开 GET aggregate 读取分类与独立页面，默认线上公开基址，MIX_SPACE_API_URL 可覆盖，8 秒超时/no-store/Suspense，失败可重试。不创建目标页面，链接仍可能进入尚未实现路由的 404。已验证真实数据、左右定位、延迟关闭、键盘与手机点击；未启动后台/数据库。
+
+- 导航关闭延迟直接修改 app/navigation-menu.tsx 的 closeDelay（毫秒），当前 500。SDK 与 API 地址管理已进入调研，用户尚未授权本轮迁移；不要把导航组件内的线上地址回退当成最终请求层设计。

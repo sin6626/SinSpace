@@ -34,7 +34,7 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
     <NavigationMenu.Root
       aria-label="主导航"
       orientation={vertical ? "vertical" : "horizontal"}
-      closeDelay={750}
+      closeDelay={500}
     >
       <NavigationMenu.List className="navigation-list">
         <NavigationMenu.Item>
@@ -47,7 +47,7 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
         {menus.map(({ title, links }) => (
           <NavigationMenu.Item key={title}>
             <NavigationMenu.Trigger className="navigation-item">
-              {title}<span className="navigation-caret" aria-hidden="true">‹</span>
+              <span><span className="navigation-caret" aria-hidden="true">‹</span> {title}</span>
             </NavigationMenu.Trigger>
             <NavigationMenu.Content>
               <ul className="navigation-submenu">
