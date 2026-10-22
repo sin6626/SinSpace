@@ -22,4 +22,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - 2026-10-22：用户明确后续富文本改用 Plate，不继续引入 Lexical 前端渲染；计划见 docs/plate-content-plan.md。当前详情只渲染 Markdown/GFM，旧 Lexical 使用已有 text 副本并提示简化阅读，不改原 JSON，不做评论或编辑器。SDK fetch 适配器保留 HTTP status 用于详情 404。
 
-- 2026-10-22：用户选择 Next 缓存，不引入 React Query。公开数据函数集中在 apps/web/lib/blog-data.ts；时间单位秒，错误由页面处理，禁止缓存鉴权/访客状态。Mix Space已有webhook但本轮只读调研，尚未接收或登记发布失效通知，不得宣称已自动同步。宽度变量在 globals.css 开头，84rem容器/48rem正文。说明见 docs/cache-and-layout.md。
+- 2026-10-22：用户选择 Next 缓存，不引入 React Query。公开数据函数集中在 apps/web/lib/blog-data.ts；时间单位秒，错误由页面处理，禁止缓存鉴权/访客状态。Mix Space已有webhook但本轮只读调研，现已实现签名接收，日常库仍需手动登记，见 docs/webhook-local.md。宽度变量在 globals.css 开头，84rem容器/48rem正文。说明见 docs/cache-and-layout.md。
+
+- 2026-10-22：apps/admin 已导入现有 mx-admin，dev:admin 仅启动后台，dev:all 联合启动。Webhook 校验原始体 HMAC，文章三事件使 posts/categories 缓存立即过期；隔离库真实 CRUD/健康检查/重发验证通过，测试记录已清理，不写日常文章。通知栏仅计划，见 docs/notification-center-plan.md。后台浏览器冷启动两次超资源预算并清理，尚无登录/表单成功证据；不得重复重型尝试或提高预算。用户已授权测试后恢复日常前后端服务。
+- 本轮收尾已恢复普通 `pnpm dev` 日常前后端，使用原本机 shrio-import-20261014 库，公开列表仍为13篇。隔离服务和测试浏览器已关闭；后台按需用 dev:admin 启动，不自动常驻。

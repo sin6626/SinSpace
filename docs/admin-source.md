@@ -7,3 +7,5 @@
 原依赖 overrides、packageExtensions 与十份补丁需由根 pnpm workspace 管理。现有 Lexical 编辑入口保持不变，Plate 迁移另见计划。
 
 后台 Webhook 页面路径为 `/extra-features/webhooks`。
+
+依赖合并保留兼容补丁，`@lexical/code` 统一为 0.41.0 并沿用 no-Prism 补丁，避免两种 CodeNode 类身份并存。后台继续使用 SDK 1.21.2，前端使用 workspace SDK 2.4.2。类型检查、Webhook API 绑定及 block-identity/quote-transforms 模型检查通过；不代表完整编辑器 UI 验收。

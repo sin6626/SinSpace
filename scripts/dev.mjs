@@ -13,6 +13,7 @@ import { getResourceViolation, sampleResourceUsage, validateResourceBudget } fro
 const root = fileURLToPath(new URL('../', import.meta.url))
 if (existsSync(join(root, '.env.local'))) loadEnvFile(join(root, '.env.local'))
 const testing = process.argv.includes('--test')
+const coreNoWatch = testing && process.env.SIN_CORE_NO_WATCH === '1'
 const coreOnly = process.argv.includes('--core-only')
 const webOnly = process.argv.includes('--web-only')
 const adminOnly = process.argv.includes('--admin-only')
@@ -173,7 +174,8 @@ try {
     mongo.instanceInfo.instance.once('instanceClosed', () => fail(new Error(`MongoDB 已退出，请查看 ${join(logs, 'mongo.log')}。`)))
     await start('redis', 'redis-server', ['--bind', host, '--port', String(ports.redis), '--dir', redisDir, '--appendonly', 'yes'], '.')
     await waitForPort(ports.redis)
-    await start('core', process.execPath, [cliPath('apps/core', '@nestjs/cli', 'nest'), 'start', '-w', '--path', 'tsconfig.json', '--'], 'apps/core', { ...coreEnv, JWT_SECRET: secret })
+    if (coreNoWatch && !existsSync(join(root, 'apps/core/dist/main.js'))) throw new Error('请先编译 Core，再运行无监听的隔离验证。')
+    await start('core', process.execPath, coreNoWatch ? ['dist/main.js'] : [cliPath('apps/core', '@nestjs/cli', 'nest'), 'start', '-w', '--path', 'tsconfig.json', '--'], 'apps/core', { ...coreEnv, JWT_SECRET: secret })
     await waitForPort(ports.core)
   }
   if (!coreOnly && !adminOnly) {

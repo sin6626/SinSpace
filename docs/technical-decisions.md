@@ -60,7 +60,7 @@ Base UI 负责组件行为，但不会替项目决定视觉风格；自行添加
 | --- | --- | --- |
 | 新前端 | SinPersonalSpace/apps/web | 独立开发公开内容与阅读体验 |
 | Core | SinPersonalSpace/apps/core | 已按用户新决定复制既有后端源码，保留原有修复 |
-| 管理后台 | ShrioRenovation 中的 mx-admin | 继续负责内容管理，不重做后台 |
+| 管理后台 | 本仓库 apps/admin 中的 mx-admin | 继续负责内容管理，不重做后台 |
 | MongoDB、Redis | 旧项目管理的本地数据目录 | 复用已有启动与存储配置，不复制数据 |
 | 旧 Shiro 前端 | 旧项目中保留 | 不修改，不随新前端启动 |
 

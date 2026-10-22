@@ -30,7 +30,7 @@
     "@haklex/rich-kit-shiro": "0.0.85",
     "@haklex/rich-plugin-toolbar": "0.0.85",
     "@haklex/rich-style-token": "0.0.85",
-    "@lexical/code": "npm:lexical-code-no-prism@^0.41.0",
+    "@lexical/code": "0.41.0",
     "@lexical/markdown": "0.41.0",
     "@lexical/react": "0.41.0",
     "@lezer/highlight": "1.2.3",

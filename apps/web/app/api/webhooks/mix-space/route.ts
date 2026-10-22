@@ -2,8 +2,6 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { revalidateTag } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
 
-export const runtime = "nodejs";
-
 const maxBodyBytes = 4 * 1024 * 1024;
 const postEvents = new Set(["POST_CREATE", "POST_UPDATE", "POST_DELETE"]);
 

@@ -47,9 +47,7 @@ SDK 传输层仍是 `no-store`：外层 `use cache` 命中时不会调用 SDK；
 - 创建或修改 webhook 会先发送 `health_check`。文章更新事件约有 1 秒防抖，投递本身是异步的；服务配置了最多 10 次 HTTP 重试，不能将它理解为同步发布事务。
 - `POST_DELETE` 只有文章 ID；更新可能改变 slug。因此不能仅靠新 slug 清理旧路径的缓存。
 
-本轮已经加了标签，但**尚未创建 Next 接收接口，也未在后台登记 webhook**。目前只有时间驱动的重新验证，后台发布、编辑、隐藏或删除不会立即清理 Next 缓存。浏览器刷新也不等于清空服务端缓存。
-
-下一小步接线方案：先实现仅服务端使用的签名校验接收接口，支持健康检查，再在既有后台配置接收地址、匹配的密钥、事件和作用域。文章事件包含 `TO_SYSTEM_VISITOR`（5）作用域，订阅不能只选管理员事件。密钥不进入 `NEXT_PUBLIC_*` 或请求日志。
+已实现签名接收端 `/api/webhooks/mix-space`，文章创建、修改、删除已在隔离库验证缓存失效。日常库尚需手动登记 Webhook，见[配置与测试](./webhook-local.md)。分类和独立页面事件暂未接入。
 
 | 已验证通知 | 建议清理的现有标签 |
 | --- | --- |
@@ -57,12 +55,12 @@ SDK 传输层仍是 `no-store`：外层 `use cache` 命中时不会调用 SDK；
 | 分类创建、更新、删除 | `blog:categories`（所有带分类名的读取已关联该标签） |
 | 独立页面创建、更新、删除 | `blog:pages` |
 
-未来接收端可对这些标签调用 `revalidateTag(tag, { expire: 0 })`，让后续服务端请求等待新结果。删除、隐藏和转私密尤其不能只依赖长期缓存；但通知本身仍有投递延迟，已打开的页面也不会被服务器主动推送刷新。实时撤回的要求需另行设计。
+当前文章事件对前两种标签调用 `revalidateTag(tag, { expire: 0 })`，让后续服务端请求等待新结果。删除、隐藏和转私密尤其不能只依赖长期缓存；但通知本身仍有投递延迟，已打开的页面也不会被服务器主动推送刷新。实时撤回的要求需另行设计。
 
 ## 本轮检查
 
 - 公开 DTO 字段投影、缓存标签和时间约束由 `scripts/verify-blog-cache.mjs` 检查。
 - 真实本地列表和详情各首次请求 Core 一次，紧接着的重复访问未新增对应后端读取。
-- 不通过修改真实文章来测试失效；没有写 webhook 配置或启动管理后台。
+- 后续隔离库验证已覆盖真实文章创建、修改、删除；未修改日常文章。后台浏览器验收受资源预算限制，详见 Webhook 文档。
 
 参考：[Next 缓存](https://nextjs.org/docs/app/getting-started/caching)、[cacheLife](https://nextjs.org/docs/app/api-reference/functions/cacheLife)、[revalidateTag](https://nextjs.org/docs/app/api-reference/functions/revalidateTag)。具体 API 以项目安装版本的本地文档为准。

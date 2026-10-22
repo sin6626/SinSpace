@@ -18,7 +18,7 @@
 | --- | --- | --- |
 | 已确认决策 | Next.js、React、TypeScript、Tailwind CSS；直接使用 Base UI，自行设计样式；Motion；复用 Mix Space 与 mx-admin | shadcn/ui 仅作为按需选用或参考的来源；这些选择不代表依赖已经安装或功能已经实现 |
 | 待评审基线 | 中性色、字号、间距、尺寸、圆角和动效时长 | 是设计系统首版建议，不是最终视觉；品牌色和页面版式由用户决定 |
-| 尚未实现 | Motion 安装、主题切换、业务页面及正文 API 接入 | 当前已具备布局与导航，不能按已经可用的业务页面介绍 |
+| 尚未实现 | Motion 安装、主题切换、Plate 富文本和评论 | 文章列表、分类和 Markdown 详情已实现，其余业务逐步接入 |
 
 当前已替换欢迎页：左侧文字导航、中间页面内容、右侧补充信息占位。桌面通过 react-resizable-panels 拖动两条分隔线调整栏宽，不记忆宽度、不折叠；窄屏保留 CSS Grid，隐藏右栏，手机导航置顶。`pnpm dev` 已联合启动本仓库前端、Core 与共享 MongoDB/Redis，不启动管理后台。颜色跟随系统，尚未完整应用设计系统 v0.1。
 
@@ -65,4 +65,6 @@
 
 2026-10-22：新增 `/posts/[category]/[slug]` Markdown 详情页，列表标题可跳转，使用 SDK getPost。现有 Lexical 文章仅展示已有 Markdown 阅读副本，不转换或覆盖原 JSON。富文本目标改为 Plate，见 [Plate 接入与迁移计划](./plate-content-plan.md)。
 
-2026-10-22：公开导航、分类、列表与详情采用 Next 缓存；整体宽度上限改为 84rem，正文上限 48rem。参数位置与 webhook 调研见 [缓存与阅读宽度调整](./cache-and-layout.md)。发布通知尚未接通，当前仅时间重新验证。
+2026-10-22：公开导航、分类、列表与详情采用 Next 缓存；整体宽度上限改为 84rem，正文上限 48rem。参数位置与 webhook 调研见 [缓存与阅读宽度调整](./cache-and-layout.md)。发布通知现已接通，日常后台仍需配置。
+
+2026-10-22：导入本仓库 mx-admin，新增 `dev:admin` / `dev:all`。签名 Webhook 与真实隔离库缓存失效已验证。见[配置说明](./webhook-local.md)、[后台来源](./admin-source.md)、[通知栏计划](./notification-center-plan.md)。通知栏尚未实现。

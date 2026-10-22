@@ -25,6 +25,17 @@ export default ({ mode }) => {
       UnoCSS(),
       vue({}),
       vueJsx(),
+      {
+        name: 'vue-jsx-dependency-scan',
+        // The scanner reparses transformed TSX as JS, so JSX must not remain.
+        config: () => ({
+          optimizeDeps: {
+            rolldownOptions: {
+              transform: { jsx: { runtime: 'automatic', importSource: 'vue' } },
+            },
+          },
+        }),
+      },
       tsconfigPaths(),
 
       ...(isDev

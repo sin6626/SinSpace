@@ -1,23 +1,61 @@
 packages:
   - apps/*
   - packages/*
-
 allowBuilds:
-  "@nestjs/core": false
-  "@swc/core": false
+  '@nestjs/core': false
+  '@swc/core': false
   esbuild: false
   mongodb-memory-server: false
   redis-memory-server: false
   sharp: false
   unrs-resolver: false
-
 patchedDependencies:
-  "@lexical/code@0.41.0": patches/@lexical__code@0.41.0.patch
-
+  '@lexical/code@0.41.0': patches/@lexical__code@0.41.0.patch
+  '@haklex/rich-static-renderer@0.0.85': patches/@haklex__rich-static-renderer@0.0.85.patch
+  '@haklex/rich-plugin-slash-menu@0.0.85': patches/@haklex__rich-plugin-slash-menu@0.0.85.patch
+  '@haklex/rich-editor@0.0.85': patches/@haklex__rich-editor@0.0.85.patch
+  '@haklex/rich-plugin-toolbar@0.0.85': patches/@haklex__rich-plugin-toolbar@0.0.85.patch
+  '@haklex/rich-plugin-block-handle@0.0.85': patches/@haklex__rich-plugin-block-handle@0.0.85.patch
+  '@haklex/rich-ext-excalidraw@0.0.85': patches/@haklex__rich-ext-excalidraw@0.0.85.patch
+  '@haklex/rich-plugin-link-edit@0.0.85': patches/@haklex__rich-plugin-link-edit@0.0.85.patch
+  '@haklex/rich-ext-code-snippet@0.0.85': patches/@haklex__rich-ext-code-snippet@0.0.85.patch
+  '@haklex/rich-plugin-table@0.0.85': patches/@haklex__rich-plugin-table@0.0.85.patch
+  '@haklex/rich-ext-nested-doc@0.0.85': patches/@haklex__rich-ext-nested-doc@0.0.85.patch
 overrides:
-  'get-pixels@^3>request': './apps/core/external/request'
-  'pino': './apps/core/external/pino'
-  'semver': '7.7.4'
-  'typescript': '5.9.3'
-  'whatwg-url': '14.1.1'
-  'eslint-plugin-react-compiler>zod': '3.24.2'
+  get-pixels@^3>request: ./apps/core/external/request
+  pino: ./apps/core/external/pino
+  semver: 7.7.4
+  typescript: 5.9.3
+  whatwg-url: 14.1.1
+  eslint-plugin-react-compiler>zod: 3.24.2
+  '@lexical/code': 0.41.0
+  '@haklex/rich-ext-code-snippet@0.0.85>shiki': 3.23.0
+  '@haklex/rich-ext-excalidraw@0.0.85>@excalidraw/excalidraw': 0.18.1
+  '@haklex/rich-static-renderer@0.0.85>lucide-react': 0.574.0
+  '@haklex/rich-ext-code-snippet@0.0.85>lucide-react': 0.574.0
+  '@haklex/rich-renderer-codeblock@0.0.85>lucide-react': 0.574.0
+  '@haklex/rich-renderer-codeblock@0.0.85>shiki': 3.23.0
+  '@haklex/rich-ext-embed@0.0.85>lucide-react': 0.574.0
+  '@haklex/rich-renderer-mention@0.0.85>lucide-react': 0.574.0
+  '@haklex/rich-renderer-katex@0.0.85>lucide-react': 0.574.0
+  '@haklex/rich-editor-ui@0.0.85>lucide-react': 0.574.0
+  '@haklex/rich-renderer-alert@0.0.85>lucide-react': 0.574.0
+  '@haklex/rich-renderer-banner@0.0.85>lucide-react': 0.574.0
+  '@haklex/rich-renderer-image@0.0.85>lucide-react': 0.574.0
+  '@haklex/rich-renderer-linkcard@0.0.85>lucide-react': 0.574.0
+  '@haklex/rich-renderer-mermaid@0.0.85>lucide-react': 0.574.0
+  '@haklex/rich-renderer-video@0.0.85>lucide-react': 0.574.0
+  '@excalidraw/excalidraw@0.18.1>@radix-ui/react-tabs': 1.1.2
+packageExtensions:
+  '@haklex/rich-editor@0.0.85':
+    dependencies:
+      '@lexical/selection': 0.41.0
+      shiki: 3.23.0
+      lucide-react: 0.574.0
+  '@haklex/rich-ext-embed@0.0.85':
+    dependencies:
+      shiki: 3.23.0
+  '@haklex/rich-kit-shiro@0.0.85':
+    dependencies:
+      shiki: 3.23.0
+      lucide-react: 0.574.0
