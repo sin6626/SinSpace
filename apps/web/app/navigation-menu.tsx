@@ -4,6 +4,7 @@ import { NavigationMenu } from "@base-ui/react/navigation-menu";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSyncExternalStore } from "react";
+import "./navigation-menu.css";
 
 type NavigationLink = { label: string; href: string };
 export type NavigationState =
@@ -32,32 +33,33 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
 
   return (
     <NavigationMenu.Root
+      className="navigation-Root"
       aria-label="主导航"
       orientation={vertical ? "vertical" : "horizontal"}
       closeDelay={500}
     >
-      <NavigationMenu.List className="navigation-list">
+      <NavigationMenu.List className="navigation-List">
         <NavigationMenu.Item>
           <NavigationMenu.Link
-            className="navigation-item"
+            className="navigation-Trigger"
             active={pathname === "/"}
             render={<Link href="/" prefetch={false} />}
           >首页</NavigationMenu.Link>
         </NavigationMenu.Item>
         {menus.map(({ title, links }) => (
           <NavigationMenu.Item key={title}>
-            <NavigationMenu.Trigger className="navigation-item">
-              <NavigationMenu.Icon className="navigation-caret" aria-hidden="true">‹</NavigationMenu.Icon>{title}
+            <NavigationMenu.Trigger className="navigation-Trigger">
+              <NavigationMenu.Icon className="navigation-Icon" aria-hidden="true">‹</NavigationMenu.Icon>{title}
             </NavigationMenu.Trigger>
-            <NavigationMenu.Content className="navigation-content">
-              <ul className="navigation-submenu">
+            <NavigationMenu.Content className="navigation-Content">
+              <ul className="navigation-FlexLinkList">
                 {title === "文章" && (
-                  <li><NavigationMenu.Link className="navigation-subitem" closeOnClick render={<Link href="/posts" prefetch={false} />}>全部文章</NavigationMenu.Link></li>
+                  <li><NavigationMenu.Link className="navigation-LinkCard" closeOnClick render={<Link href="/posts" prefetch={false} />}><span className="navigation-LinkTitle">全部文章</span></NavigationMenu.Link></li>
                 )}
                 {links.map(({ label, href }) => (
                   <li key={href}>
-                    <NavigationMenu.Link className="navigation-subitem" active={pathname === href} closeOnClick render={<Link href={href} prefetch={false} />}>
-                      {label}
+                    <NavigationMenu.Link className="navigation-LinkCard" active={pathname === href} closeOnClick render={<Link href={href} prefetch={false} />}>
+                      <span className="navigation-LinkTitle">{label}</span>
                     </NavigationMenu.Link>
                   </li>
                 ))}
@@ -74,16 +76,17 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
         ))}
         {["作品", "手记"].map((label) => (
           <NavigationMenu.Item key={label}>
-            <button className="navigation-item" type="button" disabled>
+            <button className="navigation-Trigger" type="button" disabled>
               {label}<span className="navigation-status">未开放</span>
             </button>
           </NavigationMenu.Item>
         ))}
       </NavigationMenu.List>
       <NavigationMenu.Portal>
-        <NavigationMenu.Positioner className="navigation-positioner" side={vertical ? "left" : "bottom"} align="start" sideOffset={8} collisionPadding={8}>
-          <NavigationMenu.Popup className="navigation-popup">
-            <NavigationMenu.Viewport className="navigation-viewport" />
+        <NavigationMenu.Positioner className="navigation-Positioner" side={vertical ? "left" : "bottom"} align="start" sideOffset={8} collisionPadding={8}>
+          <NavigationMenu.Popup className="navigation-Popup">
+            <NavigationMenu.Arrow className="navigation-Arrow" />
+            <NavigationMenu.Viewport className="navigation-Viewport" />
           </NavigationMenu.Popup>
         </NavigationMenu.Positioner>
       </NavigationMenu.Portal>
