@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --layout-max-width: 84rem;
-  --article-max-width: 48rem;
+  --layout-max-width: 84rem;  /*三栏整体*/
+  --article-max-width: 48rem; /*主要内容*/ 
   --background: #ffffff;
   --foreground: #171717;
   --border: #e4e4e7;
