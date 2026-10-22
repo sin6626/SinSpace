@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 :root {
+  --layout-max-width: 84rem;
+  --article-max-width: 48rem;
   --background: #ffffff;
   --foreground: #171717;
   --border: #e4e4e7;
@@ -58,7 +60,7 @@ a:focus-visible,
 .site-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  max-width: 72rem;
+  max-width: var(--layout-max-width);
   min-height: 100dvh;
   margin-inline: auto;
 }

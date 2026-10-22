@@ -4,7 +4,7 @@
 }
 
 .article-body {
-  max-width: 42rem;
+  max-width: var(--article-max-width);
   font-size: 1.125rem;
   line-height: 1.85;
   overflow-wrap: anywhere;
