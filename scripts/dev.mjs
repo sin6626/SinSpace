@@ -15,7 +15,11 @@ if (existsSync(join(root, '.env.local'))) loadEnvFile(join(root, '.env.local'))
 const testing = process.argv.includes('--test')
 const coreOnly = process.argv.includes('--core-only')
 const webOnly = process.argv.includes('--web-only')
-if (coreOnly && webOnly) throw new Error('--core-only 与 --web-only 不能同时使用。')
+const adminOnly = process.argv.includes('--admin-only')
+const withAdmin = process.argv.includes('--with-admin')
+if ([coreOnly, webOnly, adminOnly].filter(Boolean).length > 1 || (withAdmin && (coreOnly || webOnly || adminOnly))) {
+  throw new Error('--core-only、--web-only、--admin-only、--with-admin 不能同时使用。')
+}
 const agentVerification = testing && process.env.SIN_VERIFY === '1'
 const dataRoot = testing
   ? join(root, '.local/verification')
@@ -25,13 +29,14 @@ const mediaRoot = testing
   : resolve(process.env.MIX_SPACE_MEDIA_ROOT || join(dataRoot, '../apps/mix-space/apps/core/tmp'))
 const logs = join(root, testing ? '.local/verification/logs' : '.local/logs')
 const ports = testing
-  ? { mongo: 27029, redis: 6391, core: 2533, web: 2523 }
-  : { mongo: 27018, redis: 6380, core: 2333, web: 2323 }
+  ? { mongo: 27029, redis: 6391, core: 2533, web: 2523, admin: 9529 }
+  : { mongo: 27018, redis: 6380, core: 2333, web: 2323, admin: 9528 }
 const host = '127.0.0.1'
 const api = `http://${host}:${ports.core}`
 const web = `http://${host}:${ports.web}`
+const admin = `http://${host}:${ports.admin}`
 const databaseFile = join(dataRoot, 'database')
-const database = webOnly ? null : testing ? 'sinpersonalspace-verify'
+const database = webOnly || adminOnly ? null : testing ? 'sinpersonalspace-verify'
   : readFileSync(databaseFile, 'utf8').trim()
 if (database && !testing && !/^shrio-(?:local|import-\d{8}(?:-[a-z0-9]+)?)$/.test(database)) throw new Error('共享 database 文件中的数据库名称无效。')
 const redisDir = database ? join(dataRoot, 'redis', database) : null
@@ -47,12 +52,12 @@ const coreEnv = {
   MONGO_CONNECTION: '', DB_CONNECTION_STRING: '', REDIS_CONNECTION_STRING: '', DB_USER: '', DB_PASSWORD: '', REDIS_PASSWORD: '', DB_OPTIONS: '',
   COLLECTION_NAME: database, PORT: String(ports.core), HOST: host,
   MX_DISABLE_TELEMETRY: 'true', DISABLE_TELEMETRY: 'true', BETTER_AUTH_URL: api,
-  MX_DEV_API_URL: api, MX_DEV_WEB_URL: web, MX_DEV_ADMIN_URL: 'http://127.0.0.1:9528',
-  ALLOWED_ORIGINS: `${host}:${ports.web},localhost:${ports.web},${host}:9528`,
+  MX_DEV_API_URL: api, MX_DEV_WEB_URL: web, MX_DEV_ADMIN_URL: admin,
+  ALLOWED_ORIGINS: `${host}:${ports.web},localhost:${ports.web},${host}:${ports.admin}`,
   MX_DATA_DIR: mediaRoot, DOTENV_CONFIG_PATH: '/dev/null', DOTENV_CONFIG_OVERRIDE: 'false',
 }
 if (process.argv.includes('--print-config')) {
-  console.log(JSON.stringify({ root, dataRoot, mediaRoot, logs, ports, database, redisDir, coreEnv, coreOnly, webOnly, resourceBudget }))
+  console.log(JSON.stringify({ root, dataRoot, mediaRoot, logs, ports, database, redisDir, coreEnv, coreOnly, webOnly, adminOnly, withAdmin, resourceBudget }))
   process.exit(0)
 }
 let lifecycle
@@ -81,17 +86,20 @@ function start(name, command, args, directory, env = {}) {
   })
 }
 
+function isPortOpen(port) {
+  return new Promise((resolve) => {
+    const socket = connect({ host, port })
+    const finish = (ready) => { socket.destroy(); resolve(ready) }
+    socket.once('connect', () => finish(true))
+    socket.once('error', () => finish(false))
+    socket.setTimeout(500, () => finish(false))
+  })
+}
+
 async function waitForPort(port) {
   const deadline = Date.now() + 120000
   while (!lifecycle.stopping && Date.now() < deadline) {
-    const ready = await new Promise((resolve) => {
-      const socket = connect({ host, port })
-      const finish = (ready) => { socket.destroy(); resolve(ready) }
-      socket.once('connect', () => finish(true))
-      socket.once('error', () => finish(false))
-      socket.setTimeout(500, () => finish(false))
-    })
-    if (ready) return
+    if (await isPortOpen(port)) return
     await delay(250)
   }
   throw new Error(`等待端口 ${port} 就绪超时或启动已取消，请查看 ${logs}。`)
@@ -107,7 +115,8 @@ try {
     if (violation) throw new Error(violation)
     resourceBudget.rootStartedAt = usage.rootStartedAt
   }
-  const requiredPorts = webOnly ? [ports.web] : coreOnly ? [ports.mongo, ports.redis, ports.core] : Object.values(ports)
+  const requiredPorts = adminOnly ? [ports.admin] : webOnly ? [ports.web]
+    : [ports.mongo, ports.redis, ports.core, ...(coreOnly ? [] : [ports.web]), ...(withAdmin ? [ports.admin] : [])]
   for (const port of requiredPorts) {
     await new Promise((resolve, reject) => {
       const server = createServer()
@@ -115,10 +124,14 @@ try {
       server.listen(port, host, () => server.close(resolve))
     })
   }
-  if (!coreOnly) cliPath('apps/web', 'next', 'next')
+  if (!coreOnly && !adminOnly) cliPath('apps/web', 'next', 'next')
+  if (adminOnly || withAdmin) cliPath('apps/admin', 'vite', 'vite')
+  if (adminOnly && !(await isPortOpen(ports.core))) {
+    throw new Error(`Core ${api} 尚未运行，请先启动 pnpm dev 或 pnpm dev:core。`)
+  }
   let MongoMemoryServer
   let secret
-  if (!webOnly) {
+  if (!webOnly && !adminOnly) {
     cliPath('apps/core', '@nestjs/cli', 'nest')
     const redisVersion = execFileSync('redis-server', ['--version'], { encoding: 'utf8' }).match(/\bv=([\d.]+)/)?.[1]
     if (redisVersion !== '8.10.2') throw new Error(`需要 Redis 8.10.2，当前为 ${redisVersion || '未知版本'}。`)
@@ -145,7 +158,7 @@ try {
     await mongoStart?.catch(() => {})
     await mongo?.stop({ doCleanup: false })
   }, resourceBudget)
-  if (!webOnly) {
+  if (!webOnly && !adminOnly) {
     mongo = new MongoMemoryServer({
       binary: { version: '7.0.45' },
       instance: { ip: host, port: ports.mongo, portGeneration: false, dbPath: join(dataRoot, 'mongo') },
@@ -163,14 +176,20 @@ try {
     await start('core', process.execPath, [cliPath('apps/core', '@nestjs/cli', 'nest'), 'start', '-w', '--path', 'tsconfig.json', '--'], 'apps/core', { ...coreEnv, JWT_SECRET: secret })
     await waitForPort(ports.core)
   }
-  if (!coreOnly) {
+  if (!coreOnly && !adminOnly) {
     await start('web', process.execPath, [cliPath('apps/web', 'next', 'next'), 'dev', '-H', host, '-p', String(ports.web)], 'apps/web', {
       MIX_SPACE_API_URL: webOnly ? (process.env.MIX_SPACE_API_URL || api) : api, NEXT_TELEMETRY_DISABLED: '1',
       ...(agentVerification ? { NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --max-old-space-size=1792`.trim() } : {}),
     })
     await waitForPort(ports.web)
   }
-  if (!lifecycle.stopping) console.log(`${coreOnly ? '' : `博客 ${web}\n`}${webOnly ? '' : `接口 ${api}\n数据库 ${database}\n`}日志 ${logs}，按 Ctrl+C 停止本命令创建的服务。`)
+  if (adminOnly || withAdmin) {
+    await start('admin', process.execPath, [cliPath('apps/admin', 'vite', 'vite'), '--host', host, '--port', String(ports.admin), '--strictPort'], 'apps/admin', {
+      VITE_APP_BASE_API: api, VITE_APP_GATEWAY: api, VITE_APP_WEB_URL: web,
+    })
+    await waitForPort(ports.admin)
+  }
+  if (!lifecycle.stopping) console.log(`${coreOnly || adminOnly ? '' : `博客 ${web}\n`}${adminOnly || withAdmin ? `后台 ${admin}\n` : ''}${webOnly || adminOnly ? '' : `接口 ${api}\n数据库 ${database}\n`}日志 ${logs}，按 Ctrl+C 停止本命令创建的服务。`)
 } catch (error) {
   fail(error)
 }

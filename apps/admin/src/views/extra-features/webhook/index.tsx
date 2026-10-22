@@ -127,13 +127,13 @@ export default defineComponent({
     })
 
     const testMutation = useMutation({
-      mutationFn: ({ id, event }: { id: string; event: string }) =>
-        webhooksApi.test(id, event),
-      onSuccess: () => {
-        toast.success('测试请求已发送')
+      mutationFn: (id: string) => webhooksApi.test(id),
+      onSuccess: (_data, id) => {
+        toast.success('健康检查已发送，请查看推送记录')
+        queryClient.invalidateQueries({ queryKey: queryKeys.webhooks.dispatches(id) })
       },
       onError: () => {
-        toast.error('测试请求发送失败')
+        toast.error('健康检查发送失败')
       },
     })
 
@@ -173,8 +173,8 @@ export default defineComponent({
       }
     }
 
-    const handleTest = (id: string, event: string) => {
-      testMutation.mutate({ id, event })
+    const handleTest = (id: string) => {
+      testMutation.mutate(id)
     }
 
     const handleSelect = (webhook: WebhookModel) => {
@@ -239,9 +239,7 @@ export default defineComponent({
                     onBack={handleBack}
                     onEdit={() => handleEdit(selectedWebhook.value!)}
                     onDelete={() => handleDelete(selectedWebhook.value!.id)}
-                    onTest={(event) =>
-                      handleTest(selectedWebhook.value!.id, event)
-                    }
+                    onTest={() => handleTest(selectedWebhook.value!.id)}
                   />
                   <WebhookDispatchPanel webhookId={selectedWebhook.value!.id} />
                 </SplitPanel>
@@ -370,7 +368,7 @@ const WebhookDetailPanel = defineComponent({
     onEdit: { type: Function as PropType<() => void>, required: true },
     onDelete: { type: Function as PropType<() => void>, required: true },
     onTest: {
-      type: Function as PropType<(event: string) => void>,
+      type: Function as PropType<() => void>,
       required: true,
     },
   },
@@ -515,21 +513,12 @@ const WebhookDetailPanel = defineComponent({
               <h4 class="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                 发送测试
               </h4>
-              <div class="flex flex-wrap gap-2">
-                {props.webhook.events.map((event) => (
-                  <NButton
-                    key={event}
-                    size="small"
-                    quaternary
-                    onClick={() => props.onTest(event)}
-                  >
-                    {{
-                      icon: () => <PlayIcon class="size-3.5" />,
-                      default: () => event,
-                    }}
-                  </NButton>
-                ))}
-              </div>
+              <NButton size="small" quaternary onClick={() => props.onTest()}>
+                {{
+                  icon: () => <PlayIcon class="size-3.5" />,
+                  default: () => '发送健康检查',
+                }}
+              </NButton>
             </div>
           </div>
         </NScrollbar>
@@ -846,7 +835,7 @@ const WebhookDispatchPanel = defineComponent({
 
     const redispatchMutation = useMutation({
       mutationFn: (eventId: string) =>
-        webhooksApi.redispatch(props.webhookId, eventId),
+        webhooksApi.redispatch(eventId),
       onSuccess: () => {
         toast.success('已重新推送')
         queryClient.invalidateQueries({

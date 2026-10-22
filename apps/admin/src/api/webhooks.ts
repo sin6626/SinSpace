@@ -55,9 +55,9 @@ export const webhooksApi = {
   // 删除 Webhook
   delete: (id: string) => request.delete<void>(`/webhooks/${id}`),
 
-  // 测试 Webhook
-  test: (id: string, event: string) =>
-    request.post<void>(`/webhooks/${id}/test`, { data: { event } }),
+  // 更新空配置会让 Core 发送 health_check，不伪造文章事件。
+  test: (id: string) =>
+    request.patch<void>(`/webhooks/${id}`, { data: {} }),
 
   // 获取 Webhook 推送记录
   getDispatches: (id: string, params?: { page?: number; size?: number }) =>
@@ -66,6 +66,6 @@ export const webhooksApi = {
     }),
 
   // 重新推送
-  redispatch: (hookId: string, eventId: string) =>
-    request.post<void>(`/webhooks/${hookId}/redispatch/${eventId}`),
+  redispatch: (eventId: string) =>
+    request.post<void>(`/webhooks/redispatch/${eventId}`),
 }
