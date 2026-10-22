@@ -19,3 +19,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - 2026-10-22：用户授权停止旧的本项目 Next 服务以迁移。SDK 构建、前后端类型、配置与 SDK 控制异常回归通过；真实联合启动与本地聚合读取通过。完整联调批次触发系统内存保护后已清理，未记为整批通过；后续单前端完成菜单动画/对齐/移动端检查，单 Mongo 复核四类内容指纹不变。结束时测试服务保持停止。详情 docs/workspace-migration.md。
 
 - 文章列表与分类入口共用 apps/web/app/post-list.tsx；SDK getList 已补 categoryIds 透传，后端未改。Next 当前动态 slug 需先解码；导航 Suspense fallback 不得调用 usePathname 等 URL hook。详情未做，列表标题不生成死链。已实现入口使用默认预加载。分页/分类/刷新返回已验，整组浏览器检查遇内存保护后停止；修正编码路径后通过轻量回归与短手机检查，用户服务保持运行，测试浏览器已关闭。
+
+- 2026-10-22：用户明确后续富文本改用 Plate，不继续引入 Lexical 前端渲染；计划见 docs/plate-content-plan.md。当前详情只渲染 Markdown/GFM，旧 Lexical 使用已有 text 副本并提示简化阅读，不改原 JSON，不做评论或编辑器。SDK fetch 适配器保留 HTTP status 用于详情 404。

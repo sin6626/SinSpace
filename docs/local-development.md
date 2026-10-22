@@ -36,7 +36,7 @@
 | MongoDB | `127.0.0.1:27018` |
 | Redis | `127.0.0.1:6380` |
 
-启动器读取根目录 `.env.local`，可参考根 `.env.example`。进程已设置的环境变量优先。
+启动器读取根目录 `.env.local`，可参考根 `.env.example`。进程已设置的环境变量优先。`.env.example` 本身不会被读取；没有 `.env.local` 时，`pnpm dev` 仍会向前端进程注入本地 API 地址，所以现有页面使用的是环境变量，而不是模板文件。需要自定义时再把模板复制成根 `.env.local`，该文件不会提交到 Git。
 
 - `MIX_SPACE_API_URL`：前端服务端请求地址。联合启动强制注入本次启动的本地 Core 地址；`dev:web` 可用此变量指定其他地址，默认本地 Core。部署时必须显式配置，不再默认访问线上博客。
 - `MIX_SPACE_DATA_ROOT`：默认相邻 `ShrioRenovation/.local`。复用其中的 `database`、`mongo/`、按库分目录的 `redis/`、`jwt-secret`。
