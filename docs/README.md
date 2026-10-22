@@ -64,3 +64,5 @@
 2026-10-22：新增 `/posts` 与 `/categories/[slug]`，共用 `apps/web/app/post-list.tsx`，通过 SDK 查询每页 10 条已发布文章，分类使用后端已有的 categoryIds 参数。支持分页、空态、错误重试；标题暂不链接详情。首页/文章/分类链接恢复 Next 默认预加载，未实现的关于页仍关闭。默认预加载仅在生产模式启用，当前 Partial Prefetching 先预取页面外壳，不等于 hover 时加载全部动态数据。
 
 2026-10-22：新增 `/posts/[category]/[slug]` Markdown 详情页，列表标题可跳转，使用 SDK getPost。现有 Lexical 文章仅展示已有 Markdown 阅读副本，不转换或覆盖原 JSON。富文本目标改为 Plate，见 [Plate 接入与迁移计划](./plate-content-plan.md)。
+
+2026-10-22：公开导航、分类、列表与详情采用 Next 缓存；整体宽度上限改为 84rem，正文上限 48rem。参数位置与 webhook 调研见 [缓存与阅读宽度调整](./cache-and-layout.md)。发布通知尚未接通，当前仅时间重新验证。
