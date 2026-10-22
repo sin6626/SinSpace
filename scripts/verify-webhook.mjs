@@ -1,0 +1,63 @@
+import assert from 'node:assert/strict'
+import { createHmac } from 'node:crypto'
+import { createRequire } from 'node:module'
+import { readFileSync } from 'node:fs'
+import vm from 'node:vm'
+
+const require = createRequire(process.env.WEBHOOK_TEST_PACKAGE || new URL('../apps/web/package.json', import.meta.url))
+const ts = require('typescript')
+const source = readFileSync(new URL('../apps/web/app/api/webhooks/mix-space/route.ts', import.meta.url), 'utf8')
+const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText
+const calls = []
+let failInvalidation = false
+const module = { exports: {} }
+vm.runInNewContext(code, {
+  module, exports: module.exports, Buffer, process, Response,
+  require: (id) => id === 'next/cache' ? { revalidateTag: (...args) => {
+    if (failInvalidation) throw new Error('storage unavailable')
+    calls.push(args)
+  } } : require(id),
+})
+const previous = process.env.MIX_SPACE_WEBHOOK_SECRET
+const secret = 'local-test-secret-not-a-real-credential'
+const id = '000000000000000000000001'
+const signature = (body) => createHmac('sha256', secret).update(body).digest('hex')
+const request = (event, body, signed = signature(body)) => new Request('http://localhost/api/webhooks/mix-space', {
+  method: 'POST', headers: { 'content-type': 'application/json', 'x-webhook-event': event, 'x-webhook-signature256': signed }, body,
+})
+async function expectStatus(event, body, status, signed) {
+  const before = calls.length
+  const response = await module.exports.POST(request(event, body, signed))
+  assert.equal(response.status, status)
+  if (status !== 200 || event === 'health_check') assert.equal(calls.length, before)
+  return response.json()
+}
+try {
+  delete process.env.MIX_SPACE_WEBHOOK_SECRET
+  await expectStatus('POST_CREATE', JSON.stringify({ id }), 503)
+  process.env.MIX_SPACE_WEBHOOK_SECRET = secret
+  await expectStatus('POST_CREATE', JSON.stringify({ id }), 401, '')
+  await expectStatus('POST_CREATE', JSON.stringify({ id }), 401, 'g'.repeat(64))
+  await expectStatus('POST_CREATE', JSON.stringify({ id }), 401, '0'.repeat(64))
+  await expectStatus('POST_CREATE', JSON.stringify({ id, title: '篡改' }), 401, signature(JSON.stringify({ id })))
+  await expectStatus('POST_CREATE', '{', 400)
+  for (const body of ['null', '[]', '1', '{}', '{"id":"bad"}']) await expectStatus('POST_CREATE', body, 400)
+  await expectStatus('UNKNOWN', JSON.stringify({ id }), 400)
+  await expectStatus('POST_CREATE', 'x'.repeat(4 * 1024 * 1024 + 1), 413)
+  assert.deepEqual(await expectStatus('health_check', '{}', 200), { event: 'health_check', revalidated: false })
+  for (const event of ['POST_CREATE', 'POST_UPDATE', 'POST_DELETE', 'POST_DELETE']) {
+    const body = JSON.stringify(event === 'POST_UPDATE' ? { _id: id, title: '中文正文 🐈' } : { id })
+    const before = calls.length
+    assert.equal((await expectStatus(event, body, 200)).revalidated, true)
+    assert.equal(calls.length, before + 2)
+    assert.equal(calls[before][0], 'blog:posts')
+    assert.equal(calls[before + 1][0], 'blog:categories')
+    assert.equal(calls[before][1].expire, 0)
+  }
+  failInvalidation = true
+  await expectStatus('POST_UPDATE', JSON.stringify({ id }), 500)
+  console.log('PASS webhook signatures, raw UTF-8, input limits, health check, event allowlist, retries and cache failure')
+} finally {
+  if (previous === undefined) delete process.env.MIX_SPACE_WEBHOOK_SECRET
+  else process.env.MIX_SPACE_WEBHOOK_SECRET = previous
+}
