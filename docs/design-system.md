@@ -30,7 +30,7 @@
 
 例如，同一个主操作按钮在浅色和深色主题中可以采用不同颜色，但始终引用 `--primary` 与 `--primary-foreground`。不要把按钮写成“使用某一档灰色”，否则换主题时必须逐个查找修改。
 
-落地时沿用 shadcn 的 CSS 变量与 Tailwind 映射方式。不在业务页面硬编码颜色；确需特殊视觉时，先说明它属于什么语义角色。不得为了整理变量同时引入新的生成框架。
+落地时使用本站自己的 CSS 语义变量，并与现有 Tailwind 配合。Base UI 不提供预设主题，也不强制变量命名。不在业务页面硬编码颜色；确需特殊视觉时，先说明它属于什么语义角色。不得为了整理变量同时引入新的生成框架。
 
 检查方法：搜索组件中的原始色值，判断是否已有语义变量；检查亮暗主题是否为同一语义定义成对值；确认组件引用没有无意义地重复语义层。
 
@@ -38,37 +38,37 @@
 
 ### 核心颜色基线
 
-先用中性色验证层级。品牌色留给用户设计，不预先指定蓝色、紫色或 Adobe 品牌色。表中的十六进制值用于阅读和评审，未来 CSS 的颜色表示方式服从选定版本的 shadcn 约定。
+先用中性色验证层级。品牌色留给用户设计，不预先指定蓝色、紫色或 Adobe 品牌色。表中的十六进制值用于阅读和评审，变量名称是本站首版提案，不是对某个组件库主题的依赖。
 
-先看下面的色板，再对照变量表。左右分别固定显示浅色和深色模式，下方展示文字放在对应背景上的实际效果；不是只有孤立的颜色值。
+下面两张颜色表的每个色号旁都带有本地 PNG 色块，Markdown 预览可以直接看到；源码中的十六进制文字本身仍是文字，不依赖编辑器的颜色装饰功能。大色板用于比较浅色、深色和文字配对。
 
 [![浅色与深色色板，以及主要文字、次要文字、主操作的背景配对](./assets/color-palette.png)](./assets/color-palette.png)
 
 在 VS Code 中打开本文，按 **Cmd+Shift+V** 查看 Markdown 预览；需要左右对照源码时，先按 **Cmd+K**，松开后按 **V**。也可以直接打开[色板图片](./assets/color-palette.png)放大查看，不需要安装插件。[VS Code 预览说明](https://code.visualstudio.com/docs/languages/markdown#_markdown-preview)
 
-图片由下表色值生成，可编辑源图为 [color-palette.svg](./assets/color-palette.svg)。色值调整时同步更新源图和 PNG，并与表格核对。图中的细描边只是色块边界辅助，不是新增的界面配色。
+图片由下表色值生成，可编辑源图为 [color-palette.svg](./assets/color-palette.svg)。色值调整时同步更新源图、大色板 PNG 和表格中的小色块，并与表格核对。图中的细描边只是色块边界辅助，不是新增的界面配色。
 
-| 用途 | shadcn 语义变量 | 浅色 | 深色 |
+| 用途 | 项目语义变量 | 浅色 | 深色 |
 | --- | --- | --- | --- |
-| 页面背景 | `--background` | `#FAFAFA` | `#09090B` |
-| 主要文字 | `--foreground` | `#18181B` | `#FAFAFA` |
-| 卡片表面 | `--card` | `#FFFFFF` | `#18181B` |
-| 卡片文字 | `--card-foreground` | `#18181B` | `#FAFAFA` |
-| 浮层表面 | `--popover` | `#FFFFFF` | `#18181B` |
-| 浮层文字 | `--popover-foreground` | `#18181B` | `#FAFAFA` |
-| 弱强调表面 | `--muted` | `#F4F4F5` | `#27272A` |
-| 次要文字 | `--muted-foreground` | `#52525B` | `#A1A1AA` |
-| 主操作背景 | `--primary` | `#18181B` | `#FAFAFA` |
-| 主操作文字 | `--primary-foreground` | `#FAFAFA` | `#18181B` |
+| 页面背景 | `--background` | ![](./assets/swatches/fafafa.png) `#FAFAFA` | ![](./assets/swatches/09090b.png) `#09090B` |
+| 主要文字 | `--foreground` | ![](./assets/swatches/18181b.png) `#18181B` | ![](./assets/swatches/fafafa.png) `#FAFAFA` |
+| 卡片表面 | `--card` | ![](./assets/swatches/ffffff.png) `#FFFFFF` | ![](./assets/swatches/18181b.png) `#18181B` |
+| 卡片文字 | `--card-foreground` | ![](./assets/swatches/18181b.png) `#18181B` | ![](./assets/swatches/fafafa.png) `#FAFAFA` |
+| 浮层表面 | `--popover` | ![](./assets/swatches/ffffff.png) `#FFFFFF` | ![](./assets/swatches/18181b.png) `#18181B` |
+| 浮层文字 | `--popover-foreground` | ![](./assets/swatches/18181b.png) `#18181B` | ![](./assets/swatches/fafafa.png) `#FAFAFA` |
+| 弱强调表面 | `--muted` | ![](./assets/swatches/f4f4f5.png) `#F4F4F5` | ![](./assets/swatches/27272a.png) `#27272A` |
+| 次要文字 | `--muted-foreground` | ![](./assets/swatches/52525b.png) `#52525B` | ![](./assets/swatches/a1a1aa.png) `#A1A1AA` |
+| 主操作背景 | `--primary` | ![](./assets/swatches/18181b.png) `#18181B` | ![](./assets/swatches/fafafa.png) `#FAFAFA` |
+| 主操作文字 | `--primary-foreground` | ![](./assets/swatches/fafafa.png) `#FAFAFA` | ![](./assets/swatches/18181b.png) `#18181B` |
 
-`--secondary`、`--accent` 及对应前景色用于次级控件、悬停或选中等具体场景，实际接入组件时再评审数值。shadcn 的 `accent` 不自动等于本站品牌色。
+`--secondary`、`--accent` 及对应前景色用于次级控件、悬停或选中等具体场景，实际接入组件时再评审数值。这里的 `accent` 表达弱强调交互表面，不自动等于本站品牌色。
 
 ### 反馈与边界角色
 
 | 角色 | 首版规则 | 检查方法 |
 | --- | --- | --- |
 | 成功、警告、错误、信息 | 分别保留语义角色，具体色值待评审；不借用品牌色表达全部状态 | 去掉颜色后，仍有文字或图标说明发生了什么 |
-| 错误操作 | 优先映射 shadcn 的 `destructive` 等相关变量 | 危险程度和文案一致，不把所有错误提示都画成强操作按钮 |
+| 错误操作 | 使用项目定义的 `destructive` 等危险操作语义变量 | 危险程度和文案一致，不把所有错误提示都画成强操作按钮 |
 | 装饰分隔线 | 表达内容分组，单独定义 `--border` | 不依靠这条线作为识别控件的唯一手段 |
 | 输入框边界 | 表达可输入区域，单独定义 `--input` | 对实际背景有足够识别度，不能机械沿用很淡的分隔线 |
 | 键盘焦点 | 使用 `--ring` 等明确的焦点样式 | 浅色、深色和相邻表面下都可见，不用 `outline: none` 隐藏 |
@@ -87,12 +87,12 @@
 
 | 配对 | 前景 | 背景 | 对比度 |
 | --- | --- | --- | --- |
-| 浅色主要文字 | `#18181B` | `#FAFAFA` | 16.97:1 |
-| 浅色次要文字 | `#52525B` | `#F4F4F5` | 7.03:1 |
-| 浅色主操作文字 | `#FAFAFA` | `#18181B` | 16.97:1 |
-| 深色主要文字 | `#FAFAFA` | `#09090B` | 19.06:1 |
-| 深色次要文字 | `#A1A1AA` | `#27272A` | 5.81:1 |
-| 深色主操作文字 | `#18181B` | `#FAFAFA` | 16.97:1 |
+| 浅色主要文字 | ![](./assets/swatches/18181b.png) `#18181B` | ![](./assets/swatches/fafafa.png) `#FAFAFA` | 16.97:1 |
+| 浅色次要文字 | ![](./assets/swatches/52525b.png) `#52525B` | ![](./assets/swatches/f4f4f5.png) `#F4F4F5` | 7.03:1 |
+| 浅色主操作文字 | ![](./assets/swatches/fafafa.png) `#FAFAFA` | ![](./assets/swatches/18181b.png) `#18181B` | 16.97:1 |
+| 深色主要文字 | ![](./assets/swatches/fafafa.png) `#FAFAFA` | ![](./assets/swatches/09090b.png) `#09090B` | 19.06:1 |
+| 深色次要文字 | ![](./assets/swatches/a1a1aa.png) `#A1A1AA` | ![](./assets/swatches/27272a.png) `#27272A` | 5.81:1 |
+| 深色主操作文字 | ![](./assets/swatches/18181b.png) `#18181B` | ![](./assets/swatches/fafafa.png) `#FAFAFA` | 16.97:1 |
 
 复算方法：将每个 sRGB 通道除以 255 得到 `c`；当 `c <= 0.04045` 时线性值为 `c / 12.92`，否则为 `((c + 0.055) / 1.055) ** 2.4`。亮度为 `0.2126R + 0.7152G + 0.0722B`。对比度为 `(较亮值 + 0.05) / (较暗值 + 0.05)`。表格展示值保留两位小数，判断是否达标使用未舍入值，不能把 4.499:1 四舍五入后算作通过。
 
@@ -123,7 +123,7 @@
 | 宽表格 | 保留表头与单元格语义，局部容器处理横向滚动 | 手机能访问完整内容，不缩成不可辨认的小字 |
 | 图片与说明 | 保留比例，说明与图片关联；内容图默认完整呈现 | 替代文本有意义，加载失败时仍可理解关联内容 |
 
-封面可以裁切，但必须明确焦点与比例。头像保持比例；装饰图使用空替代文本。图标优先沿用所选 shadcn 组件的体系，装饰图标不重复朗读，图标按钮有可访问名称。缺少实际图片时向用户索取，不用 CSS 或 SVG 猜画替代素材。
+封面可以裁切，但必须明确焦点与比例。头像保持比例；装饰图使用空替代文本。图标使用统一体系，具体图标库在接入时单独确认；装饰图标不重复朗读，图标按钮有可访问名称。缺少实际图片时向用户索取，不用 CSS 或 SVG 猜画替代素材。
 
 ## 5. 布局、尺寸与响应式
 
@@ -143,7 +143,7 @@
 
 ## 6. 组件规范
 
-以下是组件规划，不是安装清单。第一批只从 Button 学习。保留 shadcn 与 Base UI 的基础交互，不手写替代焦点管理，也不为每个组件再包一层无必要的项目组件。
+以下是组件与内容样式的参考范围，不是安装或补造清单。第一批从 Base UI Button 的行为和自己的样式开始学习。保留 Base UI 的基础交互，不手写替代焦点管理，也不为每个组件再包一层无必要的项目组件。shadcn/ui 仅在有合适实现时按需参考或选用。
 
 ### 统一说明模板
 
@@ -161,7 +161,9 @@
 
 ### 组件用途、结构和变体
 
-尺寸优先使用官方组件已经提供的变体，具体映射在该组件学习单元核对。容器按内容适配；常见触控操作遵循上一节的命中区域目标。
+Base UI 不预设按钮高度、圆角或视觉变体，这些由本站设计变量与样式决定。容器按内容适配；常见触控操作遵循上一节的命中区域目标。
+
+Button、Avatar、Separator、Input、Field、Tabs、Menu、Dialog、Drawer、Tooltip 对应可用的 Base UI 交互基础。Badge、Card、Skeleton、Empty、Pagination、Alert 在下表中是内容或样式模式，不代表 Base UI 提供这些同名组件。暂时没有需求就不实现；简单内容使用语义 HTML 和样式即可，不提前创建同名组件库。
 
 | 组件 | 用途与结构 | 尺寸、变体及适用状态 |
 | --- | --- | --- |
@@ -175,10 +177,10 @@
 | Input | 搜索或短文本输入 | 使用合适类型、可见标签；覆盖焦点、只读、禁用和需要时的错误 |
 | Field | 将标签、输入、说明和错误组织成一组 | 不单独制造另一套输入样式；内容和错误说明正确关联 |
 | Tabs | 切换同一上下文的不同内容面板 | 选中项与面板关联，面板尺寸由内容决定；不替代所有跨页面导航 |
-| Dropdown Menu | 收纳次要操作，由触发器和菜单项组成 | 保留官方焦点和键盘行为，明确禁用项；不用悬停作为唯一打开方式 |
+| Menu | 收纳次要操作，由触发器和菜单项组成 | 保留官方焦点和键盘行为，明确禁用项；不用悬停作为唯一打开方式 |
 | Pagination | 在同一内容集合中切换页码 | 使用导航链接和当前页语义，边界页明确不可继续的方向 |
 | Dialog | 需要聚焦处理的局部任务 | 包含标题、必要说明、正文与关闭操作；边界适配窄屏 |
-| Sheet | 从侧边展开的补充内容或移动导航 | 保留弹层的标题、关闭和焦点语义；方向按具体场景确定 |
+| Drawer | 从侧边展开的补充内容或移动导航 | 保留弹层的标题、关闭和焦点语义；方向按具体场景确定 |
 | Tooltip | 补充已经可识别的操作说明 | 鼠标与焦点可触发，内容简短；不能承载唯一的必要说明 |
 | Alert | 呈现页面内重要反馈 | 标题、说明和可选操作；状态明确，不把常驻说明都设为紧急播报 |
 
@@ -198,10 +200,10 @@
 | Input | 标签关联；输入不触发意外导航；文本可选中 | 使用 input、background、foreground、ring | 只用 placeholder 当标签；清除用户输入后才报告错误 |
 | Field | 说明与错误通过组件的关联机制连接输入 | 标签与说明使用对应文字层级 | 错误只出现在页面顶部且无法找到对应输入 |
 | Tabs | 保留方向键、焦点与选中行为，面板关系准确 | 使用 surface、accent 配对与 ring | 改写组件语义，导致视觉选中与实际面板不一致 |
-| Dropdown Menu | 键盘打开、方向键移动、Escape 关闭并恢复焦点 | 使用 popover 配对、ring 和状态变量 | 把完整复杂表单塞进菜单项 |
+| Menu | 键盘打开、方向键移动、Escape 关闭并恢复焦点 | 使用 popover 配对、ring 和状态变量 | 把完整复杂表单塞进菜单项 |
 | Pagination | 当前页有 `aria-current`，页码与前后页有清晰名称 | 使用 foreground、primary、muted 配对 | 页码变化后显示上一页的内容却不说明加载状态 |
 | Dialog | 焦点进入、限制在弹窗内、关闭后恢复；Escape 行为可预期 | 使用 popover 配对、遮罩与必要层级 | 缺少标题、隐藏唯一关闭方式、改坏基础焦点管理 |
-| Sheet | 键盘、关闭和焦点检查同 Dialog | 使用表面与边界变量；窄屏可访问所有操作 | 仅允许拖动关闭，或让内容进入不可访问区域 |
+| Drawer | 键盘、关闭和焦点检查同 Dialog | 使用表面与边界变量；窄屏可访问所有操作 | 仅允许拖动关闭，或让内容进入不可访问区域 |
 | Tooltip | 聚焦也能获取提示，可关闭，不挡住触发器 | 使用 popover 配对及对应文字尺度 | 把关键错误、长文或唯一操作入口藏在气泡里 |
 | Alert | 根据紧急程度选择播报方式；操作有清晰名称 | 使用相应反馈角色和前景色 | 只有颜色没有文字，或反复播报无变化的内容 |
 
@@ -267,7 +269,8 @@
 - [Spectrum 设计变量](https://spectrum.adobe.com/foundations/design-data)：表达可复用的设计决定。
 - [Spectrum 排版体系](https://spectrum.adobe.com/foundations/typography/typography-system)：用字号、字重和颜色表达信息层级。
 - [Spectrum 间距规范](https://spectrum.adobe.com/foundations/layout-and-structure/spacing/spacing-overview)：用距离表达关系和边界。
-- [shadcn 主题变量](https://ui.shadcn.com/docs/theming)：组件样式与语义变量的映射。
+- [Base UI 样式指南](https://base-ui.com/react/handbook/styling)：自行定义外观与组件状态样式。
+- [Base UI 组件目录](https://base-ui.com/react/components)：核对实际组件名称与能力。
 - [Motion 无障碍指南](https://motion.dev/docs/react-accessibility)：减少动态效果的处理。
 - [WCAG 2.2](https://www.w3.org/TR/WCAG22/)：文字、非文字对比度、焦点、输入和交互的验收依据。
 - [文字对比度解释](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)与[非文字对比度解释](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html)：核对阈值、适用对象和例外。
