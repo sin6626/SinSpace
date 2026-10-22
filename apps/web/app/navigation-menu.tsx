@@ -47,9 +47,9 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
         {menus.map(({ title, links }) => (
           <NavigationMenu.Item key={title}>
             <NavigationMenu.Trigger className="navigation-item">
-              <span><span className="navigation-caret" aria-hidden="true">‹</span> {title}</span>
+              <NavigationMenu.Icon className="navigation-caret" aria-hidden="true">‹</NavigationMenu.Icon>{title}
             </NavigationMenu.Trigger>
-            <NavigationMenu.Content>
+            <NavigationMenu.Content className="navigation-content">
               <ul className="navigation-submenu">
                 {title === "文章" && (
                   <li><NavigationMenu.Link className="navigation-subitem" closeOnClick render={<Link href="/posts" prefetch={false} />}>全部文章</NavigationMenu.Link></li>
@@ -83,7 +83,7 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
       <NavigationMenu.Portal>
         <NavigationMenu.Positioner className="navigation-positioner" side={vertical ? "left" : "bottom"} align="start" sideOffset={8} collisionPadding={8}>
           <NavigationMenu.Popup className="navigation-popup">
-            <NavigationMenu.Viewport />
+            <NavigationMenu.Viewport className="navigation-viewport" />
           </NavigationMenu.Popup>
         </NavigationMenu.Positioner>
       </NavigationMenu.Portal>

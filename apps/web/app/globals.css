@@ -100,6 +100,7 @@ a:focus-visible,
 }
 
 .navigation-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -126,6 +127,8 @@ a:focus-visible,
 }
 
 .navigation-caret {
+  position: absolute;
+  left: 0;
   color: var(--muted-foreground);
 }
 
@@ -133,6 +136,11 @@ a:focus-visible,
   z-index: 2;
   width: var(--positioner-width);
   height: var(--positioner-height);
+  transition: top 180ms ease, left 180ms ease, width 180ms ease, height 180ms ease;
+}
+
+.navigation-positioner[data-instant] {
+  transition: none;
 }
 
 .navigation-popup {
@@ -143,6 +151,37 @@ a:focus-visible,
   background: var(--background);
   border: 1px solid var(--border);
   border-radius: 0.5rem;
+  transform-origin: var(--transform-origin);
+  transition: opacity 180ms ease, transform 180ms ease, width 180ms ease, height 180ms ease;
+  height: var(--popup-height);
+}
+
+.navigation-popup[data-starting-style],
+.navigation-popup[data-ending-style] {
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+.navigation-viewport {
+  overflow: hidden;
+}
+
+.navigation-content {
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.navigation-content[data-starting-style],
+.navigation-content[data-ending-style] {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navigation-positioner,
+  .navigation-popup,
+  .navigation-content {
+    transition: none;
+  }
 }
 
 .navigation-submenu {
