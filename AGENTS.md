@@ -17,3 +17,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - pnpm dev 构建 SDK 后启动新前端、Core、MongoDB、Redis，不启动旧 Shiro 或 mx-admin。数据继续引用旧 .local，媒体引用旧 Core tmp；未获另行授权不搬迁、清空或写入真实内容。
 - 默认本地提交，Conventional Commits 中文说明；不推送或部署。禁止批量删除；测试只开一套必要服务和一个独立无头浏览器，及时关闭自启资源，不干扰其他进程。普通 dev 不启用 Agent 内存预算。
 - 2026-10-22：用户授权停止旧的本项目 Next 服务以迁移。SDK 构建、前后端类型、配置与 SDK 控制异常回归通过；真实联合启动与本地聚合读取通过。完整联调批次触发系统内存保护后已清理，未记为整批通过；后续单前端完成菜单动画/对齐/移动端检查，单 Mongo 复核四类内容指纹不变。结束时测试服务保持停止。详情 docs/workspace-migration.md。
+
+- 文章列表与分类入口共用 apps/web/app/post-list.tsx；SDK getList 已补 categoryIds 透传，后端未改。Next 当前动态 slug 需先解码；导航 Suspense fallback 不得调用 usePathname 等 URL hook。详情未做，列表标题不生成死链。已实现入口使用默认预加载。分页/分类/刷新返回已验，整组浏览器检查遇内存保护后停止；修正编码路径后通过轻量回归与短手机检查，用户服务保持运行，测试浏览器已关闭。

@@ -39,7 +39,7 @@ async function NavigationData() {
 
 export default function Navigation() {
   return (
-    <Suspense fallback={<NavigationMenu state={{ status: "loading" }} />}>
+    <Suspense fallback={<p className="navigation-message" role="status">正在读取导航…</p>}>
       <NavigationData />
     </Suspense>
   );

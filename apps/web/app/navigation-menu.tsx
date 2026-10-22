@@ -43,7 +43,7 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
           <NavigationMenu.Link
             className="navigation-Trigger"
             active={pathname === "/"}
-            render={<Link href="/" prefetch={false} />}
+            render={<Link href="/" />}
           >首页</NavigationMenu.Link>
         </NavigationMenu.Item>
         {menus.map(({ title, links }) => (
@@ -54,11 +54,11 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
             <NavigationMenu.Content className="navigation-Content">
               <ul className="navigation-FlexLinkList">
                 {title === "文章" && (
-                  <li><NavigationMenu.Link className="navigation-LinkCard" closeOnClick render={<Link href="/posts" prefetch={false} />}><span className="navigation-LinkTitle">全部文章</span></NavigationMenu.Link></li>
+                  <li><NavigationMenu.Link className="navigation-LinkCard" active={pathname === "/posts"} closeOnClick render={<Link href="/posts" />}><span className="navigation-LinkTitle">全部文章</span></NavigationMenu.Link></li>
                 )}
                 {links.map(({ label, href }) => (
                   <li key={href}>
-                    <NavigationMenu.Link className="navigation-LinkCard" active={pathname === href} closeOnClick render={<Link href={href} prefetch={false} />}>
+                    <NavigationMenu.Link className="navigation-LinkCard" active={pathname === href} closeOnClick render={<Link href={href} prefetch={title === "文章" ? undefined : false} />}>
                       <span className="navigation-LinkTitle">{label}</span>
                     </NavigationMenu.Link>
                   </li>

@@ -23,6 +23,7 @@ declare module '../core/client' {
 }
 
 export type PostListOptions = {
+  categoryIds?: string[]
   select?: SelectFields<keyof PostModel>
   year?: number
   sortBy?: 'categoryId' | 'title' | 'created' | 'modified'
@@ -59,11 +60,12 @@ export class PostController<ResponseWrapper> implements IController {
    * @returns 当传入 lang 时，返回的文章可能包含 isTranslated 和 translationMeta 字段
    */
   getList(page = 1, perPage = 10, options: PostListOptions = {}) {
-    const { select, sortBy, sortOrder, year, truncate, lang } = options
+    const { select, sortBy, sortOrder, year, truncate, lang, categoryIds } = options
     return this.proxy.get<PaginateResult<PostListItem>>({
       params: {
         page,
         size: perPage,
+        categoryIds: categoryIds?.join(','),
         select: select?.join(' '),
         sortBy,
         sortOrder,
