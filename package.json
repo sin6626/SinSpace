@@ -7,7 +7,7 @@
     "node": ">=24.21.0 <25"
   },
   "scripts": {
-    "dev": "pnpm build:sdk && node scripts/dev.mjs",
+    "dev": "pnpm build:sdk && node scripts/dev.mjs --with-admin",
     "dev:web": "pnpm build:sdk && node scripts/dev.mjs --web-only",
     "dev:core": "node scripts/dev.mjs --core-only",
     "dev:check": "node scripts/dev.mjs --check",
