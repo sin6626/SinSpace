@@ -14,7 +14,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - 当前为 pnpm workspace：apps/web（Next）、apps/core（Mix Space）、packages/api-client（本地 SDK）。根安装依赖、维护单一锁文件；不复制 node_modules。Next 本地文档以 apps/web/node_modules/next/dist/docs 为准，保留自动生成说明。
 - UI 使用 Base UI，自定义样式。导航采用官方状态驱动的 CSS 过渡；复杂业务动画以后使用 Motion。菜单文字统一左对齐、箭头独立在左；closeDelay=500 位于 apps/web/app/navigation-menu.tsx。
 - API 基址仅通过 apps/web/lib/config.ts 读取环境配置，统一客户端在 lib/api.ts；SDK 异常回调必须保留 Next 内部控制异常。不要重新在组件内硬编码域名。
-- pnpm dev 构建 SDK 后启动新前端、Core、MongoDB、Redis，不启动旧 Shiro 或 mx-admin。数据继续引用旧 .local，媒体引用旧 Core tmp；未获另行授权不搬迁、清空或写入真实内容。
+- pnpm dev（与 dev:all 相同）构建 SDK 后启动新前端、Core、MongoDB、Redis 和本仓库 mx-admin，不启动旧 Shiro；dev:web/dev:core/dev:admin 可单独启动，不要在 dev 之上再开 dev:admin。数据继续引用旧 .local，媒体引用旧 Core tmp；未获另行授权不搬迁、清空或写入真实内容。
 - 默认本地提交，Conventional Commits 中文说明；不推送或部署。禁止批量删除；测试只开一套必要服务和一个独立无头浏览器，及时关闭自启资源，不干扰其他进程。普通 dev 不启用 Agent 内存预算。
 - 2026-10-22：用户授权停止旧的本项目 Next 服务以迁移。SDK 构建、前后端类型、配置与 SDK 控制异常回归通过；真实联合启动与本地聚合读取通过。完整联调批次触发系统内存保护后已清理，未记为整批通过；后续单前端完成菜单动画/对齐/移动端检查，单 Mongo 复核四类内容指纹不变。结束时测试服务保持停止。详情 docs/workspace-migration.md。
 
@@ -24,8 +24,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - 2026-10-22：用户选择 Next 缓存，不引入 React Query。公开数据函数集中在 apps/web/lib/blog-data.ts；时间单位秒，错误由页面处理，禁止缓存鉴权/访客状态。Mix Space已有webhook但本轮只读调研，现已实现签名接收，日常库仍需手动登记，见 docs/webhook-local.md。宽度变量在 globals.css 开头，84rem容器/48rem正文。说明见 docs/cache-and-layout.md。
 
-- 2026-10-22：apps/admin 已导入现有 mx-admin，dev:admin 仅启动后台，dev:all 联合启动。Webhook 校验原始体 HMAC，文章三事件使 posts/categories 缓存立即过期；隔离库真实 CRUD/健康检查/重发验证通过，测试记录已清理，不写日常文章。通知栏仅计划，见 docs/notification-center-plan.md。后台浏览器冷启动两次超资源预算并清理，尚无登录/表单成功证据；不得重复重型尝试或提高预算。用户已授权测试后恢复日常前后端服务。
-- 本轮收尾已恢复普通 `pnpm dev` 日常前后端，使用原本机 shrio-import-20261014 库，公开列表仍为13篇。隔离服务和测试浏览器已关闭；后台按需用 dev:admin 启动，不自动常驻。
+- 2026-10-22：apps/admin 已导入现有 mx-admin，dev:admin 仅启动后台，dev:all 联合启动。Webhook 校验原始体 HMAC，文章三事件使 posts/categories 缓存立即过期；隔离库真实 CRUD/健康检查/重发验证通过，测试记录已清理，不写日常文章。通知已按下文 Base UI Toast 实施，见 docs/notification-center-plan.md。后台浏览器冷启动两次超资源预算并清理，尚无登录/表单成功证据；不得重复重型尝试或提高预算。用户已授权测试后恢复日常前后端服务。
+- 本轮收尾已恢复普通 `pnpm dev` 日常前后端，使用原本机 shrio-import-20261014 库，公开列表仍为13篇。隔离服务和测试浏览器已关闭；（2026-10-23 起 pnpm dev 默认包含后台。）
 
 - 2026-10-22：通知改为 Base UI 官方 Toast，文案/时长集中 apps/web/lib/notification-copy.ts，样式 notifications.css。复用 Core /web Socket.IO，公开新文章全站提示，修改/删除仅对应文章房间。无已读/历史/新管理员入口，不公开后台投递记录。Webhook缓存失效与访客消息独立，不声称弹窗代表缓存已刷新。
 - Toast 本轮实际浏览器使用协议替身通过显示/悬停/关闭/超时/手机/文章房间进出，真实 Core 网关握手通过；未做日常文章写入。新增依赖后曾遇旧 Next 进程持续热更新，重启后通过。浏览器已关闭，日常服务已恢复。

@@ -16,7 +16,7 @@
 
 | 命令 | 实际行为 |
 | --- | --- |
-| `pnpm dev` | 构建 SDK，启动 MongoDB、Redis、本仓库 Core 与新前端 |
+| `pnpm dev` | 构建 SDK，启动 MongoDB、Redis、本仓库 Core、新前端与后台（同 `dev:all`） |
 | `pnpm dev:web` | 构建 SDK，只启动新前端；Core 需已运行或设置其他 API 基址 |
 | `pnpm dev:admin` | 仅启动本仓库后台，要求 Core 已运行 |
 | `pnpm dev:all` | 启动前端、Core、数据库与后台 |
