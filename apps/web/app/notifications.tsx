@@ -23,6 +23,7 @@ export default function Notifications({ url, children }: { url: string; children
 
 function Connection({ url, children }: { url: string; children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
+  // Base UI: 获取 Toast的管理器, 返回一个管理器, add方法是用于添加Toast 通知的
   const { add } = Toast.useToastManager();
   useEffect(() => {
     const connection = io(url, { transports: ["websocket"], autoConnect: false });
