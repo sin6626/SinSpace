@@ -1,0 +1,66 @@
+/* Base UI ToggleGroup hero example: https://github.com/mui/base-ui/blob/v1.9.0/docs/src/app/(docs)/react/components/toggle-group/demos/hero/css-modules/index.module.css
+   颜色已换成 globals.css 的语义变量，深色由 light-dark() 处理。 */
+.theme-switcher {
+  display: flex;
+  gap: 1px;
+  padding: 1px;
+  border: 1px solid var(--foreground);
+}
+
+.theme-switcher-item {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  color: var(--foreground);
+  -webkit-user-select: none;
+  user-select: none;
+
+  @media (hover: hover) {
+    &:hover:not([data-disabled]) {
+      background-color: var(--accent);
+    }
+  }
+
+  &:active:not([data-disabled], [data-pressed]) {
+    background-color: var(--accent-active);
+  }
+
+  &[data-pressed] {
+    background-color: var(--foreground);
+    color: var(--background);
+  }
+
+  @media (hover: hover) {
+    &[data-pressed]:hover:not([data-disabled]) {
+      background-color: var(--foreground);
+      color: var(--background);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 1px;
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* 适配：官方示例是图标按钮，这里是文字，宽度改为随文字。 */
+.theme-switcher {
+  width: fit-content;
+  margin-top: 1.5rem;
+}
+
+.theme-switcher-item {
+  width: auto;
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+}

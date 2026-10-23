@@ -3,6 +3,7 @@
 import { Toggle } from "@base-ui/react/toggle";
 import { ToggleGroup } from "@base-ui/react/toggle-group";
 import { useSyncExternalStore } from "react";
+import "./theme-switcher.css";
 
 type Theme = "light" | "dark" | "system";
 const storageKey = "theme";
