@@ -162,27 +162,84 @@ export async function getPage(slug: string) {
   };
 }
 
-// 关键词由访客输入，结果只含公开字段；Webhook 让文章/手记标签失效时一并刷新。
-export async function searchContent(keyword: string) {
+// 搜索关键词由访客输入；结果只含公开字段，文章/手记变动时随 Webhook 一并失效。
+// Core 搜索默认返回第一页 10 条。
+export async function searchPosts(keyword: string) {
   "use cache";
   cacheLife({ stale: 60, revalidate: 60, expire: 300 });
-  cacheTag("blog:posts", "blog:notes");
-  const { search } = getApiClient();
-  const [posts, notes] = await Promise.all([search.search("post", keyword), search.search("note", keyword)]);
+  cacheTag("blog:posts");
+  const { data, pagination } = await getApiClient().search.search("post", keyword);
   return {
-    posts: {
-      total: posts.pagination.total,
-      data: posts.data.map((post) => ({
-        id: post.id,
-        title: post.title,
-        created: post.created,
-        slug: post.slug,
-        category: post.category ? { name: post.category.name, slug: post.category.slug } : null,
-      })),
-    },
-    notes: {
-      total: notes.pagination.total,
-      data: notes.data.map((note) => ({ id: note.id, nid: note.nid, title: note.title, created: note.created })),
-    },
+    total: pagination.total,
+    data: data.map((post) => ({
+      id: post.id,
+      title: post.title,
+      created: post.created,
+      slug: post.slug,
+      category: post.category ? { name: post.category.name, slug: post.category.slug } : null,
+    })),
+  };
+}
+
+export async function searchNotes(keyword: string) {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("blog:notes");
+  const { data, pagination } = await getApiClient().search.search("note", keyword);
+  return {
+    total: pagination.total,
+    data: data.map((note) => ({ id: note.id, nid: note.nid, title: note.title, created: note.created })),
+  };
+}
+
+// 标签来自文章，文章变动（blog:posts）时一起失效。
+export async function getTags() {
+  "use cache";
+  cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
+  cacheTag("blog:posts");
+  const { data } = await getApiClient().category.getAllTags();
+  return data
+    .map(({ name, count }) => ({ name, count }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+// 标签名原样传给 Core（有的标签带空格）；没有文章时 Core 返回 404，这里转成空列表。
+export async function getPostsByTag(name: string) {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheTag("blog:posts");
+  const result = await orNotFound(getApiClient().category.getTagByName(name));
+  return (result?.data ?? []).map((post) => ({
+    id: post.id,
+    title: post.title,
+    created: post.created,
+    slug: post.slug,
+    category: post.category ? { name: post.category.name, slug: post.category.slug } : null,
+  }));
+}
+
+// 话题本身没有文章数，用每个话题第一页的分页总数统计；话题很少，请求数可以接受。
+export async function getTopics() {
+  "use cache";
+  cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
+  cacheTag("blog:notes");
+  const client = getApiClient();
+  const { data } = await client.topic.getAll();
+  const counts = await Promise.all(data.map((topic) => client.note.getNoteByTopicId(topic.id, 1, 1)));
+  return data
+    .map((topic, index) => ({ id: topic.id, name: topic.name, slug: topic.slug, count: counts[index].pagination.total }))
+    .filter((topic) => topic.count > 0)
+    .sort((a, b) => b.count - a.count);
+}
+
+// ponytail: 一次取 50 条不分页，话题下手记超过 50 篇时再加分页。
+export async function getNotesByTopic(topicId: string) {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheTag("blog:notes");
+  const { data, pagination } = await getApiClient().note.getNoteByTopicId(topicId, 1, 50, { sortBy: "created", sortOrder: -1 });
+  return {
+    total: pagination.total,
+    data: data.map((note) => ({ id: note.id, nid: note.nid, title: note.title, created: note.created })),
   };
 }

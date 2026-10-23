@@ -16,13 +16,19 @@ let invalidNavigation = false
 let detailError
 const api = {
   aggregate: { getAggregateData: async () => ({ categories: invalidNavigation ? null : [category], pageMeta: [], user: { privateField: 'not for cache' } }) },
-  category: { getAllCategories: async () => ({ data: [category] }) },
+  category: {
+    getAllCategories: async () => ({ data: [category] }),
+    getAllTags: async () => ({ data: [{ name: 'Vue', count: 1, extra: 'x' }, { name: ' 前端', count: 3 }] }),
+    getTagByName: async (name) => { calls.push(['tag', name]); if (name === 'missing') throw { status: 404 }; return { tag: name, data: [{ ...post, text: 'leak' }] } },
+  },
   note: {
     getList: async (...args) => { calls.push(args); return { data: [note], pagination: { total: 1 } } },
+    getNoteByTopicId: async (id, page, size, options) => { calls.push(['topic', id, page, size, options]); return id === 't1' ? { data: [{ ...note, text: 'leak' }], pagination: { total: 9 } } : { data: [], pagination: { total: 0 } } },
     getNoteByNid: async () => { if (detailError) throw detailError; return { data: note, prev: { nid: 6, title: '较新' }, next: { nid: 4 } } },
   },
   project: { getAll: async () => ({ data: [project] }) },
   search: { search: async (type, keyword) => { calls.push(['search', type, keyword]); return type === 'post' ? { data: [{ ...post, text: 'leak' }], pagination: { total: 1 } } : { data: [{ ...note, text: 'leak' }], pagination: { total: 1 } } } },
+  topic: { getAll: async () => ({ data: [{ id: 't1', name: '近况', slug: 'now', introduce: 'unused' }, { id: 't2', name: '空话题', slug: 'empty' }] }) },
   page: { getBySlug: async () => detailError ? Promise.reject(detailError) : ({ id: 'page-id', title: '关于我', subtitle: 'about me', text: 'page body', contentFormat: 'lexical', content: 'unused JSON', allowComment: true }) },
   post: {
     getList: async (...args) => { calls.push(args); return { data: [post], pagination: { total: 1 } } },
@@ -64,12 +70,25 @@ const page = await cache.getPage('about')
 assert.equal(page.text, 'page body')
 assert.equal('content' in page || 'allowComment' in page, false)
 assert.ok(tags.includes('blog:pages') && tags.includes('blog:page:page-id'))
-const found = await cache.searchContent('关键词')
-assert.ok(calls.some(c => c[0] === 'search' && c[1] === 'post' && c[2] === '关键词') && calls.some(c => c[1] === 'note'))
-assert.equal(found.posts.total, 1)
-assert.equal('text' in found.posts.data[0] || 'text' in found.notes.data[0] || 'password' in found.notes.data[0], false)
-assert.equal(found.posts.data[0].category.slug, 'technology')
-assert.equal(lifetimes.length, 9)
+const foundPosts = await cache.searchPosts('关键词')
+const foundNotes = await cache.searchNotes('关键词')
+assert.ok(calls.some(c => c[0] === 'search' && c[1] === 'post' && c[2] === '关键词') && calls.some(c => c[0] === 'search' && c[1] === 'note'))
+assert.equal(foundPosts.total, 1)
+assert.equal('text' in foundPosts.data[0] || 'text' in foundNotes.data[0] || 'password' in foundNotes.data[0], false)
+assert.equal(foundPosts.data[0].category.slug, 'technology')
+const topics = await cache.getTopics()
+assert.equal(JSON.stringify(topics), JSON.stringify([{ id: 't1', name: '近况', slug: 'now', count: 9 }]))
+const byTopic = await cache.getNotesByTopic('t1')
+assert.equal(byTopic.total, 9)
+assert.equal('text' in byTopic.data[0], false)
+assert.equal(calls.at(-1)[4].sortOrder, -1)
+const tagList = await cache.getTags()
+assert.equal(JSON.stringify(tagList), JSON.stringify([{ name: ' 前端', count: 3 }, { name: 'Vue', count: 1 }]))
+const tagged = await cache.getPostsByTag(' 前端')
+assert.equal(calls.at(-1)[1], ' 前端')
+assert.equal('text' in tagged[0], false)
+assert.equal((await cache.getPostsByTag('missing')).length, 0)
+assert.equal(lifetimes.length, 15)
 assert.ok(lifetimes.every(p => p.revalidate > 0 && p.expire > p.revalidate))
 // 缓存函数抛出的错误会丢失 status，所以 404/403 必须在函数内转成返回值。
 detailError = { status: 404 }

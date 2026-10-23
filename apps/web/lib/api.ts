@@ -1,5 +1,5 @@
 import "server-only";
-import { AggregateController, CategoryController, NoteController, PageController, PostController, ProjectController, SearchController, createClient } from "@mx-space/api-client";
+import { AggregateController, CategoryController, NoteController, PageController, PostController, ProjectController, SearchController, TopicController, createClient } from "@mx-space/api-client";
 import { fetchAdaptor } from "@mx-space/api-client/dist/adaptors/fetch";
 import { unstable_rethrow } from "next/navigation";
 import { getApiUrl } from "./config";
@@ -17,7 +17,7 @@ const adapter: typeof fetchAdaptor = {
 
 export function getApiClient() {
   return createClient(adapter)(getApiUrl(), {
-    controllers: [AggregateController, CategoryController, PostController, NoteController, PageController, ProjectController, SearchController],
+    controllers: [AggregateController, CategoryController, PostController, NoteController, PageController, ProjectController, SearchController, TopicController],
     customThrowResponseError(error) {
       unstable_rethrow(error);
       throw error;

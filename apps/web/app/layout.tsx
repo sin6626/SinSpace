@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   description: "技术文章、个人作品与生活记录。",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children, details }: LayoutProps<"/">) {
   return (
     <html
       lang="zh-CN"
@@ -56,9 +56,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 {children}
               </main>
             </ViewTransition>
-            <aside className="site-details" aria-labelledby="details-heading">
-              <h2 id="details-heading">补充信息</h2>
-              <p>这里将展示与当前内容相关的信息。</p>
+            {/* 右栏内容来自平行路由 app/@details，随页面变化 */}
+            <aside className="site-details" aria-label="补充信息">
+              {details}
             </aside>
           </ResizableLayout>
         </Notifications>

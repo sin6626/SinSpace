@@ -25,13 +25,13 @@
 | 功能 | 地址或位置 | 说明 |
 | --- | --- | --- |
 | 三栏布局 | `components/resizable-layout.tsx` | 桌面可拖动分隔线，手机导航置顶 |
-| 导航 | `components/navigation-menu.tsx` | Sin、文章（分类）、关于（页面）、作品、手记、搜索；开发环境多一个调试 |
+| 导航 | `components/navigation-menu.tsx` | Sin、文章（分类）、关于（页面）、作品、手记；开发环境多一个调试 |
 | 首页 | `/` | 最新 5 篇文章（标出置顶）与 5 篇手记 |
 | 文章 | `/posts`、`/categories/[slug]`、`/posts/[category]/[slug]` | 分页、分类筛选、Markdown 详情；Lexical 用 text 副本简化阅读 |
 | 手记 | `/notes`、`/notes/[nid]` | 心情、天气、话题；加密手记只提示 |
 | 作品 | `/projects` | 名称、简介、封面、外链 |
 | 关于 | `/[slug]` | 后台“页面”，如 `/about`、`/about-site` |
-| 搜索 | `/search?q=` | 同时搜文章与手记；Core 搜索 bug 已修复 |
+| 搜索与标签 | 文章/手记页右栏 | `/posts?q=`、`/posts?tag=`、`/notes?q=`、`/notes?topic=`；右栏用平行路由 `app/@details` |
 | 主题 | 左栏底部 | 浅色 / 深色 / 跟随系统，`light-dark()` 变量 |
 | 缓存与 Webhook | `lib/blog-data.ts`、`app/api/webhooks/mix-space` | 公开数据共享缓存；后台改动按事件立即失效，见 [Webhook](./webhook-local.md) |
 | 实时通知 | `components/notifications.tsx` | 新文章、更新、删除 Toast |

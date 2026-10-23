@@ -149,8 +149,11 @@ a:focus-visible,
   font-size: 0.875rem;
 }
 
+/* 右栏：手机和平板显示在正文下方，桌面为第三栏 */
 .site-details {
-  display: none;
+  min-width: 0;
+  padding: 1.5rem 1rem;
+  border-top: 1px solid var(--border);
 }
 
 .resize-handle {
@@ -203,6 +206,12 @@ a:focus-visible,
   .content-placeholder {
     padding-inline: 1.5rem;
   }
+
+  .site-details {
+    grid-column: 2;
+    padding-inline: 1.5rem;
+    border-inline: 1px solid var(--border);
+  }
 }
 
 @media (min-width: 1024px) {
@@ -211,7 +220,8 @@ a:focus-visible,
   }
 
   .site-details {
-    display: block;
+    grid-column: auto;
+    border: 0;
     position: sticky;
     top: 0;
     align-self: start;
@@ -300,47 +310,6 @@ a:focus-visible,
 .home-section-heading a {
   color: var(--muted-foreground);
   font-size: 0.875rem;
-}
-
-/* 搜索页表单（components/search-results.tsx）：直角实线边框，与 Toast 按钮一致 */
-.search-form {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-}
-
-.search-input {
-  flex: 1;
-  min-width: 0;
-  height: 2.5rem;
-  padding: 0 0.75rem;
-  border: 1px solid var(--border);
-  background: var(--background);
-  color: var(--foreground);
-}
-
-.search-input:focus-visible,
-.search-button:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: -1px;
-}
-
-.search-button {
-  height: 2.5rem;
-  padding: 0 1rem;
-  border: 1px solid var(--foreground);
-  background: var(--background);
-  color: var(--foreground);
-}
-
-@media (hover: hover) {
-  .search-button:hover {
-    background: var(--accent);
-  }
-}
-
-.search-button:active {
-  background: var(--accent-active);
 }
 
 .project-item {

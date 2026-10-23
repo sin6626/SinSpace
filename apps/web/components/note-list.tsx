@@ -2,9 +2,15 @@ import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { getNotes } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
+import { readText } from "../lib/search-params";
+import { NoteSearch, NotesByTopic } from "./note-filter";
 
-export default async function NoteList({ searchParams }: { searchParams: Promise<{ page?: string | string[] }> }) {
-  const { page: rawPage = "1" } = await searchParams;
+export default async function NoteList({ searchParams }: { searchParams: Promise<{ page?: string | string[]; q?: string | string[]; topic?: string | string[] }> }) {
+  const { page: rawPage = "1", q, topic } = await searchParams;
+  const keyword = readText(q);
+  if (keyword) return <NoteSearch keyword={keyword} />;
+  const topicSlug = readText(topic, 100);
+  if (topicSlug) return <NotesByTopic slug={topicSlug} />;
   if (typeof rawPage !== "string" || !/^[1-9]\d*$/.test(rawPage)) notFound();
   const page = Number(rawPage);
   if (!Number.isSafeInteger(page)) notFound();

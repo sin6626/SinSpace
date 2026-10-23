@@ -2,15 +2,23 @@ import type { CategoryModel } from "@mx-space/api-client";
 import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { getCategories, getPosts } from "../lib/blog-data";
+import { readText } from "../lib/search-params";
+import { PostSearch, PostsByTag } from "./post-filter";
 import { formatDate } from "../lib/date";
 
 type PostListProps = {
-  searchParams: Promise<{ page?: string | string[] }>;
+  searchParams: Promise<{ page?: string | string[]; q?: string | string[]; tag?: string | string[] }>;
   params?: Promise<{ slug: string }>;
 };
 
 export default async function PostList({ searchParams, params }: PostListProps) {
-  const [{ page: rawPage = "1" }, route] = await Promise.all([searchParams, params]);
+  const [{ page: rawPage = "1", q, tag }, route] = await Promise.all([searchParams, params]);
+  // 右栏的搜索和标签只作用于 /posts；标签名原样保留（后台有带空格的标签）。
+  if (!route) {
+    const keyword = readText(q);
+    if (keyword) return <PostSearch keyword={keyword} />;
+    if (typeof tag === "string" && tag.trim()) return <PostsByTag name={tag.slice(0, 100)} />;
+  }
   if (typeof rawPage !== "string" || !/^[1-9]\d*$/.test(rawPage)) notFound();
   const page = Number(rawPage);
   if (!Number.isSafeInteger(page)) notFound();

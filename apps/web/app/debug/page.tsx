@@ -70,11 +70,11 @@ export default function DebugPage() {
             <p className="post-empty">暂无内容。</p>
           </li>
           <li>
-            <h2>搜索</h2>
-            <p className="post-meta">search-results.tsx：未输入、无结果、请求失败</p>
-            <p className="post-empty">输入关键词，搜索文章和手记的标题与正文。</p>
-            <p className="post-empty">没有匹配的文章。</p>
-            <p className="post-empty" role="alert">搜索失败，请稍后重试。</p>
+            <h2>搜索与筛选</h2>
+            <p className="post-meta">post-filter.tsx、note-filter.tsx 共用 result-list.tsx：无结果、读取失败；右栏 post-sidebar / note-sidebar 读取失败</p>
+            <p className="post-empty">没有匹配的文章，换个关键词试试。</p>
+            <p className="post-empty" role="alert">读取失败，请稍后重试。</p>
+            <p className="post-meta">标签读取失败。</p>
           </li>
           <li>
             <h2>手记与作品</h2>

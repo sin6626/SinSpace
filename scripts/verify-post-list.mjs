@@ -20,7 +20,7 @@ const api = {
 const module = { exports: {} }
 vm.runInNewContext(code, {
   module, exports: module.exports,
-  require: (id) => id === '../lib/date' ? { formatDate: (v) => String(v) } : id === '../lib/blog-data' ? { getCategories: async () => (await api.category.getAllCategories()).data, getPosts: (page, id) => api.post.getList(page, 10, { categoryIds: id ? [id] : undefined }) } : require(id),
+  require: (id) => id === '../lib/date' ? { formatDate: (v) => String(v) } : id === '../lib/search-params' ? { readText: (v, max = 50) => typeof v === 'string' ? v.trim().slice(0, max) : '' } : id === './post-filter' ? { PostSearch: function PostSearch() {}, PostsByTag: function PostsByTag() {} } : id === '../lib/blog-data' ? { getCategories: async () => (await api.category.getAllCategories()).data, getPosts: (page, id) => api.post.getList(page, 10, { categoryIds: id ? [id] : undefined }) } : require(id),
 })
 const render = (page, slug) => module.exports.default({ searchParams: Promise.resolve(page === undefined ? {} : { page }), params: slug === undefined ? undefined : Promise.resolve({ slug }) })
 const is404 = (error) => error.digest === 'NEXT_HTTP_ERROR_FALLBACK;404'
@@ -32,8 +32,17 @@ for (const page of ['0', '-1', '1.5', 'abc', ['1', '2'], '999999999999999999']) 
 await assert.rejects(render('1', 'missing'), is404)
 await assert.rejects(render('1', '%zz'), is404)
 await assert.rejects(render('2'), is404)
+const withParams = (searchParams, slug) => module.exports.default({ searchParams: Promise.resolve(searchParams), params: slug === undefined ? undefined : Promise.resolve({ slug }) })
+const searchView = await withParams({ q: '  Plate  ' })
+assert.equal(searchView.type.name, 'PostSearch')
+assert.equal(searchView.props.keyword, 'Plate')
+const tagView = await withParams({ tag: ' 前端' })
+assert.equal(tagView.type.name, 'PostsByTag')
+assert.equal(tagView.props.name, ' 前端')
+const categoryView = await withParams({ q: 'Plate' }, 'study%26think')
+assert.notEqual(categoryView.type?.name, 'PostSearch')
 failure = true
 const errorView = await render('1', 'study&think')
 assert.equal(errorView.props.role, 'alert')
 assert.equal(errorView.props.children[1].props.href, '/categories/study%26think')
-console.log('PASS post list category selection, page validation, empty page,404 and error retry target')
+console.log('PASS post list category selection, page validation, empty page,404, error retry target, search and raw tag routing')
