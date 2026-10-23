@@ -1,4 +1,7 @@
-import { Body, Get, Post, Query, Request, Response } from '@nestjs/common'
+import type { FastifyRequest } from "fastify"
+import { AuthGuard } from "~/common/guards/auth.guard"
+import { WebEventsGateway } from "~/processors/gateway/web/events.gateway"
+import { Body, Get, Post, Query, Request, Response, NotFoundException, UseGuards } from '@nestjs/common'
 import { ApiController } from '~/common/decorators/api-controller.decorator'
 import { HTTPDecorators } from '~/common/decorators/http.decorator'
 import { BusinessEvents, EventScope } from '~/constants/business-event.constant'
@@ -15,7 +18,19 @@ export class DebugController {
     private readonly eventManager: EventManagerService,
 
     private readonly debugService: DebugService,
+    private readonly webGateway: WebEventsGateway,
   ) {}
+
+  @Post('/toast')
+  @UseGuards(AuthGuard)
+  sendToast(@Request() request: FastifyRequest) {
+    if (process.env.NODE_ENV !== 'development' ||
+      !['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(request.raw.socket.remoteAddress ?? '')) {
+      throw new NotFoundException()
+    }
+    this.webGateway.broadcast(BusinessEvents.POST_CREATE, { isPublished: true })
+    return { sent: true }
+  }
 
   @Get('/test')
   test() {

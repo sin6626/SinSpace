@@ -1,14 +1,35 @@
 import { NButton, NCard, NDivider, NSpace } from 'naive-ui'
-import { defineComponent } from 'vue'
+import { defineComponent, ref } from 'vue'
+import { systemApi } from '~/api'
 import { toast } from 'vue-sonner'
 
 export default defineComponent({
   setup() {
+    const sending = ref(false)
+    const localDevelopment = import.meta.env.DEV && ['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname)
+    const sendBlogToast = async () => {
+      if (sending.value) return
+      sending.value = true
+      try {
+        await systemApi.sendBlogTestToast()
+        toast.success('测试通知已发送，请查看博客窗口')
+      } catch {
+        toast.error('发送失败，请确认本地 Core 已启动并且已登录')
+      } finally {
+        sending.value = false
+      }
+    }
+
     return () => (
       <div class="mx-auto max-w-4xl space-y-6 p-6">
         <h1 class="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
           Toast 测试
         </h1>
+
+        {localDevelopment && <NCard title="博客前端通知">
+          <p class="mb-3">先打开本地博客，再发送测试通知。只测试 Toast，不创建文章或刷新缓存。</p>
+          <NButton loading={sending.value} disabled={sending.value} onClick={sendBlogToast}>发送博客测试通知</NButton>
+        </NCard>}
 
         <NCard title="基础用法" class="!rounded-xl">
           <div class="space-y-4">

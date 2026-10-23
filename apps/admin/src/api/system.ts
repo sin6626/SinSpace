@@ -76,6 +76,8 @@ export const systemApi = {
 
   // === Debug ===
 
+  sendBlogTestToast: () => request.post<void>('/debug/toast'),
+
   // 发送调试事件
   sendDebugEvent: (data: DebugEventData) =>
     request.post<void>('/debug/events', { data }),
