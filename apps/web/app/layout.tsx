@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ViewTransition } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import Notifications from "./notifications";
 import { getApiUrl } from "../lib/config";
@@ -40,9 +41,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </div>
               <Navigation />
             </header>
-            <main className="site-content" id="main-content" tabIndex={-1}>
-              {children}
-            </main>
+            <ViewTransition default="page-switch">
+              <main className="site-content" id="main-content" tabIndex={-1}>
+                {children}
+              </main>
+            </ViewTransition>
             <aside className="site-details" aria-labelledby="details-heading">
               <h2 id="details-heading">补充信息</h2>
               <p>这里将展示与当前内容相关的信息。</p>
