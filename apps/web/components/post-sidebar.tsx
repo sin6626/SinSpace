@@ -18,13 +18,22 @@ export default async function PostSidebar({ keyword = "", activeTag }: { keyword
         <h2 id="post-tags-heading">标签</h2>
         {tags === null ? <p className="details-message" role="alert">标签读取失败。</p> : tags.length ? (
           <ul className="tag-list">
-            {tags.map((tag) => (
-              <li key={tag.name}>
-                <Link className="tag-chip" href={`/posts?tag=${encodeURIComponent(tag.name)}`} aria-current={tag.name === activeTag ? "page" : undefined}>
-                  {tag.name.trim()}<span className="tag-count">{tag.count}</span>
-                </Link>
-              </li>
-            ))}
+            {tags.map((tag) => {
+              // 已选中的标签再点一次回到完整列表，筛选状态只存在地址栏里。
+              const active = tag.name === activeTag;
+              return (
+                <li key={tag.name}>
+                  <Link
+                    className="tag-chip"
+                    href={active ? "/posts" : `/posts?tag=${encodeURIComponent(tag.name)}`}
+                    aria-current={active ? "page" : undefined}
+                    title={active ? "再次点击取消筛选" : undefined}
+                  >
+                    {tag.name.trim()}<span className="tag-count">{tag.count}</span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         ) : <p className="details-message">暂无标签。</p>}
       </section>

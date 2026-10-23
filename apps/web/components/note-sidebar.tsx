@@ -18,13 +18,22 @@ export default async function NoteSidebar({ keyword = "", activeTopic }: { keywo
         <h2 id="note-topics-heading">话题</h2>
         {topics === null ? <p className="details-message" role="alert">话题读取失败。</p> : topics.length ? (
           <ul className="tag-list">
-            {topics.map((topic) => (
-              <li key={topic.id}>
-                <Link className="tag-chip" href={`/notes?topic=${encodeURIComponent(topic.slug)}`} aria-current={topic.slug === activeTopic ? "page" : undefined}>
-                  {topic.name}<span className="tag-count">{topic.count}</span>
-                </Link>
-              </li>
-            ))}
+            {topics.map((topic) => {
+              // 已选中的话题再点一次回到完整列表。
+              const active = topic.slug === activeTopic;
+              return (
+                <li key={topic.id}>
+                  <Link
+                    className="tag-chip"
+                    href={active ? "/notes" : `/notes?topic=${encodeURIComponent(topic.slug)}`}
+                    aria-current={active ? "page" : undefined}
+                    title={active ? "再次点击取消筛选" : undefined}
+                  >
+                    {topic.name}<span className="tag-count">{topic.count}</span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         ) : <p className="details-message">暂无话题。</p>}
       </section>

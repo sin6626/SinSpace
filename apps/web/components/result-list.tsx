@@ -4,10 +4,9 @@ import { formatDate } from "../lib/date";
 export type ResultItem = { key: string; href: string; title: string; created: string; meta?: string };
 
 // 搜索与标签/话题筛选的结果列表，文章和手记共用。
-export default function ResultList({ title, summary, clearHref, items, emptyText }: {
+export default function ResultList({ title, summary, items, emptyText }: {
   title: string;
   summary: string;
-  clearHref: string;
   items: ResultItem[] | null;
   emptyText: string;
 }) {
@@ -15,7 +14,7 @@ export default function ResultList({ title, summary, clearHref, items, emptyText
     <>
       <header className="page-heading">
         <h1>{title}</h1>
-        <p className="post-meta">{summary}<Link href={clearHref}>清除筛选</Link></p>
+        {summary && <p className="post-meta">{summary}</p>}
       </header>
       <div className="post-list-content">
         {items === null ? (

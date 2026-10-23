@@ -13,9 +13,9 @@ export async function NoteSearch({ keyword }: { keyword: string }) {
     unstable_rethrow(error);
   }
   const summary = result
-    ? `搜索“${keyword}”，共 ${result.total} 篇${result.total > result.data.length ? `，显示前 ${result.data.length} 篇` : ""}。`
-    : `搜索“${keyword}”。`;
-  return <ResultList title="搜索手记" summary={summary} clearHref="/notes" items={result && toItems(result.data)} emptyText="没有匹配的手记，换个关键词试试。" />;
+    ? `搜索“${keyword}”，共 ${result.total} 篇${result.total > result.data.length ? `，显示前 ${result.data.length} 篇` : ""}`
+    : `搜索“${keyword}”`;
+  return <ResultList title="搜索手记" summary={summary} items={result && toItems(result.data)} emptyText="没有匹配的手记，换个关键词试试。" />;
 }
 
 export async function NotesByTopic({ slug }: { slug: string }) {
@@ -36,5 +36,5 @@ export async function NotesByTopic({ slug }: { slug: string }) {
       unstable_rethrow(error);
     }
   }
-  return <ResultList title={topic ? `话题：${topic.name}` : "话题"} summary={result ? `共 ${result.total} 篇。` : ""} clearHref="/notes" items={result && toItems(result.data)} emptyText="这个话题下还没有公开的手记。" />;
+  return <ResultList title={topic ? `话题：${topic.name}` : "话题"} summary={result ? `共 ${result.total} 篇` : ""} items={result && toItems(result.data)} emptyText="这个话题下还没有公开的手记。" />;
 }
