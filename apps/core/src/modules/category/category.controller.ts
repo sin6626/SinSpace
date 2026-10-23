@@ -15,6 +15,7 @@ import { isValidObjectId } from 'mongoose'
 import { ApiController } from '~/common/decorators/api-controller.decorator'
 import { Auth } from '~/common/decorators/auth.decorator'
 import { HTTPDecorators } from '~/common/decorators/http.decorator'
+import { IsAuthenticated } from '~/common/decorators/role.decorator'
 import { Lang } from '~/common/decorators/lang.decorator'
 import { TranslateFields } from '~/common/decorators/translate-fields.decorator'
 import { BizException } from '~/common/exceptions/biz.exception'
@@ -52,8 +53,11 @@ export class CategoryController {
   })
   async getCategories(
     @Query() query: MultiCategoriesQueryDto,
+    @IsAuthenticated() isAuthenticated: boolean,
     @Lang() lang?: string,
   ) {
+    // SinPersonalSpace: 访客只能看到/统计已发布文章，后台登录后不受影响。
+    const visible = isAuthenticated ? {} : { isPublished: true }
     const { ids, joint, type = CategoryType.Category } = query // categories is category's mongo id
     if (ids) {
       const ignoreKeys = '-text -summary -isPublished -images -commentsIndex'
@@ -62,7 +66,7 @@ export class CategoryController {
       await Promise.all(
         ids.map(async (id) => {
           let posts: any[] = await this.postService.model
-            .find({ categoryId: id }, ignoreKeys)
+            .find({ categoryId: id, ...visible }, ignoreKeys)
             .sort({ created: -1 })
             .lean()
 
@@ -82,8 +86,8 @@ export class CategoryController {
       return { entries: map }
     }
     return type === CategoryType.Category
-      ? await this.categoryService.findAllCategory()
-      : await this.categoryService.getPostTagsSum()
+      ? await this.categoryService.findAllCategory(visible)
+      : await this.categoryService.getPostTagsSum(visible)
   }
 
   @Get('/:query')
@@ -95,13 +99,15 @@ export class CategoryController {
   async getCategoryById(
     @Param() { query }: SlugOrIdDto,
     @Query() { tag }: MultiQueryTagAndCategoryDto,
+    @IsAuthenticated() isAuthenticated: boolean,
     @Lang() lang?: string,
   ) {
+    const visible = isAuthenticated ? {} : { isPublished: true }
     if (!query) {
       throw new BizException(ErrorCodeEnum.InvalidParameter)
     }
     if (tag === true) {
-      let data = await this.categoryService.findArticleWithTag(query)
+      let data = await this.categoryService.findArticleWithTag(query, visible)
       if (lang && data?.length) {
         data = await this.translatePostTitles(data, lang)
       }
@@ -125,6 +131,7 @@ export class CategoryController {
 
     let children: any[] =
       (await this.categoryService.findCategoryPost(res._id.toHexString(), {
+        ...visible,
         $and: [tag ? { tags: tag } : {}],
       })) || []
 

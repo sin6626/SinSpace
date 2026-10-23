@@ -48,12 +48,16 @@ export class CategoryService implements OnApplicationBootstrap {
     }
   }
 
-  async findAllCategory() {
+  // SinPersonalSpace: condition 用于访客只统计已发布文章，默认不过滤，保持其他调用方行为。
+  async findAllCategory(condition: QueryFilter<DocumentType<PostModel>> = {}) {
     const data = await this.model.find({ type: CategoryType.Category }).lean()
     const counts = await Promise.all(
       data.map((item) => {
         const id = item._id
-        return this.postService.model.countDocuments({ categoryId: id })
+        return this.postService.model.countDocuments({
+          categoryId: id,
+          ...condition,
+        })
       }),
     )
 
@@ -68,8 +72,9 @@ export class CategoryService implements OnApplicationBootstrap {
     return this.categoryModel
   }
 
-  async getPostTagsSum() {
+  async getPostTagsSum(condition: QueryFilter<DocumentType<PostModel>> = {}) {
     const data = await this.postService.model.aggregate([
+      { $match: condition },
       { $project: { tags: 1 } },
       {
         $unwind: '$tags',
