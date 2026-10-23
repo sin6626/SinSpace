@@ -8,7 +8,7 @@ export default function SidebarSearch({ action, label, defaultValue }: { action:
     <section className="details-section">
       <Form action={action} role="search">
         {/* key 让关键词变化后输入框重新挂载，显示当前搜索词 */}
-        <Input key={defaultValue} name="q" type="search" defaultValue={defaultValue} maxLength={50} placeholder={label} aria-label={label} className="sidebar-search-input" />
+        <Input key={defaultValue} name="q" type="search" autoComplete="off" defaultValue={defaultValue} maxLength={50} placeholder={label} aria-label={label} className="sidebar-search-input" />
       </Form>
     </section>
   );
