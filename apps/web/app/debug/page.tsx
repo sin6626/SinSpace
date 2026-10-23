@@ -63,6 +63,13 @@ export default function DebugPage() {
             <p className="post-empty">这个分类下还没有已发布的文章。</p>
           </li>
           <li>
+            <h2>首页</h2>
+            <p className="post-meta">app/page.tsx 的加载占位，home-latest.tsx 单块读取失败与无内容</p>
+            <p className="post-list-content" role="status">正在读取最新内容…</p>
+            <p className="post-empty" role="alert">最新文章读取失败，请稍后刷新。</p>
+            <p className="post-empty">暂无内容。</p>
+          </li>
+          <li>
             <h2>手记与作品</h2>
             <p className="post-meta">notes/page.tsx、projects/page.tsx 的加载占位</p>
             <p className="post-list-content" role="status">正在读取手记…</p>

@@ -62,6 +62,7 @@ export default async function PostList({ searchParams, params }: PostListProps) 
                     <Link href={`/posts/${encodeURIComponent(post.category.slug)}/${encodeURIComponent(post.slug)}`}>{post.title}</Link>
                   ) : post.title}</h2>
                   <div className="post-meta">
+                    {post.pinned && <span>置顶</span>}
                     <time dateTime={post.created}>
                       {formatDate(post.created)}
                     </time>

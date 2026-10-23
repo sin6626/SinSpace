@@ -257,7 +257,8 @@ a:focus-visible,
   overflow-wrap: anywhere;
 }
 
-.post-list h2 {
+.post-list h2,
+.post-list h3 {
   font-size: 1.125rem;
   font-weight: 600;
 }
@@ -277,6 +278,30 @@ a:focus-visible,
 .post-pagination {
   margin-top: 1.5rem;
   justify-content: space-between;
+}
+
+/* 首页：最新文章与最新手记两块 */
+.home-section + .home-section {
+  margin-top: 2.5rem;
+}
+
+.home-section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.home-section-heading h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.home-section-heading a {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
 }
 
 .project-item {

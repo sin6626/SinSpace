@@ -47,7 +47,7 @@ export async function getPosts(page: number, categoryId?: string) {
   cacheTag("blog:posts", "blog:categories");
   const { data, pagination } = await getApiClient().post.getList(page, 10, {
     categoryIds: categoryId ? [categoryId] : undefined,
-    select: ["title", "summary", "created", "categoryId", "slug"],
+    select: ["title", "summary", "created", "categoryId", "slug", "pin"],
   });
   return {
     data: data.map((post) => ({
@@ -57,6 +57,8 @@ export async function getPosts(page: number, categoryId?: string) {
       summary: post.summary,
       created: post.created,
       categoryId: post.categoryId,
+      // Core 把置顶文章排在最前，页面需要标出来，否则看起来像排序错了。
+      pinned: Boolean(post.pin),
       category: post.category ? { name: post.category.name, slug: post.category.slug } : null,
     })),
     pagination: { ...pagination },
