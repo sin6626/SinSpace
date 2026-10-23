@@ -25,7 +25,7 @@
 | 功能 | 地址或位置 | 说明 |
 | --- | --- | --- |
 | 三栏布局 | `components/resizable-layout.tsx` | 桌面可拖动分隔线，手机导航置顶 |
-| 导航 | `components/navigation-menu.tsx` | Sin、文章（分类）、关于（页面）、作品、手记；开发环境多一个调试 |
+| 导航 | `components/navigation-menu.tsx` | Sin（子菜单：关于我、关于本站）、文章（子菜单：分类）、作品、手记；一级可直接点击跳转；开发环境多一个调试 |
 | 首页 | `/` | 最新 5 篇文章（标出置顶）与 5 篇手记 |
 | 文章 | `/posts`、`/categories/[slug]`、`/posts/[category]/[slug]` | 分页、分类筛选、Markdown 详情；Lexical 用 text 副本简化阅读 |
 | 手记 | `/notes`、`/notes/[nid]` | 心情、天气、话题；加密手记只提示 |
