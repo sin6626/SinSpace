@@ -74,11 +74,13 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
             </NavigationMenu.Content>
           </NavigationMenu.Item>
         ))}
-        {["作品", "手记"].map((label) => (
-          <NavigationMenu.Item key={label}>
-            <button className="navigation-Trigger" type="button" disabled>
-              {label}<span className="navigation-status">未开放</span>
-            </button>
+        {[{ label: "作品", href: "/projects" }, { label: "手记", href: "/notes" }].map(({ label, href }) => (
+          <NavigationMenu.Item key={href}>
+            <NavigationMenu.Link
+              className="navigation-Trigger"
+              active={pathname === href || pathname.startsWith(`${href}/`)}
+              render={<Link href={href} />}
+            >{label}</NavigationMenu.Link>
           </NavigationMenu.Item>
         ))}
         {process.env.NODE_ENV !== "production" && (

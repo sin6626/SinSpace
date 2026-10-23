@@ -4,6 +4,7 @@ import { notFound, unstable_rethrow } from "next/navigation";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getPost } from "../lib/blog-data";
+import { formatDate } from "../lib/date";
 import "./post-detail.css";
 
 export default async function PostDetail({ params }: {
@@ -36,7 +37,7 @@ export default async function PostDetail({ params }: {
         <h1 className="post-detail-title">{post.title}</h1>
         <div className="post-meta">
           <time dateTime={post.created}>
-            {new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Asia/Shanghai" }).format(new Date(post.created))}
+            {formatDate(post.created)}
           </time>
           {post.category && <Link href={`/categories/${encodeURIComponent(post.category.slug)}`}>{post.category.name}</Link>}
         </div>

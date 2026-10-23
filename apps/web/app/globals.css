@@ -95,7 +95,6 @@ a:focus-visible,
 }
 
 .site-brand-description,
-.navigation-status,
 .site-details p,
 .content-placeholder {
   color: var(--muted-foreground);
@@ -119,10 +118,6 @@ a:focus-visible,
 .navigation-retry {
   color: var(--foreground);
   text-decoration: underline;
-}
-
-.navigation-status {
-  font-size: 0.75rem;
 }
 
 .site-content {
@@ -282,6 +277,20 @@ a:focus-visible,
 .post-pagination {
   margin-top: 1.5rem;
   justify-content: space-between;
+}
+
+.project-item {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.project-avatar {
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  object-fit: cover;
+  border: 1px solid var(--border);
 }
 
 @media (max-width: 639px) {

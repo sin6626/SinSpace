@@ -300,11 +300,6 @@
   z-index: var(--z-popup);
 }
 
-.navigation-Trigger:disabled {
-  color: var(--muted-foreground);
-  cursor: not-allowed;
-}
-
 @media (min-width: 640px) {
   .navigation-List {
     flex-direction: column;

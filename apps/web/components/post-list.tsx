@@ -2,6 +2,7 @@ import type { CategoryModel } from "@mx-space/api-client";
 import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { getCategories, getPosts } from "../lib/blog-data";
+import { formatDate } from "../lib/date";
 
 type PostListProps = {
   searchParams: Promise<{ page?: string | string[] }>;
@@ -62,7 +63,7 @@ export default async function PostList({ searchParams, params }: PostListProps) 
                   ) : post.title}</h2>
                   <div className="post-meta">
                     <time dateTime={post.created}>
-                      {new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Asia/Shanghai" }).format(new Date(post.created))}
+                      {formatDate(post.created)}
                     </time>
                     {post.category ? (
                       <Link href={`/categories/${encodeURIComponent(post.category.slug)}`}>{post.category.name}</Link>

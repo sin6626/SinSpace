@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -60,6 +61,18 @@ export default function DebugPage() {
             <p className="post-meta">post-list.tsx 的空列表</p>
             <p className="post-empty">还没有已发布的文章。</p>
             <p className="post-empty">这个分类下还没有已发布的文章。</p>
+          </li>
+          <li>
+            <h2>手记与作品</h2>
+            <p className="post-meta">notes/page.tsx、projects/page.tsx 的加载占位</p>
+            <p className="post-list-content" role="status">正在读取手记…</p>
+            <p className="post-list-content" role="status">正在读取作品…</p>
+            <p className="post-meta">note-list.tsx、project-list.tsx 的读取失败与空列表</p>
+            <p className="post-list-content" role="alert">手记读取失败。<a href="/debug">重试</a></p>
+            <p className="post-empty">还没有公开的手记。</p>
+            <p className="post-empty">还没有作品。</p>
+            <p className="post-meta">note-detail.tsx：Core 对加密手记返回 403 时</p>
+            <p className="post-list-content" role="status">这篇手记设置了访问密码，暂不支持在这里查看。<Link href="/notes">返回手记列表</Link></p>
           </li>
           <li>
             <h2>通知 Toast</h2>

@@ -63,3 +63,56 @@ export async function getPost(category: string, slug: string) {
     category: post.category ? { name: post.category.name, slug: post.category.slug } : null,
   };
 }
+
+export async function getNotes(page: number) {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("blog:notes");
+  const { data, pagination } = await getApiClient().note.getList(page, 10);
+  return {
+    data: data.map((note) => ({
+      id: note.id,
+      nid: note.nid,
+      title: note.title,
+      created: note.created,
+      mood: note.mood,
+      weather: note.weather,
+      topic: note.topic?.name ?? null,
+    })),
+    pagination: { ...pagination },
+  };
+}
+
+export async function getNote(nid: number) {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheTag("blog:notes");
+  const { data: note, prev, next } = await getApiClient().note.getNoteByNid(nid);
+  cacheTag(`blog:note:${note.id}`);
+  // Mix Space 的 prev 是更新的一篇，next 是更早的一篇。
+  const link = (item?: { nid?: number; title?: string }) =>
+    item?.nid && item.title ? { nid: item.nid, title: item.title } : null;
+  return {
+    id: note.id,
+    nid: note.nid,
+    title: note.title,
+    text: note.text,
+    contentFormat: note.contentFormat,
+    created: note.created,
+    mood: note.mood,
+    weather: note.weather,
+    topic: note.topic?.name ?? null,
+    newer: link(prev),
+    older: link(next),
+  };
+}
+
+export async function getProjects() {
+  "use cache";
+  cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
+  cacheTag("blog:projects");
+  const { data } = await getApiClient().project.getAll();
+  return data.map(({ id, name, description, avatar, projectUrl, previewUrl, docUrl }) => ({
+    id, name, description, avatar, projectUrl, previewUrl, docUrl,
+  }));
+}
