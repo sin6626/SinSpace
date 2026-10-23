@@ -42,7 +42,11 @@
 
 ## 小步实施顺序与验收
 
-- [ ] 盘点旧节点与扩展组件，确认第一批必须支持的格式。
+- [x] 盘点旧节点与扩展组件（2026-10-23，只读，见 [Lexical 内容盘点](./plate-lexical-inventory.md)，可用 `node scripts/inventory-lexical.mjs` 重新生成）。第一批范围待用户确认：
+  - 13 篇 Lexical 内容（文章 6、手记 6、页面 1）共 39 种节点；其中 18 种只出现在演示文章《富文本组件对照》里。
+  - **建议第一批**（真实内容用到的 21 种）：段落、标题 h1–h6、换行、无序/有序/待办列表、链接、图片（含 alt/caption/尺寸/thumbhash）、分割线、引用、提示引用 `alert-quote`、表格（合并单元格、表头、列宽）、代码 `code` 与 `code-block`（css/js/ts/tsx/vue/python）、行内与块级公式 KaTeX、标签页 `tab`、链接卡片 `link-card`；文本格式以行内代码、加粗、斜体、下划线为主。
+  - **建议后置**（只在演示文章出现的 18 种）：banner、gallery、details、autolink、video、code-snippet、mermaid、nested-doc、grid-container、excalidraw、ruby、spoiler、tag、comment、mention、embed、footnote、footnote-section。转换时报告为“不支持”并保留原 JSON。
+  - 图片全部来自本地 Core（`127.0.0.1:2333`），迁移和部署时需处理媒体域名。
 - [ ] 锁定 Plate 版本，用少量合成文档验证 `PlateStatic`；先覆盖文本、代码、图片和表格，不接真实写入。
 - [ ] 评审并扩展 Core/SDK 的 Plate 协议，确保现有 Markdown/Lexical 读取不回归。
 - [ ] 单独确定编辑入口，验证输入、中文输入法、保存重载、撤销重做与图片上传。
