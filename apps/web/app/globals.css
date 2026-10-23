@@ -1,20 +1,31 @@
 @import "tailwindcss";
 
+/* 主题：light-dark(浅色值, 深色值) 由 color-scheme 决定取哪个。
+   默认跟随系统；用户手动选择时 <html data-theme="light|dark"> 覆盖。 */
 :root {
+  color-scheme: light dark;
   --layout-max-width: 84rem;  /*三栏整体*/
-  --article-max-width: 48rem; /*主要内容*/ 
-  --background: #ffffff;
-  --foreground: #171717;
-  --border: #e4e4e7;
-  --muted: #f4f4f5;
-  --muted-foreground: #52525b;
-  --accent: #f4f4f5;        /*悬停*/
-  --accent-active: #e4e4e7; /*按下*/
+  --article-max-width: 48rem; /*主要内容*/
+  --background: light-dark(#ffffff, #0a0a0a);
+  --foreground: light-dark(#171717, #ededed);
+  --border: light-dark(#e4e4e7, #27272a);
+  --muted: light-dark(#f4f4f5, #18181b);
+  --muted-foreground: light-dark(#52525b, #a1a1aa);
+  --accent: light-dark(#f4f4f5, #27272a);        /*悬停*/
+  --accent-active: light-dark(#e4e4e7, #3f3f46); /*按下*/
   --ring: var(--foreground);
-  --shadow-popup: 0.25rem 0.25rem 0 rgb(0 0 0 / 12%);
+  --shadow-popup: 0.25rem 0.25rem 0 light-dark(rgb(0 0 0 / 12%), transparent);
   --z-popup: 2;
   --z-toast: 3;
   --z-skip-link: 4;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -25,19 +36,6 @@
   --color-muted-foreground: var(--muted-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --border: #27272a;
-    --muted: #18181b;
-    --muted-foreground: #a1a1aa;
-    --accent: #27272a;
-    --accent-active: #3f3f46;
-    --shadow-popup: none;
-  }
 }
 
 body {
@@ -118,6 +116,28 @@ a:focus-visible,
 .navigation-retry {
   color: var(--foreground);
   text-decoration: underline;
+}
+
+/* 左栏底部的主题切换（theme-switcher.tsx）：文字按钮，选中项加粗下划线，与分类导航一致 */
+.theme-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
+
+.theme-switcher-item[data-pressed] {
+  color: var(--foreground);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+
+.theme-switcher-item:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
 
 .site-content {

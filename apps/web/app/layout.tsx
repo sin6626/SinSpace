@@ -5,6 +5,7 @@ import Notifications from "@/components/notifications";
 import { getApiUrl } from "../lib/config";
 import Navigation from "@/components/navigation";
 import ResizableLayout from "@/components/resizable-layout";
+import ThemeSwitcher from "@/components/theme-switcher";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,6 +18,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const themeScript = `try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
+
 export const metadata: Metadata = {
   title: "Sin Personal Space",
   description: "技术文章、个人作品与生活记录。",
@@ -27,7 +30,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="zh-CN"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      // 下面的脚本会在水合前设置 data-theme，属性与服务端不同是预期的。
+      suppressHydrationWarning
     >
+      <head>
+        {/* 绘制前读取已保存的主题，避免刷新时先闪一下系统主题。 */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body>
         <Notifications url={`${new URL(getApiUrl()).origin}/web`}>
           <a className="skip-link" href="#main-content">
@@ -40,6 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 <span className="site-brand-description">Personal Space</span>
               </div>
               <Navigation />
+              <ThemeSwitcher />
             </header>
             <ViewTransition default="page-switch">
               <main className="site-content" id="main-content" tabIndex={-1}>
