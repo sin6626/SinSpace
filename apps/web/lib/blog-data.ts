@@ -109,7 +109,8 @@ export async function getNote(nid: number) {
 
 export async function getProjects() {
   "use cache";
-  cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
+  // Core 没有可勾选的作品事件，Webhook 无法通知，缓存时间设短一些。
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
   cacheTag("blog:projects");
   const { data } = await getApiClient().project.getAll();
   return data.map(({ id, name, description, avatar, projectUrl, previewUrl, docUrl }) => ({

@@ -3,7 +3,34 @@ import { revalidateTag } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
 
 const maxBodyBytes = 4 * 1024 * 1024;
-const postEvents = new Set(["POST_CREATE", "POST_UPDATE", "POST_DELETE"]);
+// 后台勾选的事件 → 需要立即失效的缓存标签。不在表里的事件回 400，后台投递记录会显示失败。
+// blog:categories 同时挂在导航、分类和文章列表上；blog:pages 挂在导航上。
+const kindTags = {
+  POST: ["blog:posts", "blog:categories"],
+  NOTE: ["blog:notes"],
+  PAGE: ["blog:pages"],
+  CATEGORY: ["blog:categories"],
+  TOPIC: ["blog:notes"],
+  // Core 的事件枚举没有 PROJECT_*，只有后台勾选“全部事件”时才会收到。
+  PROJECT: ["blog:projects"],
+};
+const eventTags = new Map<string, readonly string[]>(
+  Object.entries(kindTags).flatMap(([kind, tags]) =>
+    ["CREATE", "UPDATE", "DELETE"].map((action) => [`${kind}_${action}`, tags] as const),
+  ),
+);
+// 备份恢复后 Core 发出 CONTENT_REFRESH，载荷是字符串 "restore_done"，全部公开缓存失效。
+const allTags = Array.from(new Set(Object.values(kindTags).flat()));
+
+function revalidate(event: string, tags: readonly string[]) {
+  try {
+    for (const tag of tags) revalidateTag(tag, { expire: 0 });
+  } catch (error) {
+    unstable_rethrow(error);
+    return Response.json({ error: "缓存失效失败" }, { status: 500 });
+  }
+  return Response.json({ event, revalidated: true });
+}
 
 export async function POST(request: Request) {
   const secret = process.env.MIX_SPACE_WEBHOOK_SECRET;
@@ -47,26 +74,19 @@ export async function POST(request: Request) {
   } catch {
     return Response.json({ error: "JSON 无效" }, { status: 400 });
   }
+  const event = request.headers.get("x-webhook-event");
+  if (event === "CONTENT_REFRESH") return revalidate(event, allTags);
   if (payload === null || typeof payload !== "object" || Array.isArray(payload)) {
     return Response.json({ error: "请求体必须是对象" }, { status: 400 });
   }
-
-  const event = request.headers.get("x-webhook-event");
   if (event === "health_check") return Response.json({ event, revalidated: false });
-  if (!event || !postEvents.has(event)) {
+  const tags = event ? eventTags.get(event) : undefined;
+  if (!event || !tags) {
     return Response.json({ error: "不支持的事件" }, { status: 400 });
   }
   const id = "id" in payload ? payload.id : "_id" in payload ? payload._id : undefined;
   if (typeof id !== "string" || !/^[a-f\d]{24}$/i.test(id)) {
-    return Response.json({ error: "文章 ID 无效" }, { status: 400 });
+    return Response.json({ error: "内容 ID 无效" }, { status: 400 });
   }
-
-  try {
-    revalidateTag("blog:posts", { expire: 0 });
-    revalidateTag("blog:categories", { expire: 0 });
-  } catch (error) {
-    unstable_rethrow(error);
-    return Response.json({ error: "缓存失效失败" }, { status: 500 });
-  }
-  return Response.json({ event, revalidated: true });
+  return revalidate(event, tags);
 }

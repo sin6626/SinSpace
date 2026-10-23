@@ -28,7 +28,7 @@ pnpm dev:admin
 | --- | --- |
 | Payload URL | `http://127.0.0.1:2323/api/webhooks/mix-space` |
 | Secret | 根 `.env.local` 中 `MIX_SPACE_WEBHOOK_SECRET` 的值 |
-| 触发事件 | `POST_CREATE`、`POST_UPDATE`、`POST_DELETE` |
+| 触发事件 | 文章、手记、页面、分类、话题各自的 `_CREATE`/`_UPDATE`/`_DELETE`（共 15 个），外加 `CONTENT_REFRESH`；不要勾“全部事件” |
 | 触发范围 | 勾选“访客”和“系统”，合计 5 |
 | 启用状态 | 开启 |
 
@@ -37,7 +37,7 @@ pnpm dev:admin
 保存时 Core 会发送 `health_check`。也可以点击“发送健康检查”，然后在投递记录查看 HTTP 状态和 Response：
 
 - 健康检查成功：HTTP 200，`revalidated: false`。只证明地址与签名能接通，没有清理文章缓存。
-- 文章事件成功：HTTP 200，`revalidated: true`。后续服务端读取会重新获取文章，不代表已打开的访客页面主动刷新。
+- 已接入事件成功：HTTP 200，`revalidated: true`。后续服务端读取会重新获取文章，不代表已打开的访客页面主动刷新。
 - 已发送不等于投递成功，以记录中的状态和响应为准。失败记录可点击“重新发送”。
 
 旧后台的测试地址与 Core 不一致，本轮已改为使用现成的 `PATCH /webhooks/:id` 健康检查，并将重发地址修正为 `POST /webhooks/redispatch/:eventId`。因此测试按钮只做健康检查，真实文章事件通过实际发布/修改/删除测试文章验证。
@@ -46,7 +46,9 @@ pnpm dev:admin
 
 - 使用 `X-Webhook-Signature256`，对原始请求体做 HMAC-SHA256 与恒定时间比较。
 - 请求体限制 4MiB；无配置返回503，签名错误401，格式/事件错误400，超限413，缓存操作失败500。
-- 三种文章事件均使 `blog:posts` 和 `blog:categories` 立即过期，覆盖列表、详情、旧slug缓存及分类信息。不会按请求提供任意缓存标签。
+- 事件与失效标签（2026-10-23）：文章 → `blog:posts`、`blog:categories`；手记、话题 → `blog:notes`；页面 → `blog:pages`（导航）；分类 → `blog:categories`（导航、分类、文章列表）；`PROJECT_*` → `blog:projects`；`CONTENT_REFRESH`（备份恢复，载荷为字符串 `"restore_done"`）→ 全部公开标签。不会按请求提供任意缓存标签。
+- Core 的事件枚举没有作品事件，后台无法单独勾选；作品缓存因此缩短为 5 分钟更新。只有勾“全部事件”才会收到 `PROJECT_*`，但同时会收到访客上下线、阅读数等大量未接入事件并全部回 400，不建议。
+- 评论、说说、友链、动态等前端尚未展示的事件不接，勾选会在投递记录里显示 400。前端新增展示某类内容时，必须同时在 route.ts 的对照表里加上对应事件。
 - 不记录密钥或文章正文，不展示通知 UI，不修改文章。
 - Core 的签名不覆盖事件/时间戳请求头，本轮不声称提供防重放。重复通知只重复执行幂等失效。Core 的更新事件有约1秒防抖，通知本身异步。
 
