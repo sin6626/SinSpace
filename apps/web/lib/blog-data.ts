@@ -8,6 +8,11 @@ function httpStatus(error: unknown) {
   return typeof error === "object" && error !== null && "status" in error ? error.status : undefined;
 }
 
+// Lexical 正文 JSON 只在 lexical 格式时缓存，给富文本渲染器用；Markdown 只需要 text。
+function lexicalContent(doc: { contentFormat?: string; content?: string }) {
+  return doc.contentFormat === "lexical" && typeof doc.content === "string" ? { content: doc.content } : {};
+}
+
 async function orNotFound<T>(request: Promise<T>) {
   try {
     return await request;
@@ -77,6 +82,7 @@ export async function getPost(category: string, slug: string) {
     title: post.title,
     text: post.text,
     contentFormat: post.contentFormat,
+    ...lexicalContent(post),
     created: post.created,
     category: post.category ? { name: post.category.name, slug: post.category.slug } : null,
   };
@@ -126,6 +132,7 @@ export async function getNote(nid: number) {
     title: note.title,
     text: note.text,
     contentFormat: note.contentFormat,
+    ...lexicalContent(note),
     created: note.created,
     mood: note.mood,
     weather: note.weather,
@@ -159,6 +166,7 @@ export async function getPage(slug: string) {
     subtitle: page.subtitle,
     text: page.text,
     contentFormat: page.contentFormat,
+    ...lexicalContent(page),
   };
 }
 

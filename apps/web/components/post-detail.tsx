@@ -1,10 +1,9 @@
 import { ArticleNotifications } from "./notifications";
 import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { getPost } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
+import ArticleBody from "./article-body";
 import "./post-detail.css";
 
 export default async function PostDetail({ params }: {
@@ -43,12 +42,7 @@ export default async function PostDetail({ params }: {
         </div>
       </header>
       <div className="post-list-content">
-        {post.contentFormat === "lexical" && <p className="post-meta">此文章目前以简化阅读版展示，部分扩展内容暂不支持。</p>}
-        {typeof post.text === "string" ? (
-          <div className="article-body">
-            <Markdown remarkPlugins={[remarkGfm]} skipHtml>{post.text}</Markdown>
-          </div>
-        ) : <p role="status">这篇文章暂时没有可展示的正文。</p>}
+        <ArticleBody text={post.text} contentFormat={post.contentFormat} content={post.content} emptyText="这篇文章暂时没有可展示的正文。" />
       </div>
     </article>
   );

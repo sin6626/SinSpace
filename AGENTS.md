@@ -20,7 +20,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - 文章列表与分类入口共用 apps/web/components/post-list.tsx；SDK getList 已补 categoryIds 透传，后端未改。Next 当前动态 slug 需先解码；导航 Suspense fallback 不得调用 usePathname 等 URL hook。详情未做，列表标题不生成死链。已实现入口使用默认预加载。分页/分类/刷新返回已验，整组浏览器检查遇内存保护后停止；修正编码路径后通过轻量回归与短手机检查，用户服务保持运行，测试浏览器已关闭。
 
-- 2026-10-22：用户明确后续富文本改用 Plate，不继续引入 Lexical 前端渲染；计划见 docs/plate-content-plan.md。当前详情只渲染 Markdown/GFM，旧 Lexical 使用已有 text 副本并提示简化阅读，不改原 JSON，不做评论或编辑器。SDK fetch 适配器保留 HTTP status 用于详情 404。
+- 2026-10-22（已被 10-23 决定取代）：原计划富文本改用 Plate、前端不渲染 Lexical。SDK fetch 适配器保留 HTTP status 用于详情 404。
 
 - 2026-10-22：用户选择 Next 缓存，不引入 React Query。公开数据函数集中在 apps/web/lib/blog-data.ts；时间单位秒，错误由页面处理，禁止缓存鉴权/访客状态。Mix Space已有webhook但本轮只读调研，现已实现签名接收，日常库仍需手动登记，见 docs/webhook-local.md。宽度变量在 globals.css 开头，84rem容器/48rem正文。说明见 docs/cache-and-layout.md。
 
@@ -43,3 +43,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - 2026-10-23：选中/当前态不要改字重（加粗变宽会让标签、分类整行重新换行），只改边框、底色或下划线；html 设 scrollbar-gutter: stable，避免长短页面切换时滚动条让布局左右跳动。搜索只匹配标题和正文（Core 的 title/text），不含摘要和标签。
 - 2026-10-23：Core 搜索切词在 apps/core/src/modules/search/search-keyword.util.ts（空白 + 汉字/非汉字交界切分、转义正则），排序先看命中词数，标题权重 20 > 正文 3；检查脚本 scripts/verify-search-keywords.mjs。右栏搜索框 autoComplete="off"。
 - 2026-10-23：导航一级为 Sin（子菜单=后台页面：关于我/关于本站）、文章（子菜单=分类）、作品、手记、调试，不再有单独“关于”。Sin/文章的 Trigger 用 nativeButton={false} + render={<Link/>}：鼠标点击/回车直接跳转，悬停展开；Base UI 会给它加 role="button"。点击打开的弹层不会因鼠标离开而关闭，所以 Root 受控 value，路由变化时在渲染期重置为 null（组件内 useState，非状态管理库）。触屏无悬停：子菜单未展开时第一次点按 preventDefault 只展开，再点才跳转。浏览器工具的点击是鼠标事件，触屏要用 PointerEvent(pointerType: 'touch') 模拟。
+- 2026-10-23：用户决定富文本先用 Lexical，Plate 等博客完成后再评估（docs/plate-content-plan.md 暂停）。前端用与后台同版的 @haklex/rich-kit-shiro 0.0.85 + lexical 0.41.0 的 ShiroRenderer（components/rich-content.tsx，移植自 ShrioRenovation ArticleContent 9b8a48a/27eeade），工作区 pnpm-workspace.yaml 的 Haklex 补丁与版本覆盖自动生效；推文嵌入移植 3ca2cc7 的缺字段修复（components/tweet.tsx）。正文入口 components/article-body.tsx：lexical 且有 content 用富文本，否则或 JSON 无效/渲染出错退回 react-markdown 渲染 text。blog-data 仅在 lexical 时缓存 content。主题由 use-resolved-theme 读 data-theme/系统偏好传给渲染器。外层类名 article-rich（rich-content 已被 Haklex 占用）。渲染器 CSS 约 1.7MB（内嵌 KaTeX 字体），白板/Mermaid/Shiki 按需加载；开发模式下 Excalidraw 0.18 在严格模式会打印 setState 未挂载警告，生产不出现。

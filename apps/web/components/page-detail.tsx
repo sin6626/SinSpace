@@ -1,7 +1,6 @@
 import { notFound, unstable_rethrow } from "next/navigation";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { getPage } from "../lib/blog-data";
+import ArticleBody from "./article-body";
 import "./post-detail.css";
 
 // 后台“页面”（如关于我、关于本站），地址是 /<slug>。
@@ -29,12 +28,7 @@ export default async function PageDetail({ params }: { params: Promise<{ slug: s
         {page.subtitle && <p className="post-meta">{page.subtitle}</p>}
       </header>
       <div className="post-list-content">
-        {page.contentFormat === "lexical" && <p className="post-meta">此页面目前以简化阅读版展示，部分扩展内容暂不支持。</p>}
-        {typeof page.text === "string" ? (
-          <div className="article-body">
-            <Markdown remarkPlugins={[remarkGfm]} skipHtml>{page.text}</Markdown>
-          </div>
-        ) : <p role="status">这个页面暂时没有可展示的正文。</p>}
+        <ArticleBody text={page.text} contentFormat={page.contentFormat} content={page.content} emptyText="这个页面暂时没有可展示的正文。" />
       </div>
     </article>
   );

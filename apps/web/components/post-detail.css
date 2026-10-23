@@ -3,6 +3,11 @@
   overflow-wrap: anywhere;
 }
 
+/* 富文本正文外层（rich-content.tsx）；不要用 rich-content 类名，Haklex 渲染器根元素已占用 */
+.article-rich {
+  max-width: var(--article-max-width);
+}
+
 .article-body {
   max-width: var(--article-max-width);
   font-size: 1.125rem;

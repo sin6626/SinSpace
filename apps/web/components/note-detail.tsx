@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { getNote } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
+import ArticleBody from "./article-body";
 import "./post-detail.css";
 
 export default async function NoteDetail({ params }: { params: Promise<{ nid: string }> }) {
@@ -34,12 +33,7 @@ export default async function NoteDetail({ params }: { params: Promise<{ nid: st
         </div>
       </header>
       <div className="post-list-content">
-        {note.contentFormat === "lexical" && <p className="post-meta">此手记目前以简化阅读版展示，部分扩展内容暂不支持。</p>}
-        {typeof note.text === "string" ? (
-          <div className="article-body">
-            <Markdown remarkPlugins={[remarkGfm]} skipHtml>{note.text}</Markdown>
-          </div>
-        ) : <p role="status">这篇手记暂时没有可展示的正文。</p>}
+        <ArticleBody text={note.text} contentFormat={note.contentFormat} content={note.content} emptyText="这篇手记暂时没有可展示的正文。" />
         {(note.newer || note.older) && (
           <nav className="post-pagination" aria-label="相邻手记">
             {note.newer ? <Link href={`/notes/${note.newer.nid}`}>较新：{note.newer.title}</Link> : <span />}
