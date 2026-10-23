@@ -52,9 +52,10 @@
   }
 }
 
+/* 选中态只改边框和底色，不改字重：加粗会让文字变宽，整片标签重新换行 */
 .tag-chip[aria-current="page"] {
   border-color: var(--foreground);
-  font-weight: 600;
+  background: var(--accent);
 }
 
 .tag-count {

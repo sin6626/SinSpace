@@ -38,6 +38,11 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* 始终预留滚动条位置：长页面有滚动条、短页面没有时，整体布局不会左右跳动约 15px */
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -253,8 +258,8 @@ a:focus-visible,
   margin-bottom: 1rem;
 }
 
+/* 当前分类只用下划线标识，不加粗：加粗会变宽，切换分类时整行重新换行 */
 .post-categories [aria-current="page"] {
-  font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 0.3em;
 }
