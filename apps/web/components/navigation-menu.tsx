@@ -44,7 +44,7 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
             className="navigation-Trigger"
             active={pathname === "/"}
             render={<Link href="/" />}
-          >首页</NavigationMenu.Link>
+          >Sin</NavigationMenu.Link>
         </NavigationMenu.Item>
         {menus.map(({ title, links }) => (
           <NavigationMenu.Item key={title}>
