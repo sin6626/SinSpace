@@ -24,6 +24,7 @@ import {
   SEARCH_TEXT_WEIGHT,
   SEARCH_TITLE_WEIGHT,
 } from './search.constants'
+import { buildSearchKeywordRegexes } from './search-keyword.util'
 
 @Injectable()
 export class SearchService {
@@ -371,10 +372,7 @@ export class SearchService {
   }
 
   private buildSearchKeywordRegexes(keyword: string) {
-    return keyword
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((item) => new RegExp(String(item), 'gi'))
+    return buildSearchKeywordRegexes(keyword)
   }
 
   private applyWeightedSort<T extends Record<string, any>>(
@@ -409,13 +407,16 @@ export class SearchService {
     const title = doc.title ?? ''
     const text = doc.text ?? ''
     let score = 0
+    // SinPersonalSpace: 先按命中了几个不同的词排序，同时包含全部关键词的排在前面，再比较次数权重。
+    let matchedTerms = 0
     for (const keywordRegex of keywordRegexes) {
       const titleMatches = this.countKeywordMatches(title, keywordRegex)
       const textMatches = this.countKeywordMatches(text, keywordRegex)
+      if (titleMatches + textMatches > 0) matchedTerms++
       score +=
         titleMatches * SEARCH_TITLE_WEIGHT + textMatches * SEARCH_TEXT_WEIGHT
     }
-    return score
+    return matchedTerms * 1_000_000 + score
   }
 
   private countKeywordMatches(text: string, keywordRegex: RegExp) {
