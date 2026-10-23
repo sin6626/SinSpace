@@ -161,3 +161,28 @@ export async function getPage(slug: string) {
     contentFormat: page.contentFormat,
   };
 }
+
+// 关键词由访客输入，结果只含公开字段；Webhook 让文章/手记标签失效时一并刷新。
+export async function searchContent(keyword: string) {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("blog:posts", "blog:notes");
+  const { search } = getApiClient();
+  const [posts, notes] = await Promise.all([search.search("post", keyword), search.search("note", keyword)]);
+  return {
+    posts: {
+      total: posts.pagination.total,
+      data: posts.data.map((post) => ({
+        id: post.id,
+        title: post.title,
+        created: post.created,
+        slug: post.slug,
+        category: post.category ? { name: post.category.name, slug: post.category.slug } : null,
+      })),
+    },
+    notes: {
+      total: notes.pagination.total,
+      data: notes.data.map((note) => ({ id: note.id, nid: note.nid, title: note.title, created: note.created })),
+    },
+  };
+}

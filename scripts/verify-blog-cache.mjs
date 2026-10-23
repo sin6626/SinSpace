@@ -22,6 +22,7 @@ const api = {
     getNoteByNid: async () => { if (detailError) throw detailError; return { data: note, prev: { nid: 6, title: '较新' }, next: { nid: 4 } } },
   },
   project: { getAll: async () => ({ data: [project] }) },
+  search: { search: async (type, keyword) => { calls.push(['search', type, keyword]); return type === 'post' ? { data: [{ ...post, text: 'leak' }], pagination: { total: 1 } } : { data: [{ ...note, text: 'leak' }], pagination: { total: 1 } } } },
   page: { getBySlug: async () => detailError ? Promise.reject(detailError) : ({ id: 'page-id', title: '关于我', subtitle: 'about me', text: 'page body', contentFormat: 'lexical', content: 'unused JSON', allowComment: true }) },
   post: {
     getList: async (...args) => { calls.push(args); return { data: [post], pagination: { total: 1 } } },
@@ -63,7 +64,12 @@ const page = await cache.getPage('about')
 assert.equal(page.text, 'page body')
 assert.equal('content' in page || 'allowComment' in page, false)
 assert.ok(tags.includes('blog:pages') && tags.includes('blog:page:page-id'))
-assert.equal(lifetimes.length, 8)
+const found = await cache.searchContent('关键词')
+assert.ok(calls.some(c => c[0] === 'search' && c[1] === 'post' && c[2] === '关键词') && calls.some(c => c[1] === 'note'))
+assert.equal(found.posts.total, 1)
+assert.equal('text' in found.posts.data[0] || 'text' in found.notes.data[0] || 'password' in found.notes.data[0], false)
+assert.equal(found.posts.data[0].category.slug, 'technology')
+assert.equal(lifetimes.length, 9)
 assert.ok(lifetimes.every(p => p.revalidate > 0 && p.expire > p.revalidate))
 // 缓存函数抛出的错误会丢失 status，所以 404/403 必须在函数内转成返回值。
 detailError = { status: 404 }

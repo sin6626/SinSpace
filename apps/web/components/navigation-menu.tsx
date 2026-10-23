@@ -74,7 +74,7 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
             </NavigationMenu.Content>
           </NavigationMenu.Item>
         ))}
-        {[{ label: "作品", href: "/projects" }, { label: "手记", href: "/notes" }].map(({ label, href }) => (
+        {[{ label: "作品", href: "/projects" }, { label: "手记", href: "/notes" }, { label: "搜索", href: "/search" }].map(({ label, href }) => (
           <NavigationMenu.Item key={href}>
             <NavigationMenu.Link
               className="navigation-Trigger"

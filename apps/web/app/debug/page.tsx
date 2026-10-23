@@ -70,6 +70,13 @@ export default function DebugPage() {
             <p className="post-empty">暂无内容。</p>
           </li>
           <li>
+            <h2>搜索</h2>
+            <p className="post-meta">search-results.tsx：未输入、无结果、请求失败</p>
+            <p className="post-empty">输入关键词，搜索文章和手记的标题与正文。</p>
+            <p className="post-empty">没有匹配的文章。</p>
+            <p className="post-empty" role="alert">搜索失败，请稍后重试。</p>
+          </li>
+          <li>
             <h2>手记与作品</h2>
             <p className="post-meta">notes/page.tsx、projects/page.tsx 的加载占位</p>
             <p className="post-list-content" role="status">正在读取手记…</p>
