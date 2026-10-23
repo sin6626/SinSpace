@@ -1,0 +1,84 @@
+import { notFound } from "next/navigation";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import BlogNavigation from "../navigation-menu";
+import ToastButtons from "./toast-buttons";
+import "../post-detail.css";
+
+const sampleMarkdown = `## 二级标题
+
+正文段落，包含[链接](/posts)和行内代码 \`revalidateTag\`。
+
+### 三级标题
+
+- 无序列表项
+- 第二项
+
+1. 有序列表项
+2. 第二项
+
+> 引用内容
+
+\`\`\`ts
+export const answer = 42;
+\`\`\`
+
+| 列 A | 列 B |
+| --- | --- |
+| 单元格 | 单元格 |
+`;
+
+// 仅开发环境：集中展示平时很难看到的组件状态，样式和真实页面共用。
+export default function DebugPage() {
+  if (process.env.NODE_ENV === "production") notFound();
+  return (
+    <>
+      <header className="page-heading">
+        <h1>调试</h1>
+        <p className="post-meta">仅开发环境可见，集中展示平时不容易看到的组件状态。</p>
+      </header>
+      <div className="post-list-content">
+        <ul className="post-list">
+          <li>
+            <h2>导航菜单</h2>
+            <p className="post-meta">navigation.tsx 的加载占位</p>
+            <p className="navigation-message" role="status">正在读取导航…</p>
+            <p className="post-meta">navigation-menu.tsx 的三种状态，悬停或点击“文章”查看弹层</p>
+            <p className="post-meta">读取中</p>
+            <BlogNavigation state={{ status: "loading" }} />
+            <p className="post-meta">读取失败</p>
+            <BlogNavigation state={{ status: "error" }} />
+            <p className="post-meta">没有分类和页面</p>
+            <BlogNavigation state={{ status: "ready", articles: [], pages: [] }} />
+          </li>
+          <li>
+            <h2>文章列表</h2>
+            <p className="post-meta">posts/page.tsx 的加载占位</p>
+            <p className="post-list-content" role="status">正在读取文章…</p>
+            <p className="post-meta">post-list.tsx 的读取失败</p>
+            <p className="post-list-content" role="alert">文章读取失败。<a href="/debug">重试</a></p>
+            <p className="post-meta">post-list.tsx 的空列表</p>
+            <p className="post-empty">还没有已发布的文章。</p>
+            <p className="post-empty">这个分类下还没有已发布的文章。</p>
+          </li>
+          <li>
+            <h2>通知 Toast</h2>
+            <p className="post-meta">文案来自 lib/notification-copy.ts，只在本页弹出，不走 WebSocket，也不清缓存</p>
+            <ToastButtons />
+          </li>
+          <li>
+            <h2>文章正文</h2>
+            <p className="post-meta">与详情页相同的 Markdown 渲染和 post-detail.css</p>
+            <div className="article-body">
+              <Markdown remarkPlugins={[remarkGfm]} skipHtml>{sampleMarkdown}</Markdown>
+            </div>
+          </li>
+          <li>
+            <h2>页面切换动画</h2>
+            <p className="post-meta">点击左侧任意导航即可看到，样式在 globals.css 末尾的 page-switch</p>
+          </li>
+        </ul>
+      </div>
+    </>
+  );
+}

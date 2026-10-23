@@ -31,3 +31,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Toast 本轮实际浏览器使用协议替身通过显示/悬停/关闭/超时/手机/文章房间进出，真实 Core 网关握手通过；未做日常文章写入。新增依赖后曾遇旧 Next 进程持续热更新，重启后通过。浏览器已关闭，日常服务已恢复。
 - 2026-10-23：颜色、焦点、阴影、层级变量集中在 apps/web/app/globals.css 开头，深色只在那里定义一次；组件 CSS 禁止硬编码色值或嵌套 prefers-color-scheme。页面标题手机 28px、640px 起 32px。2026-10-23 用户决定：先保持 Base UI 示例风格（直角、实线边框、硬投影）看整体效果，最后再按设计系统统一做色彩设计；在此之前不改视觉方向。连续快速改 CSS 时 Turbopack 曾漏编译，验证样式应以浏览器实际输出的 CSS 为准。
 - 2026-10-23：路由切换动画使用 React 19.3 原生 `<ViewTransition default="page-switch">`，只包 layout.tsx 的 main；样式在 globals.css 末尾（旧内容淡出 120ms、新内容上移淡入 180ms，root 不动画，覆盖层不拦截点击，减少动态效果时关闭）。未装 Motion，未做方向滑动和加载小球。
+- 2026-10-23：开发环境导航末尾有“调试”入口，/debug 集中展示导航三态、文章列表加载/失败/空、三种 Toast 本地触发、Markdown 正文样式；生产环境入口隐藏、页面 notFound。新增可见状态或组件时同步加到 apps/web/app/debug/page.tsx，尽量直接复用真实组件。Next 会用 Activity 隐藏保留上一页面，DOM 里出现两份 h1 属正常。

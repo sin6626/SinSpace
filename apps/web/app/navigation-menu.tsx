@@ -81,6 +81,15 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
             </button>
           </NavigationMenu.Item>
         ))}
+        {process.env.NODE_ENV !== "production" && (
+          <NavigationMenu.Item>
+            <NavigationMenu.Link
+              className="navigation-Trigger"
+              active={pathname === "/debug"}
+              render={<Link href="/debug" />}
+            >调试</NavigationMenu.Link>
+          </NavigationMenu.Item>
+        )}
       </NavigationMenu.List>
       <NavigationMenu.Portal>
         <NavigationMenu.Positioner className="navigation-Positioner" side={vertical ? "left" : "bottom"} align="start" sideOffset={8} collisionPadding={8}>
