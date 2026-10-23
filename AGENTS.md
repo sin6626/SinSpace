@@ -41,3 +41,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - 2026-10-23：不设独立搜索页。右栏用平行路由 app/@details：/posts 与分类页显示“搜索文章 + 标签”（post-sidebar），/notes 显示“搜索手记 + 话题”（note-sidebar），其余页面由 default 与 [...catchAll] 兜底为默认内容（缺 catchAll 时客户端跳转会保留上一页右栏）。筛选走 /posts?q=、/posts?tag=（标签名原样保留，有带空格的标签）、/notes?q=、/notes?topic=，结果共用 components/result-list.tsx。手机/平板右栏显示在正文下方。Core 分类/标签接口与搜索曾不过滤草稿，已在 apps/core 修复（2f61f74、b8f5bf2）。
 - 2026-10-23：Plate 第一步只读盘点完成：scripts/inventory-lexical.mjs → docs/plate-lexical-inventory.md（13 篇、39 种节点，真实内容用 21 种，18 种仅在演示文章）。第一批范围写在 docs/plate-content-plan.md，待用户确认后才进入第二步；不得写库或转换原 JSON。
 - 2026-10-23：选中/当前态不要改字重（加粗变宽会让标签、分类整行重新换行），只改边框、底色或下划线；html 设 scrollbar-gutter: stable，避免长短页面切换时滚动条让布局左右跳动。搜索只匹配标题和正文（Core 的 title/text），不含摘要和标签。
+- 2026-10-23：Core 搜索切词在 apps/core/src/modules/search/search-keyword.util.ts（空白 + 汉字/非汉字交界切分、转义正则），排序先看命中词数，标题权重 20 > 正文 3；检查脚本 scripts/verify-search-keywords.mjs。右栏搜索框 autoComplete="off"。
