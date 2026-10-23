@@ -12,7 +12,6 @@ import { POST_SERVICE_TOKEN } from '~/constants/injection.constant'
 import type { SearchDto } from '~/modules/search/search.schema'
 import { DatabaseService } from '~/processors/database/database.service'
 import type { Pagination } from '~/shared/interface/paginator.interface'
-import { transformDataToPaginate } from '~/transformers/paginate.transformer'
 import { algoliasearch } from 'algoliasearch'
 import { omit } from 'es-toolkit/compat'
 import removeMdCodeblock from 'remove-md-codeblock'
@@ -51,16 +50,9 @@ export class SearchService {
     const result = await this.noteService.model.paginate(
       {
         $or: [{ title: { $in: keywordArr } }, { text: { $in: keywordArr } }],
-        $and: [
-          { password: { $ne: null } },
-          { isPublished: { $in: showHidden ? [false, true] : [true] } },
-          {
-            $or: [
-              { publicAt: { $ne: null } },
-              { publicAt: { $lte: new Date() } },
-            ],
-          },
-        ],
+        // SinPersonalSpace: 原条件 password $ne null 会排除所有未设密码的手记（password 为 null），
+        // 访客搜索改为与公开手记列表相同的条件。
+        ...(showHidden ? {} : this.noteService.publicNoteQueryCondition),
       },
       {
         limit: size,
@@ -69,16 +61,19 @@ export class SearchService {
       },
     )
     result.docs = this.applyWeightedSort(result.docs, keywordArr)
-    return transformDataToPaginate(result)
+    // SinPersonalSpace: 控制器的 @HTTPDecorators.Paginator 会再转换一次，这里重复转换会丢掉 data。
+    return result
   }
 
-  async searchPost(searchOption: SearchDto) {
+  async searchPost(searchOption: SearchDto, isAuthenticated = false) {
     const { keyword, page, size } = searchOption
     const select = '_id title created modified categoryId slug'
     const keywordArr = this.buildSearchKeywordRegexes(keyword)
     const result = await this.postService.model.paginate(
       {
         $or: [{ title: { $in: keywordArr } }, { text: { $in: keywordArr } }],
+        // SinPersonalSpace: 原查询未过滤草稿，访客只能搜到已发布文章，与文章列表一致。
+        ...(isAuthenticated ? {} : { isPublished: true }),
       },
       {
         limit: size,
