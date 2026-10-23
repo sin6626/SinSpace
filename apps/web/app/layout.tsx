@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { ViewTransition } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
-import Notifications from "./notifications";
+import Notifications from "@/components/notifications";
 import { getApiUrl } from "../lib/config";
-import Navigation from "./navigation";
-import ResizableLayout from "./resizable-layout";
+import Navigation from "@/components/navigation";
+import ResizableLayout from "@/components/resizable-layout";
 import "./globals.css";
 
 const geistSans = Geist({

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import PostDetail from "../../../post-detail";
+import PostDetail from "@/components/post-detail";
 
 export default function PostPage({ params }: PageProps<"/posts/[category]/[slug]">) {
   return (

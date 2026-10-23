@@ -12,13 +12,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - 中文沟通，先阅读 docs/README.md；学习项目按用户授权的小单元推进，不自动生成整站页面。
 - 当前为 pnpm workspace：apps/web（Next）、apps/core（Mix Space）、packages/api-client（本地 SDK）。根安装依赖、维护单一锁文件；不复制 node_modules。Next 本地文档以 apps/web/node_modules/next/dist/docs 为准，保留自动生成说明。
-- UI 使用 Base UI，自定义样式。导航采用官方状态驱动的 CSS 过渡；复杂业务动画以后使用 Motion。菜单文字统一左对齐、箭头独立在左；closeDelay=500 位于 apps/web/app/navigation-menu.tsx。
+- UI 使用 Base UI，自定义样式。导航采用官方状态驱动的 CSS 过渡；复杂业务动画以后使用 Motion。菜单文字统一左对齐、箭头独立在左；closeDelay=500 位于 apps/web/components/navigation-menu.tsx。
 - API 基址仅通过 apps/web/lib/config.ts 读取环境配置，统一客户端在 lib/api.ts；SDK 异常回调必须保留 Next 内部控制异常。不要重新在组件内硬编码域名。
 - pnpm dev（与 dev:all 相同）构建 SDK 后启动新前端、Core、MongoDB、Redis 和本仓库 mx-admin，不启动旧 Shiro；dev:web/dev:core/dev:admin 可单独启动，不要在 dev 之上再开 dev:admin。数据继续引用旧 .local，媒体引用旧 Core tmp；未获另行授权不搬迁、清空或写入真实内容。
 - 默认本地提交，Conventional Commits 中文说明；不推送或部署。禁止批量删除；测试只开一套必要服务和一个独立无头浏览器，及时关闭自启资源，不干扰其他进程。普通 dev 不启用 Agent 内存预算。
 - 2026-10-22：用户授权停止旧的本项目 Next 服务以迁移。SDK 构建、前后端类型、配置与 SDK 控制异常回归通过；真实联合启动与本地聚合读取通过。完整联调批次触发系统内存保护后已清理，未记为整批通过；后续单前端完成菜单动画/对齐/移动端检查，单 Mongo 复核四类内容指纹不变。结束时测试服务保持停止。详情 docs/workspace-migration.md。
 
-- 文章列表与分类入口共用 apps/web/app/post-list.tsx；SDK getList 已补 categoryIds 透传，后端未改。Next 当前动态 slug 需先解码；导航 Suspense fallback 不得调用 usePathname 等 URL hook。详情未做，列表标题不生成死链。已实现入口使用默认预加载。分页/分类/刷新返回已验，整组浏览器检查遇内存保护后停止；修正编码路径后通过轻量回归与短手机检查，用户服务保持运行，测试浏览器已关闭。
+- 文章列表与分类入口共用 apps/web/components/post-list.tsx；SDK getList 已补 categoryIds 透传，后端未改。Next 当前动态 slug 需先解码；导航 Suspense fallback 不得调用 usePathname 等 URL hook。详情未做，列表标题不生成死链。已实现入口使用默认预加载。分页/分类/刷新返回已验，整组浏览器检查遇内存保护后停止；修正编码路径后通过轻量回归与短手机检查，用户服务保持运行，测试浏览器已关闭。
 
 - 2026-10-22：用户明确后续富文本改用 Plate，不继续引入 Lexical 前端渲染；计划见 docs/plate-content-plan.md。当前详情只渲染 Markdown/GFM，旧 Lexical 使用已有 text 副本并提示简化阅读，不改原 JSON，不做评论或编辑器。SDK fetch 适配器保留 HTTP status 用于详情 404。
 
@@ -32,3 +32,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - 2026-10-23：颜色、焦点、阴影、层级变量集中在 apps/web/app/globals.css 开头，深色只在那里定义一次；组件 CSS 禁止硬编码色值或嵌套 prefers-color-scheme。页面标题手机 28px、640px 起 32px。2026-10-23 用户决定：先保持 Base UI 示例风格（直角、实线边框、硬投影）看整体效果，最后再按设计系统统一做色彩设计；在此之前不改视觉方向。连续快速改 CSS 时 Turbopack 曾漏编译，验证样式应以浏览器实际输出的 CSS 为准。
 - 2026-10-23：路由切换动画使用 React 19.3 原生 `<ViewTransition default="page-switch">`，只包 layout.tsx 的 main；样式在 globals.css 末尾（旧内容淡出 120ms、新内容上移淡入 180ms，root 不动画，覆盖层不拦截点击，减少动态效果时关闭）。未装 Motion，未做方向滑动和加载小球。
 - 2026-10-23：开发环境导航末尾有“调试”入口，/debug 集中展示导航三态、文章列表加载/失败/空、三种 Toast 本地触发、Markdown 正文样式；生产环境入口隐藏、页面 notFound。新增可见状态或组件时同步加到 apps/web/app/debug/page.tsx，尽量直接复用真实组件。Next 会用 Activity 隐藏保留上一页面，DOM 里出现两份 h1 属正常。
+- 2026-10-23：可复用组件统一放 apps/web/components/（导航、通知、文章列表/详情、可拖动布局及其 CSS），app/ 只保留路由、layout 和 globals.css；路由文件用 `@/components/...` 引用。

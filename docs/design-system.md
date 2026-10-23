@@ -173,10 +173,10 @@ Base UI 不预设按钮高度、圆角或视觉变体，这些由本站设计变
 
 | 已实现 | 位置 | 变量 | 待处理 |
 | --- | --- | --- | --- |
-| Navigation Menu | `app/navigation-menu.tsx`、`navigation-menu.css` | foreground、background、accent、ring、shadow-popup、z-popup | 触发器高 32px，低于 44px 触控目标；类名沿用示例的 PascalCase |
-| Toast | `app/notifications.tsx`、`notifications.css` | 同上，另有 accent-active、z-toast | 关闭按钮高 32px |
-| 文章列表与分页 | `app/post-list.tsx`、`globals.css` | border、muted-foreground | 分页为纯文字链接 |
-| 文章正文 | `app/post-detail.tsx`、`post-detail.css` | border、muted、muted-foreground | Markdown 内的 h1 与页面 h1 重复 |
+| Navigation Menu | `components/navigation-menu.tsx`、`navigation-menu.css` | foreground、background、accent、ring、shadow-popup、z-popup | 触发器高 32px，低于 44px 触控目标；类名沿用示例的 PascalCase |
+| Toast | `components/notifications.tsx`、`notifications.css` | 同上，另有 accent-active、z-toast | 关闭按钮高 32px |
+| 文章列表与分页 | `components/post-list.tsx`、`globals.css` | border、muted-foreground | 分页为纯文字链接 |
+| 文章正文 | `components/post-detail.tsx`、`post-detail.css` | border、muted、muted-foreground | Markdown 内的 h1 与页面 h1 重复 |
 
 ## 7. 交互与内容状态
 

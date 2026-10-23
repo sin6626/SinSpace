@@ -37,7 +37,7 @@ export const notificationSettings = { timeout: 5000, limit: 3, close: "关闭" }
 
 例如将 `POST_CREATE.title` 改为“我又写了一篇”，只改变新文章提示的文字，不影响订阅事件和缓存。
 
-`apps/web/app/notifications.tsx` 负责连接和 Toast 结构。`apps/web/app/notifications.css` 来自[官网示例](https://base-ui.com/react/components/toast)，只改为项目前缀类名，并补减少动态效果与长文本换行。位置在 `.notification-viewport`，桌面右下边距 2rem、宽度 22.5rem，手机边距 1rem。要改间距就在这里改；堆叠变量和动画先保留官方实现。
+`apps/web/components/notifications.tsx` 负责连接和 Toast 结构。`apps/web/components/notifications.css` 来自[官网示例](https://base-ui.com/react/components/toast)，只改为项目前缀类名，并补减少动态效果与长文本换行。位置在 `.notification-viewport`，桌面右下边距 2rem、宽度 22.5rem，手机边距 1rem。要改间距就在这里改；堆叠变量和动画先保留官方实现。
 
 浏览器连接地址由服务端布局基于现有 `MIX_SPACE_API_URL` 的 origin 加 `/web` 得到，本地即 `http://127.0.0.1:2333/web`。当前要求 Core 同一 origin 暴露默认 `/socket.io` 通道；将来部署到内部域名或子路径时需独立配置公开网关地址。
 

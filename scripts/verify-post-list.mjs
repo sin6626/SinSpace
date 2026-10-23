@@ -5,7 +5,7 @@ import vm from 'node:vm'
 
 const require = createRequire(new URL('../apps/web/package.json', import.meta.url))
 const ts = require('typescript')
-const source = readFileSync(new URL('../apps/web/app/post-list.tsx', import.meta.url), 'utf8')
+const source = readFileSync(new URL('../apps/web/components/post-list.tsx', import.meta.url), 'utf8')
 const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText
 let request
 let failure = false

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import PostList from "../post-list";
+import PostList from "@/components/post-list";
 
 export default function PostsPage({ searchParams }: PageProps<"/posts">) {
   return (

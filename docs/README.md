@@ -61,7 +61,7 @@
 
 2026-10-22：按用户新决定复制后端源码进入 pnpm workspace，前端使用同源 SDK，接口地址统一配置。布局保留，菜单增加官方状态驱动的过渡，关闭等待 500ms。详见[迁移记录](./workspace-migration.md)。
 
-2026-10-22：新增 `/posts` 与 `/categories/[slug]`，共用 `apps/web/app/post-list.tsx`，通过 SDK 查询每页 10 条已发布文章，分类使用后端已有的 categoryIds 参数。支持分页、空态、错误重试；标题暂不链接详情。首页/文章/分类链接恢复 Next 默认预加载，未实现的关于页仍关闭。默认预加载仅在生产模式启用，当前 Partial Prefetching 先预取页面外壳，不等于 hover 时加载全部动态数据。
+2026-10-22：新增 `/posts` 与 `/categories/[slug]`，共用 `apps/web/components/post-list.tsx`，通过 SDK 查询每页 10 条已发布文章，分类使用后端已有的 categoryIds 参数。支持分页、空态、错误重试；标题暂不链接详情。首页/文章/分类链接恢复 Next 默认预加载，未实现的关于页仍关闭。默认预加载仅在生产模式启用，当前 Partial Prefetching 先预取页面外壳，不等于 hover 时加载全部动态数据。
 
 2026-10-22：新增 `/posts/[category]/[slug]` Markdown 详情页，列表标题可跳转，使用 SDK getPost。现有 Lexical 文章仅展示已有 Markdown 阅读副本，不转换或覆盖原 JSON。富文本目标改为 Plate，见 [Plate 接入与迁移计划](./plate-content-plan.md)。
 

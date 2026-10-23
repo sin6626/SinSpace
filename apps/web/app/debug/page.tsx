@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import BlogNavigation from "../navigation-menu";
+import BlogNavigation from "@/components/navigation-menu";
 import ToastButtons from "./toast-buttons";
-import "../post-detail.css";
+import "@/components/post-detail.css";
 
 const sampleMarkdown = `## 二级标题
 
