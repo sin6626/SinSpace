@@ -1,7 +1,7 @@
 import type { FastifyRequest } from "fastify"
 import { AuthGuard } from "~/common/guards/auth.guard"
 import { WebEventsGateway } from "~/processors/gateway/web/events.gateway"
-import { Body, Get, Post, Query, Request, Response, NotFoundException, UseGuards } from '@nestjs/common'
+import { Body, Get, Post, Query, Request, Response, NotFoundException, BadRequestException, UseGuards } from '@nestjs/common'
 import { ApiController } from '~/common/decorators/api-controller.decorator'
 import { HTTPDecorators } from '~/common/decorators/http.decorator'
 import { BusinessEvents, EventScope } from '~/constants/business-event.constant'
@@ -23,12 +23,15 @@ export class DebugController {
 
   @Post('/toast')
   @UseGuards(AuthGuard)
-  sendToast(@Request() request: FastifyRequest) {
+  sendToast(@Request() request: FastifyRequest, @Body('event') event: unknown) {
     if (process.env.NODE_ENV !== 'development' ||
       !['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(request.raw.socket.remoteAddress ?? '')) {
       throw new NotFoundException()
     }
-    this.webGateway.broadcast(BusinessEvents.POST_CREATE, { isPublished: true })
+    if (event !== BusinessEvents.POST_CREATE && event !== BusinessEvents.POST_UPDATE && event !== BusinessEvents.POST_DELETE) {
+      throw new BadRequestException('不支持的测试通知类型')
+    }
+    this.webGateway.broadcast(event, { isPublished: true })
     return { sent: true }
   }
 

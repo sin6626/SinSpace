@@ -7,11 +7,11 @@ export default defineComponent({
   setup() {
     const sending = ref(false)
     const localDevelopment = import.meta.env.DEV && ['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname)
-    const sendBlogToast = async () => {
+    const sendBlogToast = async (event: 'POST_CREATE' | 'POST_UPDATE' | 'POST_DELETE') => {
       if (sending.value) return
       sending.value = true
       try {
-        await systemApi.sendBlogTestToast()
+        await systemApi.sendBlogTestToast(event)
         toast.success('测试通知已发送，请查看博客窗口')
       } catch {
         toast.error('发送失败，请确认本地 Core 已启动并且已登录')
@@ -28,7 +28,11 @@ export default defineComponent({
 
         {localDevelopment && <NCard title="博客前端通知">
           <p class="mb-3">先打开本地博客，再发送测试通知。只测试 Toast，不创建文章或刷新缓存。</p>
-          <NButton loading={sending.value} disabled={sending.value} onClick={sendBlogToast}>发送博客测试通知</NButton>
+          <NSpace>
+            <NButton disabled={sending.value} onClick={() => sendBlogToast('POST_CREATE')}>测试新文章通知</NButton>
+            <NButton disabled={sending.value} onClick={() => sendBlogToast('POST_UPDATE')}>测试文章更新通知</NButton>
+            <NButton disabled={sending.value} onClick={() => sendBlogToast('POST_DELETE')}>测试文章删除通知</NButton>
+          </NSpace>
         </NCard>}
 
         <NCard title="基础用法" class="!rounded-xl">
