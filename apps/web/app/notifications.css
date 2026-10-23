@@ -1,7 +1,7 @@
 /* Base UI v1.9.0 Toast hero example (MIT); official stacking and transitions. */
 .notification-viewport {
   position: fixed;
-  z-index: 1;
+  z-index: var(--z-toast);
   width: calc(100vw - 2rem);
   margin: 0 auto;
   bottom: 1rem;
@@ -31,10 +31,10 @@
   margin: 0 auto;
   box-sizing: border-box;
   width: 100%;
-  border: 1px solid oklch(14.5% 0 0deg);
-  background-color: white;
-  color: oklch(14.5% 0 0deg);
-  box-shadow: 0.25rem 0.25rem 0 rgb(0 0 0 / 12%);
+  border: 1px solid var(--foreground);
+  background-color: var(--background);
+  color: var(--foreground);
+  box-shadow: var(--shadow-popup);
   transform-origin: bottom center;
   bottom: 0;
   left: auto;
@@ -56,13 +56,6 @@
       )
     )
     scale(var(--scale));
-
-  @media (prefers-color-scheme: dark) {
-    border: 1px solid white;
-    background-color: oklch(14.5% 0 0deg);
-    color: white;
-    box-shadow: none;
-  }
 
   &[data-expanded] {
     transform: translateX(var(--toast-swipe-movement-x)) translateY(var(--offset-y));
@@ -105,12 +98,8 @@
   }
 
   &:focus-visible {
-    outline: 2px solid oklch(14.5% 0 0deg);
+    outline: 2px solid var(--ring);
     outline-offset: -1px;
-
-    @media (prefers-color-scheme: dark) {
-      outline-color: white;
-    }
   }
 }
 
@@ -161,57 +150,34 @@
   gap: 0.5rem;
   height: 2rem;
   padding: 0 0.75rem;
-  border: 1px solid oklch(14.5% 0 0deg);
+  border: 1px solid var(--foreground);
   border-radius: 0;
-  background-color: white;
-  color: oklch(14.5% 0 0deg);
+  background-color: var(--background);
+  color: var(--foreground);
   font-family: inherit;
   font-size: 0.875rem;
   font-weight: 400;
   line-height: 1;
   white-space: nowrap;
 
-  @media (prefers-color-scheme: dark) {
-    border: 1px solid white;
-    background-color: oklch(14.5% 0 0deg);
-    color: white;
-  }
-
   @media (hover: hover) {
     &:hover:not([data-disabled]) {
-      background-color: oklch(97% 0 0deg);
-
-      @media (prefers-color-scheme: dark) {
-        background-color: oklch(26.9% 0 0deg);
-      }
+      background-color: var(--accent);
     }
   }
 
   &:active:not([data-disabled]) {
-    background-color: oklch(92.2% 0 0deg);
-
-    @media (prefers-color-scheme: dark) {
-      background-color: oklch(37.1% 0 0deg);
-    }
+    background-color: var(--accent-active);
   }
 
   &[data-disabled] {
-    color: oklch(55.6% 0 0deg);
-    border-color: oklch(55.6% 0 0deg);
-
-    @media (prefers-color-scheme: dark) {
-      color: oklch(70.8% 0 0deg);
-      border-color: oklch(70.8% 0 0deg);
-    }
+    color: var(--muted-foreground);
+    border-color: var(--muted-foreground);
   }
 
   &:focus-visible {
-    outline: 2px solid oklch(14.5% 0 0deg);
+    outline: 2px solid var(--ring);
     outline-offset: -1px;
-
-    @media (prefers-color-scheme: dark) {
-      outline-color: white;
-    }
   }
 }
 

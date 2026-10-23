@@ -8,6 +8,13 @@
   --border: #e4e4e7;
   --muted: #f4f4f5;
   --muted-foreground: #52525b;
+  --accent: #f4f4f5;        /*悬停*/
+  --accent-active: #e4e4e7; /*按下*/
+  --ring: var(--foreground);
+  --shadow-popup: 0.25rem 0.25rem 0 rgb(0 0 0 / 12%);
+  --z-popup: 2;
+  --z-toast: 3;
+  --z-skip-link: 4;
 }
 
 @theme inline {
@@ -27,6 +34,9 @@
     --border: #27272a;
     --muted: #18181b;
     --muted-foreground: #a1a1aa;
+    --accent: #27272a;
+    --accent-active: #3f3f46;
+    --shadow-popup: none;
   }
 }
 
@@ -40,7 +50,7 @@ body {
   position: fixed;
   top: 1rem;
   left: 1rem;
-  z-index: 1;
+  z-index: var(--z-skip-link);
   padding: 0.75rem 1rem;
   background: var(--background);
   border: 1px solid var(--border);
@@ -53,7 +63,7 @@ body {
 
 a:focus-visible,
 .site-content:focus-visible {
-  outline: 2px solid var(--foreground);
+  outline: 2px solid var(--ring);
   outline-offset: -2px;
 }
 
@@ -102,7 +112,7 @@ a:focus-visible,
 }
 
 .navigation-retry:focus-visible {
-  outline: 2px solid var(--foreground);
+  outline: 2px solid var(--ring);
   outline-offset: -2px;
 }
 
@@ -125,7 +135,12 @@ a:focus-visible,
   border-bottom: 1px solid var(--border);
 }
 
-.page-heading h1,
+.page-heading h1 { /*页面标题：手机28px，640px起32px*/
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
 .site-details h2 {
   font-size: 1.125rem;
   font-weight: 600;
@@ -151,7 +166,7 @@ a:focus-visible,
 }
 
 .resize-handle:focus-visible {
-  outline: 2px solid var(--foreground);
+  outline: 2px solid var(--ring);
   outline-offset: -1px;
 }
 
@@ -186,6 +201,10 @@ a:focus-visible,
 
   .page-heading {
     padding-inline: 1.5rem;
+  }
+
+  .page-heading h1 {
+    font-size: 2rem;
   }
 
   .content-placeholder {

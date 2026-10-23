@@ -1,12 +1,8 @@
 /* Base UI Navigation Menu hero example: https://github.com/mui/base-ui/blob/master/docs/src/app/(docs)/react/components/navigation-menu/demos/hero/css-modules/index.module.css */
 .navigation-Root {
   box-sizing: border-box;
-  color: oklch(14.5% 0 0deg);
+  color: var(--foreground);
   min-width: max-content;
-
-  @media (prefers-color-scheme: dark) {
-    color: white;
-  }
 }
 
 .navigation-List {
@@ -34,7 +30,7 @@
   font-size: 0.875rem;
   font-weight: 400;
   line-height: 1.25rem;
-  color: oklch(14.5% 0 0deg);
+  color: var(--foreground);
   -webkit-user-select: none;
   user-select: none;
   text-decoration: none;
@@ -43,35 +39,19 @@
     padding: 0 0.5rem;
   }
 
-  @media (prefers-color-scheme: dark) {
-    color: white;
-  }
-
   @media (hover: hover) {
     &:hover {
-      background-color: oklch(97% 0 0deg);
-
-      @media (prefers-color-scheme: dark) {
-        background-color: oklch(26.9% 0 0deg);
-      }
+      background-color: var(--accent);
     }
   }
 
   &[data-pressed] {
-    background-color: oklch(97% 0 0deg);
-
-    @media (prefers-color-scheme: dark) {
-      background-color: oklch(26.9% 0 0deg);
-    }
+    background-color: var(--accent);
   }
 
   &:focus-visible {
-    outline: 2px solid oklch(14.5% 0 0deg);
+    outline: 2px solid var(--ring);
     outline-offset: -1px;
-
-    @media (prefers-color-scheme: dark) {
-      outline-color: white;
-    }
   }
 }
 
@@ -140,23 +120,16 @@
   overflow: visible;
   box-sizing: border-box;
   outline: 0;
-  border: 1px solid oklch(14.5% 0 0deg);
-  background-color: white;
-  color: oklch(14.5% 0 0deg);
-  box-shadow: 0.25rem 0.25rem 0 rgb(0 0 0 / 12%);
+  border: 1px solid var(--foreground);
+  background-color: var(--background);
+  color: var(--foreground);
+  box-shadow: var(--shadow-popup);
   transform-origin: var(--transform-origin);
   transition-property: opacity, transform, width, height;
   transition-duration: var(--duration);
   transition-timing-function: var(--easing);
   width: var(--popup-width);
   height: var(--popup-height);
-
-  @media (prefers-color-scheme: dark) {
-    border: 1px solid white;
-    background-color: oklch(14.5% 0 0deg);
-    color: white;
-    box-shadow: none;
-  }
 
   &[data-starting-style],
   &[data-ending-style] {
@@ -241,21 +214,13 @@
 
   @media (hover: hover) {
     &:hover {
-      background-color: oklch(97% 0 0deg);
-
-      @media (prefers-color-scheme: dark) {
-        background-color: oklch(26.9% 0 0deg);
-      }
+      background-color: var(--accent);
     }
   }
 
   &:focus-visible {
-    outline: 2px solid oklch(14.5% 0 0deg);
+    outline: 2px solid var(--ring);
     outline-offset: -1px;
-
-    @media (prefers-color-scheme: dark) {
-      outline-color: white;
-    }
   }
 }
 
@@ -305,14 +270,9 @@
     box-sizing: border-box;
     width: calc(6px * sqrt(2));
     height: calc(6px * sqrt(2));
-    border: 1px solid oklch(14.5% 0 0deg);
-    background-color: white;
+    border: 1px solid var(--foreground);
+    background-color: var(--background);
     transform: translate(-50%, 50%) rotate(45deg);
-
-    @media (prefers-color-scheme: dark) {
-      border: 1px solid white;
-      background-color: oklch(14.5% 0 0deg);
-    }
   }
 }
 
@@ -337,7 +297,7 @@
 }
 
 .navigation-Positioner {
-  z-index: 2;
+  z-index: var(--z-popup);
 }
 
 .navigation-Trigger:disabled {

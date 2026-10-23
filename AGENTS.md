@@ -29,3 +29,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - 2026-10-22：通知改为 Base UI 官方 Toast，文案/时长集中 apps/web/lib/notification-copy.ts，样式 notifications.css。复用 Core /web Socket.IO，公开新文章全站提示，修改/删除仅对应文章房间。无已读/历史/新管理员入口，不公开后台投递记录。Webhook缓存失效与访客消息独立，不声称弹窗代表缓存已刷新。
 - Toast 本轮实际浏览器使用协议替身通过显示/悬停/关闭/超时/手机/文章房间进出，真实 Core 网关握手通过；未做日常文章写入。新增依赖后曾遇旧 Next 进程持续热更新，重启后通过。浏览器已关闭，日常服务已恢复。
+- 2026-10-23：颜色、焦点、阴影、层级变量集中在 apps/web/app/globals.css 开头，深色只在那里定义一次；组件 CSS 禁止硬编码色值或嵌套 prefers-color-scheme。页面标题手机 28px、640px 起 32px。视觉方向（现直角硬投影 vs 文档圆角轻阴影）待用户决定。连续快速改 CSS 时 Turbopack 曾漏编译，验证样式应以浏览器实际输出的 CSS 为准。
