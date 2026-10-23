@@ -25,9 +25,9 @@ export default async function PostDetail({ params }: {
     post = await getPost(category, slug);
   } catch (error) {
     unstable_rethrow(error);
-    if (typeof error === "object" && error !== null && "status" in error && error.status === 404) notFound();
     return <p className="post-list-content" role="alert">文章读取失败。<a href={href}>重试</a></p>;
   }
+  if (!post) notFound();
 
   return (
     <article className="post-detail">

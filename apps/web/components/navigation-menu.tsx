@@ -58,7 +58,7 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
                 )}
                 {links.map(({ label, href }) => (
                   <li key={href}>
-                    <NavigationMenu.Link className="navigation-LinkCard" active={pathname === href} closeOnClick render={<Link href={href} prefetch={title === "文章" ? undefined : false} />}>
+                    <NavigationMenu.Link className="navigation-LinkCard" active={pathname === href} closeOnClick render={<Link href={href} />}>
                       <span className="navigation-LinkTitle">{label}</span>
                     </NavigationMenu.Link>
                   </li>

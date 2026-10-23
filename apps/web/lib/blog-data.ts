@@ -2,6 +2,21 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { getApiClient } from "./api";
 
+// "use cache" 函数抛出的错误会丢掉 SDK 附带的 HTTP status，
+// 所以 404/403 要在缓存函数内部转成普通返回值，组件据此调用 notFound()。
+function httpStatus(error: unknown) {
+  return typeof error === "object" && error !== null && "status" in error ? error.status : undefined;
+}
+
+async function orNotFound<T>(request: Promise<T>) {
+  try {
+    return await request;
+  } catch (error) {
+    if (httpStatus(error) === 404) return null;
+    throw error;
+  }
+}
+
 export async function getNavigationData() {
   "use cache";
   cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
@@ -52,7 +67,8 @@ export async function getPost(category: string, slug: string) {
   "use cache";
   cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
   cacheTag("blog:posts", "blog:categories");
-  const post = await getApiClient().post.getPost(category, slug);
+  const post = await orNotFound(getApiClient().post.getPost(category, slug));
+  if (!post) return null;
   cacheTag(`blog:post:${post.id}`);
   return {
     id: post.id,
@@ -87,12 +103,22 @@ export async function getNote(nid: number) {
   "use cache";
   cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
   cacheTag("blog:notes");
-  const { data: note, prev, next } = await getApiClient().note.getNoteByNid(nid);
+  let result;
+  try {
+    result = await orNotFound(getApiClient().note.getNoteByNid(nid));
+  } catch (error) {
+    // Core 对设置了密码的手记返回 403。
+    if (httpStatus(error) === 403) return { locked: true as const };
+    throw error;
+  }
+  if (!result) return null;
+  const { data: note, prev, next } = result;
   cacheTag(`blog:note:${note.id}`);
   // Mix Space 的 prev 是更新的一篇，next 是更早的一篇。
   const link = (item?: { nid?: number; title?: string }) =>
     item?.nid && item.title ? { nid: item.nid, title: item.title } : null;
   return {
+    locked: false as const,
     id: note.id,
     nid: note.nid,
     title: note.title,
@@ -116,4 +142,20 @@ export async function getProjects() {
   return data.map(({ id, name, description, avatar, projectUrl, previewUrl, docUrl }) => ({
     id, name, description, avatar, projectUrl, previewUrl, docUrl,
   }));
+}
+
+export async function getPage(slug: string) {
+  "use cache";
+  cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
+  cacheTag("blog:pages");
+  const page = await orNotFound(getApiClient().page.getBySlug(slug));
+  if (!page) return null;
+  cacheTag(`blog:page:${page.id}`);
+  return {
+    id: page.id,
+    title: page.title,
+    subtitle: page.subtitle,
+    text: page.text,
+    contentFormat: page.contentFormat,
+  };
 }

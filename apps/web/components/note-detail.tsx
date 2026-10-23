@@ -6,10 +6,6 @@ import { getNote } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
 import "./post-detail.css";
 
-function httpStatus(error: unknown) {
-  return typeof error === "object" && error !== null && "status" in error ? error.status : undefined;
-}
-
 export default async function NoteDetail({ params }: { params: Promise<{ nid: string }> }) {
   const { nid: rawNid } = await params;
   if (!/^[1-9]\d*$/.test(rawNid) || !Number.isSafeInteger(Number(rawNid))) notFound();
@@ -19,12 +15,11 @@ export default async function NoteDetail({ params }: { params: Promise<{ nid: st
     note = await getNote(Number(rawNid));
   } catch (error) {
     unstable_rethrow(error);
-    const status = httpStatus(error);
-    if (status === 404) notFound();
-    // Core 对设置了密码的手记返回 403；新前端暂不提供密码输入。
-    if (status === 403) return <p className="post-list-content" role="status">这篇手记设置了访问密码，暂不支持在这里查看。<Link href="/notes">返回手记列表</Link></p>;
     return <p className="post-list-content" role="alert">手记读取失败。<a href={href}>重试</a></p>;
   }
+  if (!note) notFound();
+  // 新前端暂不提供密码输入。
+  if (note.locked) return <p className="post-list-content" role="status">这篇手记设置了访问密码，暂不支持在这里查看。<Link href="/notes">返回手记列表</Link></p>;
 
   return (
     <article className="post-detail">

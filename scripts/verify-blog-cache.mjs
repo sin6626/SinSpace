@@ -13,17 +13,19 @@ const post = { id: 'post-id', title: '正文', text: 'body', slug: 'test', categ
 const note = { id: 'note-id', nid: 5, title: '手记', text: 'note body', created: '2026-10-22', mood: '开心', weather: '晴', topic: { name: '近况', introduce: 'unused' }, password: 'secret', liked: true, content: 'unused JSON' }
 const project = { id: 'project-id', name: '作品', description: '简介', avatar: 'https://example.com/a.png', text: 'unused', created: '2026-10-22' }
 let invalidNavigation = false
+let detailError
 const api = {
   aggregate: { getAggregateData: async () => ({ categories: invalidNavigation ? null : [category], pageMeta: [], user: { privateField: 'not for cache' } }) },
   category: { getAllCategories: async () => ({ data: [category] }) },
   note: {
     getList: async (...args) => { calls.push(args); return { data: [note], pagination: { total: 1 } } },
-    getNoteByNid: async () => ({ data: note, prev: { nid: 6, title: '较新' }, next: { nid: 4 } }),
+    getNoteByNid: async () => { if (detailError) throw detailError; return { data: note, prev: { nid: 6, title: '较新' }, next: { nid: 4 } } },
   },
   project: { getAll: async () => ({ data: [project] }) },
+  page: { getBySlug: async () => detailError ? Promise.reject(detailError) : ({ id: 'page-id', title: '关于我', subtitle: 'about me', text: 'page body', contentFormat: 'lexical', content: 'unused JSON', allowComment: true }) },
   post: {
     getList: async (...args) => { calls.push(args); return { data: [post], pagination: { total: 1 } } },
-    getPost: async () => post,
+    getPost: async () => { if (detailError) throw detailError; return post },
   },
 }
 const module = { exports: {} }
@@ -57,8 +59,22 @@ assert.ok(tags.includes('blog:notes') && tags.includes('blog:note:note-id'))
 const projects = await cache.getProjects()
 assert.equal('text' in projects[0], false)
 assert.ok(tags.includes('blog:projects'))
-assert.equal(lifetimes.length, 7)
+const page = await cache.getPage('about')
+assert.equal(page.text, 'page body')
+assert.equal('content' in page || 'allowComment' in page, false)
+assert.ok(tags.includes('blog:pages') && tags.includes('blog:page:page-id'))
+assert.equal(lifetimes.length, 8)
 assert.ok(lifetimes.every(p => p.revalidate > 0 && p.expire > p.revalidate))
+// 缓存函数抛出的错误会丢失 status，所以 404/403 必须在函数内转成返回值。
+detailError = { status: 404 }
+assert.equal(await cache.getPost('technology', 'missing'), null)
+assert.equal(await cache.getNote(999), null)
+assert.equal(await cache.getPage('missing'), null)
+detailError = { status: 403 }
+assert.equal((await cache.getNote(7)).locked, true)
+detailError = { status: 500 }
+await assert.rejects(cache.getPost('technology', 'broken'))
+detailError = undefined
 invalidNavigation = true
 await assert.rejects(cache.getNavigationData(), /导航数据/)
 console.log('PASS public cache projections, key parameters, tag coverage and lifetime constraints')

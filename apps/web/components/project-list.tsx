@@ -10,6 +10,8 @@ export default async function ProjectList() {
     projects = await getProjects();
   } catch (error) {
     unstable_rethrow(error);
+    // 重试用整页加载，确保重新请求；不用客户端路由。
+    // eslint-disable-next-line @next/next/no-html-link-for-pages
     return <p className="post-list-content" role="alert">作品读取失败。<a href="/projects">重试</a></p>;
   }
 

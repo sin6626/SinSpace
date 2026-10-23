@@ -57,7 +57,7 @@ export default function DebugPage() {
             <p className="post-meta">posts/page.tsx 的加载占位</p>
             <p className="post-list-content" role="status">正在读取文章…</p>
             <p className="post-meta">post-list.tsx 的读取失败</p>
-            <p className="post-list-content" role="alert">文章读取失败。<a href="/debug">重试</a></p>
+            <p className="post-list-content" role="alert">文章读取失败。<Link href="/debug">重试</Link></p>
             <p className="post-meta">post-list.tsx 的空列表</p>
             <p className="post-empty">还没有已发布的文章。</p>
             <p className="post-empty">这个分类下还没有已发布的文章。</p>
@@ -68,7 +68,7 @@ export default function DebugPage() {
             <p className="post-list-content" role="status">正在读取手记…</p>
             <p className="post-list-content" role="status">正在读取作品…</p>
             <p className="post-meta">note-list.tsx、project-list.tsx 的读取失败与空列表</p>
-            <p className="post-list-content" role="alert">手记读取失败。<a href="/debug">重试</a></p>
+            <p className="post-list-content" role="alert">手记读取失败。<Link href="/debug">重试</Link></p>
             <p className="post-empty">还没有公开的手记。</p>
             <p className="post-empty">还没有作品。</p>
             <p className="post-meta">note-detail.tsx：Core 对加密手记返回 403 时</p>

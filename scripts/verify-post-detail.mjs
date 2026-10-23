@@ -14,7 +14,7 @@ const post = { title: '测试', created: '2026-10-22T00:00:00Z', category: { nam
 const module = { exports: {} }
 vm.runInNewContext(code, {
   module, exports: module.exports,
-  require: (id) => id.endsWith('.css') ? {} : id === '../lib/date' ? { formatDate: (v) => String(v) } : id === './notifications' ? { ArticleNotifications: () => null } : id === '../lib/blog-data' ? { getPost: async (...args) => { request = args; if (failure) throw failure; return post } } : require(id),
+  require: (id) => id.endsWith('.css') ? {} : id === '../lib/date' ? { formatDate: (v) => String(v) } : id === './notifications' ? { ArticleNotifications: () => null } : id === '../lib/blog-data' ? { getPost: async (...args) => { request = args; if (failure === 'missing') return null; if (failure) throw failure; return post } } : require(id),
 })
 const render = (category = 'study%26think', slug = 'test') => module.exports.default({ params: Promise.resolve({ category, slug }) })
 const html = renderToStaticMarkup(await render())
@@ -28,7 +28,7 @@ post.contentFormat = 'lexical'
 assert.ok(renderToStaticMarkup(await render()).includes('简化阅读版'))
 delete post.text
 assert.ok(renderToStaticMarkup(await render()).includes('暂时没有可展示的正文'))
-failure = { status: 404 }
+failure = 'missing'
 await assert.rejects(render(), (error) => error.digest === 'NEXT_HTTP_ERROR_FALLBACK;404')
 failure = new Error('network')
 const errorView = await render()
