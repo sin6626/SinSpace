@@ -1,10 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import ArticleBody from "@/components/article-body";
 import BlogNavigation from "@/components/navigation-menu";
 import ToastButtons from "./toast-buttons";
-import "@/components/post-detail.css";
 
 const sampleMarkdown = `## 二级标题
 
@@ -95,10 +93,8 @@ export default function DebugPage() {
           </li>
           <li>
             <h2>文章正文</h2>
-            <p className="post-meta">与详情页相同的 Markdown 渲染和 post-detail.css</p>
-            <div className="article-body">
-              <Markdown remarkPlugins={[remarkGfm]} skipHtml>{sampleMarkdown}</Markdown>
-            </div>
+            <p className="post-meta">直接使用详情页的 article-body（Markdown + Shiki 高亮）；Lexical 富文本见任意 Lexical 文章</p>
+            <ArticleBody text={sampleMarkdown} emptyText="" />
           </li>
           <li>
             <h2>页面切换动画</h2>

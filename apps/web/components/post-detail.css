@@ -72,6 +72,12 @@
 }
 
 .article-body code { font-family: var(--font-geist-mono), monospace; }
+
+/* Shiki 代码高亮（article-body.tsx）：输出同时带浅色和深色变量，按当前主题取色 */
+.article-body .code-block .shiki,
+.article-body .code-block .shiki span {
+  color: light-dark(var(--shiki-light), var(--shiki-dark));
+}
 .article-body table { display: block; border-collapse: collapse; }
 .article-body th,
 .article-body td { padding: 0.5rem; border: 1px solid var(--border); }

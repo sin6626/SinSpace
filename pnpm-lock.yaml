@@ -974,7 +974,7 @@ importers:
         version: 0.18.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@haklex/rich-kit-shiro':
         specifier: 0.0.85
-        version: 0.0.85(@babel/core@7.29.7(supports-color@7.2.0))(@babel/template@7.29.7)(@base-ui/react@1.9.0(@types/react@19.3.0)(date-fns@4.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@lexical/extension@0.41.0)(@lexical/link@0.41.0)(@lexical/list@0.41.0)(@lexical/react@0.41.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(yjs@13.6.29))(@lexical/rich-text@0.41.0)(@lexical/selection@0.41.0)(@lexical/table@0.41.0)(@lexical/utils@0.41.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(lexical@0.41.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        version: 0.0.85(@babel/core@7.29.7(supports-color@7.2.0))(@babel/template@7.29.7)(@base-ui/react@1.9.0(@types/react@19.3.0)(date-fns@4.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@lexical/extension@0.41.0)(@lexical/link@0.41.0)(@lexical/list@0.41.0)(@lexical/react@0.41.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(yjs@13.6.29))(@lexical/rich-text@0.41.0)(@lexical/selection@0.41.0)(@lexical/table@0.41.0)(@lexical/utils@0.41.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(lexical@0.41.0)(prop-types@15.8.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@lexical/react':
         specifier: 0.41.0
         version: 0.41.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(yjs@13.6.29)
@@ -1011,6 +1011,9 @@ importers:
       server-only:
         specifier: 0.0.1
         version: 0.0.1
+      shiki:
+        specifier: 3.23.0
+        version: 3.23.0
       socket.io-client:
         specifier: 4.8.3
         version: 4.8.3(supports-color@7.2.0)
@@ -14768,7 +14771,7 @@ snapshots:
       - prop-types
       - utf-8-validate
 
-  '@haklex/rich-kit-shiro@0.0.85(@babel/core@7.29.7(supports-color@7.2.0))(@babel/template@7.29.7)(@base-ui/react@1.9.0(@types/react@19.3.0)(date-fns@4.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@lexical/extension@0.41.0)(@lexical/link@0.41.0)(@lexical/list@0.41.0)(@lexical/react@0.41.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(yjs@13.6.29))(@lexical/rich-text@0.41.0)(@lexical/selection@0.41.0)(@lexical/table@0.41.0)(@lexical/utils@0.41.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(lexical@0.41.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+  '@haklex/rich-kit-shiro@0.0.85(@babel/core@7.29.7(supports-color@7.2.0))(@babel/template@7.29.7)(@base-ui/react@1.9.0(@types/react@19.3.0)(date-fns@4.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@lexical/extension@0.41.0)(@lexical/link@0.41.0)(@lexical/list@0.41.0)(@lexical/react@0.41.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(yjs@13.6.29))(@lexical/rich-text@0.41.0)(@lexical/selection@0.41.0)(@lexical/table@0.41.0)(@lexical/utils@0.41.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(lexical@0.41.0)(prop-types@15.8.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@haklex/rich-editor': 0.0.85(patch_hash=4a15d7354f68be5e84f5c642002dbf2b540696bd7442b4927bc95ad02bc29941)(@base-ui/react@1.9.0(@types/react@19.3.0)(date-fns@4.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@lexical/extension@0.41.0)(@lexical/link@0.41.0)(@lexical/list@0.41.0)(@lexical/markdown@0.41.0)(@lexical/react@0.41.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(yjs@13.6.29))(@lexical/rich-text@0.41.0)(@lexical/table@0.41.0)(@lexical/utils@0.41.0)(@types/react@19.3.0)(katex@0.16.38)(lexical@0.41.0)(lucide-react@0.574.0(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(shiki@3.23.0)
       '@haklex/rich-editor-ui': 0.0.85(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
