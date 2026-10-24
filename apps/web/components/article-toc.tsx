@@ -46,8 +46,11 @@ function subscribeScroll(onChange: () => void) {
 }
 
 function getActiveId() {
+  const list = headings();
+  // 最后几节太短时标题到不了顶部，滚到底就直接算最后一节。
+  if (list.length && window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) return list.at(-1)!.id;
   let active: string | null = null;
-  for (const heading of headings()) {
+  for (const heading of list) {
     if (heading.getBoundingClientRect().top > activeOffset) break;
     active = heading.id;
   }
