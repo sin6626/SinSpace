@@ -43,9 +43,9 @@ export default ({ mode }) => {
             // 悬浮按钮固定在角落会挡住页面按钮且不能拖动，改为不显示，用快捷键开关（Mac ⌘+Shift，其他系统 Ctrl+Shift）。
             VueInspector({
               toggleButtonVisibility: 'never',
-              // 本机用 VS Code；code 命令不在 PATH 里，直接用 App 自带的命令行（可用环境变量 LAUNCH_EDITOR 覆盖）。
+              // 本机用 VS Code；code 命令不在 PATH 里，直接用 App 自带的命令行。
+              // 不读 process.env.LAUNCH_EDITOR：插件会把选项写回这个变量，Vite 改配置重启时同一进程会读到旧值。
               launchEditor:
-                process.env.LAUNCH_EDITOR ??
                 '/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code',
             }),
           ]
