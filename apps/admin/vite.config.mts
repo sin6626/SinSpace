@@ -40,8 +40,9 @@ export default ({ mode }) => {
 
       ...(isDev
         ? [
+            // 悬浮按钮固定在角落会挡住页面按钮且不能拖动，改为不显示，用快捷键开关（Mac ⌘+Shift，其他系统 Ctrl+Shift）。
             VueInspector({
-              toggleButtonVisibility: 'always',
+              toggleButtonVisibility: 'never',
               launchEditor: 'cursor',
             }),
           ]
