@@ -27,7 +27,10 @@ vm.runInNewContext(code, {
 const render = (category = 'study%26think', slug = 'test') => module.exports.default({ params: Promise.resolve({ category, slug }) })
 const html = renderToStaticMarkup(await render())
 assert.deepEqual(Array.from(request), ['study%26think', 'test'])
-assert.ok(html.includes('<h2>标题</h2>') && html.includes('<li>条目</li>'))
+assert.ok(html.includes('<h2 id="标题">标题</h2>') && html.includes('<li>条目</li>'), 'Markdown 标题带目录锚点 id')
+// 目录锚点：重名标题加序号，去掉标点，空标题退回 section。
+const slug = articleBody.exports.createSlugger()
+assert.deepEqual(['Hello World!', 'Hello World', '什么是 zod？', '？？'].map(slug), ['hello-world', 'hello-world-1', '什么是-zod', 'section'])
 assert.ok(html.includes('<table>') && html.includes('<pre>'))
 assert.ok(html.includes('href="https://example.com"'))
 assert.equal(html.includes('<script'), false)
@@ -36,7 +39,7 @@ post.contentFormat = 'lexical'
 post.content = '{"root":{"type":"root","version":1,"children":[],"format":"","indent":0,"direction":null}}'
 const richHtml = renderToStaticMarkup(await render())
 assert.ok(richHtml.includes('data-rich=') && richHtml.includes('data-api="http://api.test"'))
-assert.ok(richHtml.includes('<h2>标题</h2>'), 'Markdown 作为富文本的兜底 children 传入')
+assert.ok(richHtml.includes('<h2 id="标题">标题</h2>'), 'Markdown 作为富文本的兜底 children 传入')
 assert.equal(richHtml.includes('简化阅读版'), false)
 delete post.content
 assert.equal(renderToStaticMarkup(await render()).includes('data-rich='), false, 'lexical 但没有 content 时只用 Markdown')
