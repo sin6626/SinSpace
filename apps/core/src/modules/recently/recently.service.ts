@@ -94,7 +94,8 @@ export class RecentlyService {
 
     return result[0] || null
   }
-  async populateRef(result: RecentlyModel[], omit = ['text']) {
+  // 直接读集合会绕过模型的 select: false，访客接口不能带出正文和手记密码。
+  async populateRef(result: RecentlyModel[], omit = ['text', 'content', 'password']) {
     const refMap: Record<
       Exclude<CollectionRefTypes, CollectionRefTypes.Recently>,
       string[]
