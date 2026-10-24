@@ -8,6 +8,33 @@
   max-width: var(--article-max-width);
 }
 
+/* Haklex 图片外框可聚焦（点击打开预览），没有自带焦点样式时 Chrome 会画默认蓝框 */
+.article-rich .rr-image-frame:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* 图片加载失败：透明的 <img> 仍占满宽度，会把提示挤到框外，让它脱离排版后提示才能居中 */
+.article-rich .rr-image-frame.rr-image-error {
+  border: 1px solid var(--border);
+}
+
+.article-rich .rr-image-img[data-state="error"] {
+  position: absolute;
+  inset: 0;
+}
+
+/* 外框和提示共用 rr-image-error 类名，用 span 区分出提示 */
+.article-rich .rr-image-frame > span.rr-image-error {
+  position: relative;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--background);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
 .article-body {
   max-width: var(--article-max-width);
   font-size: 1.125rem;
