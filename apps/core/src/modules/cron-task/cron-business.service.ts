@@ -1,11 +1,16 @@
 import { rm } from 'node:fs/promises'
+import { resolve, sep } from 'node:path'
 
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common'
 import dayjs from 'dayjs'
 import { mkdirp } from 'mkdirp'
 
 import { RedisKeys } from '~/constants/cache.constant'
-import { STATIC_FILE_TRASH_DIR, TEMP_DIR } from '~/constants/path.constant'
+import {
+  DATA_DIR,
+  STATIC_FILE_TRASH_DIR,
+  TEMP_DIR,
+} from '~/constants/path.constant'
 import { AggregateService } from '~/modules/aggregate/aggregate.service'
 import { AnalyzeModel } from '~/modules/analyze/analyze.model'
 import { ConfigsService } from '~/modules/configs/configs.service'
@@ -89,7 +94,14 @@ export class CronBusinessService {
    * 清理临时文件目录
    */
   async cleanTempDirectory() {
-    await rm(TEMP_DIR, { recursive: true })
+    // SinPersonalSpace: 临时目录与数据目录重合（或数据目录在临时目录之内）时拒绝删除，防止整个数据目录被清空。
+    const temp = resolve(TEMP_DIR)
+    const data = resolve(DATA_DIR)
+    if (temp === data || data.startsWith(temp + sep)) {
+      this.logger.warn(`--> 跳过清理：临时目录 ${temp} 包含数据目录 ${data}`)
+      return { success: false }
+    }
+    await rm(TEMP_DIR, { recursive: true, force: true })
     mkdirp.sync(STATIC_FILE_TRASH_DIR)
     this.logger.log('--> 清理临时文件成功')
     return { success: true }
