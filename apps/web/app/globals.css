@@ -331,9 +331,57 @@ a:focus-visible,
   border: 1px solid var(--border);
 }
 
+/* 时间线（components/timeline-list.tsx）：日期列固定宽度，标题可换行 */
+.timeline-year + .timeline-year {
+  margin-top: 2rem;
+}
+
+.timeline-year h2 {
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.timeline-count {
+  margin-left: 0.25rem;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.timeline-list {
+  display: grid;
+  gap: 0.625rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--border);
+}
+
+.timeline-list li {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: baseline;
+}
+
+.timeline-list time {
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
 @media (max-width: 639px) {
   .post-list-content {
     padding: 1rem;
+  }
+
+  /* 手机上分类挪到标题下方，行距收紧 */
+  .timeline-list li {
+    grid-template-columns: 3.25rem minmax(0, 1fr);
+    row-gap: 0.125rem;
+  }
+
+  .timeline-list li .post-meta {
+    grid-column: 2;
   }
 }
 

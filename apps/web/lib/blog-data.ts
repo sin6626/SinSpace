@@ -175,6 +175,19 @@ export async function getProjects() {
   }));
 }
 
+// 时间线：全部已发布文章与公开手记，只取标题、日期和拼链接的字段，按发布时间倒序合并。
+export async function getTimeline() {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheTag("blog:posts", "blog:notes", "blog:categories");
+  const { data } = await getApiClient().aggregate.getTimeline({ sort: "desc" });
+  const posts = (data.posts ?? []).flatMap((post) => post.category
+    ? [{ kind: "post" as const, id: post.id, title: post.title, created: post.created, category: { name: post.category.name, slug: post.category.slug }, slug: post.slug }]
+    : []);
+  const notes = (data.notes ?? []).map((note) => ({ kind: "note" as const, id: note.id, title: note.title, created: note.created, nid: note.nid }));
+  return [...posts, ...notes].sort((a, b) => Date.parse(b.created) - Date.parse(a.created));
+}
+
 // 友链：Core 对访客只返回已通过、已失联、已封禁三种状态（审核中、已拒绝不返回）。
 // 友链没有增删改的 Webhook 事件（只有 LINK_APPLY），和作品一样缓存短一些。
 export async function getLinks() {

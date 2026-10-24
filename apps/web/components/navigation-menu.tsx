@@ -12,6 +12,7 @@ export type NavigationState =
   | { status: "ready"; articles: NavigationLink[]; pages: NavigationLink[] };
 
 const moreLinks: NavigationLink[] = [
+  { label: "时间线", href: "/timeline" },
   { label: "友链", href: "/friends" },
   { label: "一言", href: "/says" },
   { label: "思考", href: "/thinking" },

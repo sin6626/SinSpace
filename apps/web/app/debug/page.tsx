@@ -90,8 +90,10 @@ export default function DebugPage() {
             <p className="post-list-content" role="status">这篇手记设置了访问密码，暂不支持在这里查看。<Link href="/notes">返回手记列表</Link></p>
           </li>
           <li>
-            <h2>友链、一言与思考</h2>
-            <p className="post-meta">friends/says/thinking 的加载占位，friend-list.tsx、say-list.tsx、thinking-list.tsx 的读取失败与空列表</p>
+            <h2>时间线、友链、一言与思考</h2>
+            <p className="post-meta">timeline/friends/says/thinking 的加载占位，timeline-list.tsx、friend-list.tsx、say-list.tsx、thinking-list.tsx 的读取失败与空列表</p>
+            <p className="post-list-content" role="status">正在读取时间线…</p>
+            <p className="post-empty">还没有内容。</p>
             <p className="post-list-content" role="status">正在读取友链…</p>
             <p className="post-list-content" role="alert">友链读取失败。<Link href="/debug">重试</Link></p>
             <p className="post-empty">还没有友链。</p>
