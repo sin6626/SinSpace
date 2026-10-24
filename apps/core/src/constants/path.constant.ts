@@ -11,13 +11,13 @@ if (configuredDataDir && !isAbsolute(configuredDataDir)) {
   throw new Error('MX_DATA_DIR must be an absolute path')
 }
 
-// SinPersonalSpace: 显式配置 MX_DATA_DIR 时，临时目录必须是它下面独立的 temp 子目录。
-// 原写法让 TEMP_DIR 与 DATA_DIR 指向同一路径，每天 3 点的 cleanTempDirectory 会 rm -r 整个数据目录，
-// 2026-10-24 03:00 因此删掉了全部上传文件（static）。
+// 临时目录必须与数据目录分开：每天 3 点的 cleanTempDirectory 会 rm -r 整个 TEMP_DIR。
+// 上游写法在配置 MX_DATA_DIR 或开发模式下让 TEMP_DIR 与 DATA_DIR 指向同一路径，
+// 2026-10-24 03:00 因此删掉了全部上传文件（static）。现在两种情况都使用数据目录下独立的 temp。
 export const TEMP_DIR = configuredDataDir
   ? join(configuredDataDir, 'temp')
   : isDev
-    ? join(cwd, './tmp')
+    ? join(cwd, './tmp/temp')
     : '/tmp/mx-space'
 
 export const DATA_DIR =
