@@ -6,7 +6,6 @@ import {
   attachAiProviderOptionsToFormDSL,
   generateFormDSL,
 } from '~/modules/configs/configs.dsl.util'
-import { sanitizeConfigForResponse } from '~/modules/configs/configs.encrypt.util'
 import { IConfig } from '~/modules/configs/configs.interface'
 import { ConfigsService } from '~/modules/configs/configs.service'
 import { OptionController } from '../option.decorator'
@@ -50,6 +49,7 @@ export class BaseOptionController {
       throw new BizException(ErrorCodeEnum.InvalidBody)
     }
     const result = await this.configsService.patchAndValid(key, body)
-    return sanitizeConfigForResponse(result as object, key)
+    // SinPersonalSpace: 保存后返回的配置同样回显密钥，与读取接口一致。
+    return result
   }
 }

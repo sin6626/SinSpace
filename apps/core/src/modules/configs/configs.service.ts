@@ -20,7 +20,6 @@ import {
   decryptObject,
   encryptObject,
   removeEmptyEncryptedFields,
-  sanitizeConfigForResponse,
 } from './configs.encrypt.util'
 import { configDtoMapping, IConfig } from './configs.interface'
 import { OptionModel } from './configs.model'
@@ -135,22 +134,22 @@ export class ConfigsService {
   }
 
   /**
-   * Get config with encrypted fields removed (for API response)
+   * Get config for the admin API response.
+   * SinPersonalSpace: 用户要求后台回显已保存的密钥（原版返回空字符串）。只有带 Auth 的后台配置接口调用这里；
+   * 数据库中仍然加密存储，后台密码框默认遮挡、可点眼睛查看。
    */
   public async getConfigForResponse(): Promise<Readonly<IConfig>> {
-    const config = await this.getConfig()
-    return sanitizeConfigForResponse(config)
+    return this.getConfig()
   }
 
   /**
-   * Get a specific config section with encrypted fields removed (for API response)
+   * Get a specific config section for the admin API response（同上，回显已保存的密钥）。
    */
   public async getForResponse<T extends keyof IConfig>(
     key: T,
   ): Promise<Readonly<IConfig[T]>> {
     const config = await this.waitForConfigReady()
-    const value = config[key]
-    return sanitizeConfigForResponse(value as object, key) as IConfig[T]
+    return config[key]
   }
 
   private async patch<T extends keyof IConfig>(
