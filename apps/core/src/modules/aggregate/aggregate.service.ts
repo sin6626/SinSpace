@@ -231,9 +231,26 @@ export class AggregateService {
     const getNotes = () =>
       this.noteService.model
         .find(
+          // 与 RSS 一致：访客不应看到加密手记和尚未到公开时间的定时手记。
           {
             isPublished: true,
             ...addYearCondition(year),
+            $and: [
+              {
+                $or: [
+                  { password: undefined },
+                  { password: { $exists: false } },
+                  { password: null },
+                ],
+              },
+              {
+                $or: [
+                  { publicAt: { $lte: new Date() } },
+                  { publicAt: { $exists: false } },
+                  { publicAt: null },
+                ],
+              },
+            ],
           },
           '_id nid title weather mood created modified bookmark',
         )
