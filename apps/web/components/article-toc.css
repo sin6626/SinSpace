@@ -1,0 +1,51 @@
+/* 文章目录（article-toc.tsx）：在桌面右栏吸顶显示；当前章节用前景色和左边框标识，不改字重避免重排 */
+.article-toc h2 {
+  margin-bottom: 0.75rem;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.article-toc ol {
+  display: grid;
+  gap: 0.125rem;
+  border-inline-start: 1px solid var(--border);
+}
+
+.article-toc a {
+  display: block;
+  margin-inline-start: -1px;
+  padding: 0.25rem 0 0.25rem 0.75rem;
+  border-inline-start: 1px solid transparent;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.article-toc li[data-depth="1"] a { padding-inline-start: 1.5rem; }
+.article-toc li[data-depth="2"] a { padding-inline-start: 2.25rem; }
+.article-toc li[data-depth="3"] a { padding-inline-start: 3rem; }
+
+@media (hover: hover) {
+  .article-toc a:hover {
+    color: var(--foreground);
+  }
+}
+
+.article-toc a[aria-current="location"] {
+  border-inline-start-color: var(--foreground);
+  color: var(--foreground);
+}
+
+.article-toc a:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+/* 手机、平板上右栏排在正文下方，目录放在文末没有意义，直接隐藏整个右栏 */
+@media (max-width: 1023px) {
+  .site-details:has(.article-toc) {
+    display: none;
+  }
+}

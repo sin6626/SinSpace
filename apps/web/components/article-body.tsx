@@ -33,7 +33,27 @@ function CodeBlock({ node, children }: { children?: ReactNode } & ExtraProps) {
   return <HighlightedCode code={textOf(code).replace(/\n$/, "")} lang={lang} />;
 }
 
-const components: Components = { pre: CodeBlock };
+// 标题锚点：给 Markdown 标题生成与 GitHub 类似的 slug（保留中文，去标点，空格变 -），同一篇里重名依次加 -1、-2。
+// 右栏目录（article-toc.tsx）读取渲染后的标题 id；Lexical 标题的 id 由同版 Haklex 渲染器生成。
+export function createSlugger() {
+  const seen = new Map<string, number>();
+  return (text: string) => {
+    const base = text.trim().toLowerCase().replace(/[^\p{L}\p{N}\p{M}\s_-]/gu, "").replace(/\s+/g, "-") || "section";
+    const count = seen.get(base) ?? 0;
+    seen.set(base, count + 1);
+    return count ? `${base}-${count}` : base;
+  };
+}
+
+// 每次渲染新建计数器，保证同一篇文章内唯一且不同文章互不影响。
+function createComponents(): Components {
+  const slug = createSlugger();
+  const heading = (Tag: "h1" | "h2" | "h3" | "h4" | "h5" | "h6") =>
+    function Heading({ node, children }: { children?: ReactNode } & ExtraProps) {
+      return <Tag id={node ? slug(textOf(node)) : undefined}>{children}</Tag>;
+    };
+  return { pre: CodeBlock, h1: heading("h1"), h2: heading("h2"), h3: heading("h3"), h4: heading("h4"), h5: heading("h5"), h6: heading("h6") };
+}
 
 // 文章、手记、页面共用的正文：Lexical 用同版富文本渲染器，Markdown（以及富文本的兜底）用 react-markdown。
 export default function ArticleBody({ text, contentFormat, content, emptyText }: {
@@ -44,7 +64,7 @@ export default function ArticleBody({ text, contentFormat, content, emptyText }:
 }) {
   const markdown = typeof text === "string" ? (
     <div className="article-body">
-      <Markdown remarkPlugins={[remarkGfm]} components={components} skipHtml>{text}</Markdown>
+      <Markdown remarkPlugins={[remarkGfm]} components={createComponents()} skipHtml>{text}</Markdown>
     </div>
   ) : <p role="status">{emptyText}</p>;
   if (contentFormat !== "lexical" || !content) return markdown;
