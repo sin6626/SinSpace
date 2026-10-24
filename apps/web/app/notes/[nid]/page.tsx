@@ -1,5 +1,10 @@
 import { Suspense } from "react";
+import { noteMetadata } from "@/lib/page-metadata";
 import NoteDetail from "@/components/note-detail";
+
+export function generateMetadata({ params }: PageProps<"/notes/[nid]">) {
+  return noteMetadata(params);
+}
 
 export default function NotePage({ params }: PageProps<"/notes/[nid]">) {
   return (

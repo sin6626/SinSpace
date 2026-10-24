@@ -80,6 +80,7 @@ export async function getPost(category: string, slug: string) {
   return {
     id: post.id,
     title: post.title,
+    summary: post.summary,
     text: post.text,
     contentFormat: post.contentFormat,
     ...lexicalContent(post),

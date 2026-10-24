@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import PostList from "@/components/post-list";
+
+export const metadata: Metadata = { title: "文章" };
 
 export default function PostsPage({ searchParams }: PageProps<"/posts">) {
   return (

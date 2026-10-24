@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import NoteList from "@/components/note-list";
+
+export const metadata: Metadata = { title: "手记" };
 
 export default function NotesPage({ searchParams }: PageProps<"/notes">) {
   return (

@@ -1,5 +1,10 @@
 import { Suspense } from "react";
+import { postMetadata } from "@/lib/page-metadata";
 import PostDetail from "@/components/post-detail";
+
+export function generateMetadata({ params }: PageProps<"/posts/[category]/[slug]">) {
+  return postMetadata(params);
+}
 
 export default function PostPage({ params }: PageProps<"/posts/[category]/[slug]">) {
   return (

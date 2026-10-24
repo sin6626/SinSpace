@@ -3,6 +3,7 @@ import { ViewTransition } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import Notifications from "@/components/notifications";
 import { getApiUrl } from "../lib/config";
+import { siteName } from "../lib/page-metadata";
 import Navigation from "@/components/navigation";
 import ResizableLayout from "@/components/resizable-layout";
 import ThemeSwitcher from "@/components/theme-switcher";
@@ -20,9 +21,13 @@ const geistMono = Geist_Mono({
 
 const themeScript = `try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
 
+const description = "技术文章、个人作品与生活记录。";
+
+// 子页面的标题会套用模板，例如“文章 - Sin Personal Space”。
 export const metadata: Metadata = {
-  title: "Sin Personal Space",
-  description: "技术文章、个人作品与生活记录。",
+  title: { default: siteName, template: `%s - ${siteName}` },
+  description,
+  openGraph: { siteName, title: siteName, description, type: "website", locale: "zh_CN" },
 };
 
 export default function RootLayout({ children, details }: LayoutProps<"/">) {

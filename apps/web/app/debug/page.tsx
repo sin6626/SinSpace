@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ArticleBody from "@/components/article-body";
 import BlogNavigation from "@/components/navigation-menu";
 import ToastButtons from "./toast-buttons";
+
+export const metadata: Metadata = { title: "调试" };
 
 const sampleMarkdown = `## 二级标题
 
