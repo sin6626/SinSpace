@@ -312,8 +312,9 @@ export class AggregateService {
           }),
         ),
 
+      // 访客可见的接口，不能列出未发布的文章。
       this.postService.model
-        .find()
+        .find({ isPublished: true })
         .populate('category')
         .then((list) =>
           list.map((doc) => {
@@ -357,7 +358,7 @@ export class AggregateService {
 
     const [posts, notes] = await Promise.all([
       this.postService.model
-        .find()
+        .find({ isPublished: true })
         .limit(10)
         .sort({ created: -1 })
         .populate('category'),
