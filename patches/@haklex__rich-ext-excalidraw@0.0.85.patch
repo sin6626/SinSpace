@@ -1,5 +1,31 @@
+diff --git a/dist/ExcalidrawNode-DEcONli3.js b/dist/ExcalidrawNode-DEcONli3.js
+index 5f37876e154758bfbf9e8d7fc8f7af5176ec581c..05b74582a78106433aec5558abd9c40067b6a87d 100644
+--- a/dist/ExcalidrawNode-DEcONli3.js
++++ b/dist/ExcalidrawNode-DEcONli3.js
+@@ -219,7 +219,9 @@ const ExcalidrawExpandContent = ({ dismiss, ExcalidrawComponent, data, theme })
+         theme,
+         excalidrawAPI: (api) => {
+           apiRef.current = api;
+-          setTimeout(() => api.scrollToContent(), 100);
++          setTimeout(() => {
++            if (apiRef.current === api) api.scrollToContent();
++          }, 100);
+         }
+       }
+     ) })
+@@ -292,7 +294,9 @@ const ExcalidrawStaticCanvas = ({ snapshot, theme }) => {
+                 theme,
+                 excalidrawAPI: (api) => {
+                   apiRef.current = api;
+-                  setTimeout(() => api.scrollToContent(), 100);
++                  setTimeout(() => {
++                    if (apiRef.current === api) api.scrollToContent();
++                  }, 100);
+                 }
+               }
+             )
 diff --git a/dist/index.mjs b/dist/index.mjs
-index b0fb857c6789c96386e10a5041a76263bc9c1277..d3b98ae9e1f71fb6fd12d31c06496f18d09797fc 100644
+index b0fb857c6789c96386e10a5041a76263bc9c1277..533e97fa953d8c6b8e6b91285c7b88234333684d 100644
 --- a/dist/index.mjs
 +++ b/dist/index.mjs
 @@ -85,7 +85,10 @@ function $createExcalidrawEditNode(snapshot) {
@@ -293,3 +319,14 @@ index b0fb857c6789c96386e10a5041a76263bc9c1277..d3b98ae9e1f71fb6fd12d31c06496f18
      }
    }, [initialData]);
    useEffect(() => {
+@@ -523,7 +464,9 @@ const ExcalidrawEditRenderer = ({
+         theme,
+         excalidrawAPI: (api) => {
+           previewApiRef.current = api;
+-          setTimeout(() => api.scrollToContent(), 100);
++          setTimeout(() => {
++            if (previewApiRef.current === api) api.scrollToContent();
++          }, 100);
+         }
+       },
+       previewKey

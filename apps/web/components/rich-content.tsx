@@ -9,6 +9,7 @@ import { EmbedRendererProvider } from "@haklex/rich-kit-shiro/renderers";
 import type { ElementFormatType, SerializedEditorState, SerializedLexicalNode } from "lexical";
 import { useMemo, type ReactNode } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { normalizeEditorState } from "../lib/lexical-normalize";
 import { TweetEmbed } from "./tweet";
 import { useResolvedTheme } from "./use-resolved-theme";
 import "@haklex/rich-kit-shiro/style-renderer.css";
@@ -44,7 +45,9 @@ function parseContent(content: string): SerializedEditorState | null {
       !("indent" in root) || typeof root.indent !== "number" ||
       !("direction" in root) || (root.direction !== null && root.direction !== "ltr" && root.direction !== "rtl")
     ) return null;
-    return { root: { ...root, children: root.children, format: root.format, indent: root.indent, direction: root.direction } };
+    // 段落里混入块级节点的历史内容在这里整理，避免 <p> 里出现块级元素导致水合错误。
+    const state: SerializedEditorState = { root: { ...root, children: root.children, format: root.format, indent: root.indent, direction: root.direction } };
+    return normalizeEditorState(state);
   } catch {
     return null;
   }
