@@ -51,6 +51,15 @@ export async function getSiteSettings() {
   };
 }
 
+// 后台“设置 → 账户 → OAuth”里启用的第三方登录（目前前端只接 GitHub）。改动没有 Webhook 事件，缓存短一些。
+export async function getLoginProviders() {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheTag("blog:navigation");
+  const { data } = await getApiClient().proxy.auth.providers.get<{ data: string[] }>();
+  return Array.isArray(data) ? data.filter((provider) => provider === "github") : [];
+}
+
 export async function getSiteUrl() {
   return (await getSiteSettings()).siteUrl;
 }

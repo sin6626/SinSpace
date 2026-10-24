@@ -1,6 +1,6 @@
 import { unstable_rethrow } from "next/navigation";
 import Markdown from "react-markdown";
-import { getComments, getSiteSettings } from "../lib/blog-data";
+import { getComments, getLoginProviders, getSiteSettings } from "../lib/blog-data";
 import { getApiUrl } from "../lib/config";
 import { formatDate } from "../lib/date";
 import { safeUrl } from "../lib/safe-url";
@@ -13,7 +13,9 @@ type Comment = Omit<Thread, "replies" | "hiddenReplies">;
 // 评论正文按 Markdown 显示，只放行行内与段落级元素，不渲染图片和 HTML。
 const allowedElements = ["p", "br", "a", "strong", "em", "del", "code", "pre", "blockquote", "ul", "ol", "li"];
 
-function CommentBody({ comment, replyTo, apiUrl, canReply }: { comment: Comment; replyTo?: string; apiUrl: string; canReply: boolean }) {
+type FormOptions = { apiUrl: string; allowGuest: boolean; github: boolean };
+
+function CommentBody({ comment, replyTo, form, canReply }: { comment: Comment; replyTo?: string; form: FormOptions; canReply: boolean }) {
   const avatar = safeUrl(comment.avatar);
   const site = safeUrl(comment.url);
   return (
@@ -35,7 +37,7 @@ function CommentBody({ comment, replyTo, apiUrl, canReply }: { comment: Comment;
             <Markdown allowedElements={allowedElements} unwrapDisallowed skipHtml>{comment.text}</Markdown>
           </div>
         )}
-        {canReply && !comment.deleted && <CommentForm apiUrl={apiUrl} replyTo={{ id: comment.id, author: comment.author }} />}
+        {canReply && !comment.deleted && <CommentForm {...form} replyTo={{ id: comment.id, author: comment.author }} />}
       </div>
     </article>
   );
@@ -45,34 +47,35 @@ function CommentBody({ comment, replyTo, apiUrl, canReply }: { comment: Comment;
 export default async function Comments({ refId, refType, allowComment }: { refId: string; refType: CommentRefType; allowComment: boolean }) {
   let result: Awaited<ReturnType<typeof getComments>>;
   let settings: Awaited<ReturnType<typeof getSiteSettings>>["comments"];
+  let providers: string[];
   try {
-    [result, { comments: settings }] = await Promise.all([getComments(refId, 1), getSiteSettings()]);
+    [result, { comments: settings }, providers] = await Promise.all([getComments(refId, 1), getSiteSettings(), getLoginProviders().catch(() => [])]);
   } catch (error) {
     unstable_rethrow(error);
     return <section className="comments" aria-label="评论"><p className="post-empty" role="alert">评论读取失败，请稍后刷新。</p></section>;
   }
-  const apiUrl = getApiUrl();
-  // 新前端暂不支持读者登录，只能游客评论。
-  const closedReason = settings.disabled || !allowComment ? "评论已关闭。" : !settings.allowGuest ? "博主暂未开放游客评论。" : null;
+  const form: FormOptions = { apiUrl: getApiUrl(), allowGuest: settings.allowGuest, github: providers.includes("github") };
+  // 关闭游客评论但启用了 GitHub 登录时，表单里只给登录按钮；两者都没有才算无法评论。
+  const closedReason = settings.disabled || !allowComment ? "评论已关闭。" : !settings.allowGuest && !form.github ? "博主暂未开放游客评论。" : null;
   const canReply = !closedReason;
   const { data, pagination } = result;
 
   return (
-    <section className="comments" aria-labelledby="comments-heading">
+    <section className="comments" id="comments" aria-labelledby="comments-heading">
       <h2 id="comments-heading">评论{pagination.total > 0 && ` ${pagination.total}`}</h2>
-      {closedReason ? <p className="post-meta">{closedReason}</p> : <CommentForm apiUrl={apiUrl} refId={refId} refType={refType} />}
+      {closedReason ? <p className="post-meta">{closedReason}</p> : <CommentForm {...form} refId={refId} refType={refType} />}
       {data.length ? (
         <ol className="comment-list">
           {data.map((thread) => {
             const authors = new Map([thread, ...thread.replies].map((item) => [item.id, item.author]));
             return (
               <li key={thread.id}>
-                <CommentBody comment={thread} apiUrl={apiUrl} canReply={canReply} />
+                <CommentBody comment={thread} form={form} canReply={canReply} />
                 {thread.replies.length > 0 && (
                   <ol className="comment-replies">
                     {thread.replies.map((reply) => (
                       <li key={reply.id}>
-                        <CommentBody comment={reply} replyTo={reply.parentId && reply.parentId !== thread.id ? authors.get(reply.parentId) : undefined} apiUrl={apiUrl} canReply={canReply} />
+                        <CommentBody comment={reply} replyTo={reply.parentId && reply.parentId !== thread.id ? authors.get(reply.parentId) : undefined} form={form} canReply={canReply} />
                       </li>
                     ))}
                     {thread.hiddenReplies > 0 && <li className="post-meta">还有 {thread.hiddenReplies} 条回复暂未显示。</li>}

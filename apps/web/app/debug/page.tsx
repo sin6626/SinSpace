@@ -111,6 +111,7 @@ export default function DebugPage() {
             <p className="post-meta" role="status">评论已发送。博主开启审核时，通过后才会显示；列表约一分钟内更新。</p>
             <p className="post-meta" role="status">悄悄话已发送，只有博主能看到。</p>
             <p className="post-meta" role="alert">网络错误，评论没有发出去，请稍后重试。</p>
+            <p className="post-meta">读者登录（reader-session.ts）：未登录显示“用 GitHub 登录 / 或以游客身份填写下方信息”，已登录显示“以 某某 的身份评论 · 退出”并隐藏昵称邮箱网址；关闭游客评论时只显示“用 GitHub 登录后评论”。</p>
           </li>
           <li>
             <h2>通知 Toast</h2>
