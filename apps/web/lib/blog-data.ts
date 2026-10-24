@@ -36,15 +36,23 @@ export async function getNavigationData() {
   };
 }
 
-// 站点对外地址取后台“网站地址”（Core 的 url.webUrl），sitemap、RSS 的完整链接都以它为准，不在前端写死域名。
-export async function getSiteUrl() {
+// 站点级设置。对外地址取后台“网站地址”（Core 的 url.webUrl），sitemap、RSS 的完整链接都以它为准，不在前端写死域名；
+// 评论开关取后台“评论设置”（是否关闭评论、是否允许游客评论）。
+export async function getSiteSettings() {
   "use cache";
   cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
   cacheTag("blog:navigation");
-  const { url } = await getApiClient().aggregate.getAggregateData();
+  const { url, commentOptions } = await getApiClient().aggregate.getAggregateData();
   const site = new URL(url.webUrl);
   if (!["http:", "https:"].includes(site.protocol)) throw new Error("后台网站地址必须是 HTTP(S)。");
-  return site.href.replace(/\/$/, "");
+  return {
+    siteUrl: site.href.replace(/\/$/, ""),
+    comments: { disabled: Boolean(commentOptions?.disableComment), allowGuest: commentOptions?.allowGuestComment !== false },
+  };
+}
+
+export async function getSiteUrl() {
+  return (await getSiteSettings()).siteUrl;
 }
 
 export async function getCategories() {
@@ -94,6 +102,7 @@ export async function getPost(category: string, slug: string) {
     summary: post.summary,
     text: post.text,
     contentFormat: post.contentFormat,
+    allowComment: post.allowComment !== false,
     ...lexicalContent(post),
     created: post.created,
     category: post.category ? { name: post.category.name, slug: post.category.slug } : null,
@@ -144,6 +153,7 @@ export async function getNote(nid: number) {
     title: note.title,
     text: note.text,
     contentFormat: note.contentFormat,
+    allowComment: note.allowComment !== false,
     ...lexicalContent(note),
     created: note.created,
     mood: note.mood,
@@ -213,6 +223,38 @@ export async function getRecently(before?: string) {
   };
 }
 
+// 评论：Core 对访客只返回已公开、非悄悄话的评论，邮箱已换成头像，IP/UA 不返回。
+// 后台审核通过、置顶不发 Webhook 事件，所以缓存短一些；新增、编辑、删除经 COMMENT_* 事件立即失效。
+export async function getComments(refId: string, page: number) {
+  "use cache";
+  cacheLife({ stale: 30, revalidate: 60, expire: 300 });
+  cacheTag("blog:comments");
+  const { data, pagination, readers } = await getApiClient().comment.getByRefId(refId, { page, size: 10 });
+  const view = (comment: (typeof data)[number] | (typeof data)[number]["replies"][number]) => {
+    const reader = comment.readerId ? readers?.[comment.readerId] : undefined;
+    return {
+      id: comment.id,
+      author: reader?.name || comment.author || "匿名",
+      avatar: reader?.image || comment.avatar,
+      url: comment.url,
+      text: comment.text,
+      created: comment.created,
+      location: comment.location,
+      pinned: Boolean(comment.pin),
+      deleted: Boolean(comment.isDeleted),
+      parentId: comment.parentCommentId ?? null,
+    };
+  };
+  return {
+    data: data.map((comment) => ({
+      ...view(comment),
+      replies: comment.replies.map(view),
+      hiddenReplies: comment.replyWindow?.hiddenCount ?? 0,
+    })),
+    pagination: { ...pagination },
+  };
+}
+
 export async function getPage(slug: string) {
   "use cache";
   cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
@@ -226,6 +268,7 @@ export async function getPage(slug: string) {
     subtitle: page.subtitle,
     text: page.text,
     contentFormat: page.contentFormat,
+    allowComment: page.allowComment !== false,
     ...lexicalContent(page),
   };
 }

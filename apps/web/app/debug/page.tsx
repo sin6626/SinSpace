@@ -99,6 +99,18 @@ export default function DebugPage() {
             <p className="post-empty">还没有思考。</p>
           </li>
           <li>
+            <h2>评论</h2>
+            <p className="post-meta">comments.tsx 的加载占位、读取失败、空列表与关闭状态；comment-form.tsx 的提交结果文案（真实表单见任意文章底部）</p>
+            <p className="post-meta" role="status">正在读取评论…</p>
+            <p className="post-empty" role="alert">评论读取失败，请稍后刷新。</p>
+            <p className="post-empty">还没有评论，来说两句吧。</p>
+            <p className="post-meta">评论已关闭。</p>
+            <p className="post-meta">博主暂未开放游客评论。</p>
+            <p className="post-meta" role="status">评论已发送。博主开启审核时，通过后才会显示；列表约一分钟内更新。</p>
+            <p className="post-meta" role="status">悄悄话已发送，只有博主能看到。</p>
+            <p className="post-meta" role="alert">网络错误，评论没有发出去，请稍后重试。</p>
+          </li>
+          <li>
             <h2>通知 Toast</h2>
             <p className="post-meta">文案来自 lib/notification-copy.ts，只在本页弹出，不走 WebSocket，也不清缓存</p>
             <ToastButtons />

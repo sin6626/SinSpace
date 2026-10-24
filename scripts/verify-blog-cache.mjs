@@ -27,6 +27,17 @@ const api = {
     getNoteByNid: async () => { if (detailError) throw detailError; return { data: note, prev: { nid: 6, title: '较新' }, next: { nid: 4 } } },
   },
   project: { getAll: async () => ({ data: [project] }) },
+  comment: {
+    getByRefId: async (refId, options) => {
+      calls.push(['comments', refId, options])
+      const reply = { id: 'reply-id', author: '回复者', mail: 'leak@example.com', ip: '1.2.3.4', agent: 'UA', text: '回复', created: '2026-10-23', parentCommentId: 'comment-id', avatar: 'https://example.com/r.png' }
+      return {
+        data: [{ id: 'comment-id', author: '快照名', readerId: 'reader-id', mail: 'leak@example.com', ip: '1.2.3.4', text: '评论', created: '2026-10-22', pin: true, isDeleted: false, location: '上海', replies: [reply], replyWindow: { hiddenCount: 2 } }],
+        pagination: { total: 1, totalPage: 1 },
+        readers: { 'reader-id': { name: '读者', image: 'https://example.com/a.png', email: 'reader@example.com' } },
+      }
+    },
+  },
   search: { search: async (type, keyword) => { calls.push(['search', type, keyword]); return type === 'post' ? { data: [{ ...post, text: 'leak' }], pagination: { total: 1 } } : { data: [{ ...note, text: 'leak' }], pagination: { total: 1 } } } },
   topic: { getAll: async () => ({ data: [{ id: 't1', name: '近况', slug: 'now', introduce: 'unused' }, { id: 't2', name: '空话题', slug: 'empty' }] }) },
   page: { getBySlug: async () => detailError ? Promise.reject(detailError) : ({ id: 'page-id', title: '关于我', subtitle: 'about me', text: 'page body', contentFormat: 'lexical', content: 'unused JSON', allowComment: true }) },
@@ -69,7 +80,7 @@ assert.ok(tags.includes('blog:projects'))
 const page = await cache.getPage('about')
 assert.equal(page.text, 'page body')
 assert.equal(page.content, 'unused JSON', 'Lexical 页面缓存 content 给富文本渲染器')
-assert.equal('allowComment' in page, false)
+assert.equal(page.allowComment, true, '评论区需要这篇内容自己的允许评论开关')
 assert.ok(tags.includes('blog:pages') && tags.includes('blog:page:page-id'))
 const foundPosts = await cache.searchPosts('关键词')
 const foundNotes = await cache.searchNotes('关键词')
@@ -107,3 +118,14 @@ detailError = undefined
 invalidNavigation = true
 await assert.rejects(cache.getNavigationData(), /导航数据/)
 console.log('PASS public cache projections, key parameters, tag coverage and lifetime constraints')
+const comments = await cache.getComments('post-id', 1)
+assert.equal(JSON.stringify(calls.at(-1)), JSON.stringify(['comments', 'post-id', { page: 1, size: 10 }]))
+assert.ok(tags.includes('blog:comments'))
+const [thread] = comments.data
+assert.equal(thread.author, '读者', '登录读者显示读者名而不是快照')
+assert.equal(thread.avatar, 'https://example.com/a.png')
+assert.equal(thread.pinned, true)
+assert.equal(thread.hiddenReplies, 2)
+assert.equal(thread.replies[0].parentId, 'comment-id')
+assert.equal(/leak@|reader@|1\.2\.3\.4|"UA"/.test(JSON.stringify(comments)), false, '评论缓存不含邮箱、IP、UA')
+

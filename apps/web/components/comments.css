@@ -1,0 +1,189 @@
+/* 评论区（comments.tsx、comment-form.tsx）：沿用直角实线风格，颜色走 globals.css 变量。 */
+.comments {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.comments > h2 {
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.comment-list,
+.comment-replies {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.comment-list {
+  margin-top: 1.5rem;
+}
+
+.comment-replies {
+  margin: 1rem 0 0 2.75rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--border);
+}
+
+.comment {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.comment-avatar {
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--border);
+  background: var(--muted);
+  object-fit: cover;
+}
+
+.comment-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.comment-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+}
+
+.comment-meta strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.comment-text {
+  margin-top: 0.375rem;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+}
+
+.comment-text > * + * {
+  margin-top: 0.5rem;
+}
+
+.comment-text a {
+  text-decoration: underline;
+}
+
+.comment-text code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}
+
+.comment-text blockquote {
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--border);
+  color: var(--muted-foreground);
+}
+
+.comment-text ul,
+.comment-text ol {
+  padding-left: 1.25rem;
+  list-style: revert;
+}
+
+.comment-deleted {
+  margin-top: 0.375rem;
+  color: var(--muted-foreground);
+}
+
+.comment-form {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.comment-fields {
+  display: grid;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  /* 三个输入框并排，标签在上方：用网格把标签和输入框分两行 */
+  .comment-fields {
+    grid-auto-flow: column;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: auto auto;
+  }
+}
+
+.comment-form label {
+  color: var(--muted-foreground);
+}
+
+.comment-form input:not([type="checkbox"]),
+.comment-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+}
+
+.comment-form textarea {
+  resize: vertical;
+}
+
+.comment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.comment-actions label {
+  margin-right: auto;
+}
+
+.comment-form button,
+.comment-reply-button {
+  padding: 0.375rem 0.875rem;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  cursor: pointer;
+}
+
+.comment-form button[type="submit"] {
+  border-color: var(--foreground);
+}
+
+.comment-form button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.comment-reply-button {
+  margin-top: 0.375rem;
+  padding: 0.125rem 0.5rem;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+}
+
+@media (hover: hover) {
+  .comment-form button:not(:disabled):hover,
+  .comment-reply-button:hover {
+    background: var(--accent);
+  }
+}
+
+.comment-form input:focus-visible,
+.comment-form textarea:focus-visible,
+.comment-form button:focus-visible,
+.comment-reply-button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -1px;
+}

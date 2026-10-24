@@ -2,6 +2,8 @@ import { notFound, unstable_rethrow } from "next/navigation";
 import { getPage } from "../lib/blog-data";
 import ArticleBody from "./article-body";
 import "./post-detail.css";
+import { Suspense } from "react";
+import Comments from "./comments";
 
 // 后台“页面”（如关于我、关于本站），地址是 /<slug>。
 export default async function PageDetail({ params }: { params: Promise<{ slug: string }> }) {
@@ -29,6 +31,9 @@ export default async function PageDetail({ params }: { params: Promise<{ slug: s
       </header>
       <div className="post-list-content">
         <ArticleBody text={page.text} contentFormat={page.contentFormat} content={page.content} emptyText="这个页面暂时没有可展示的正文。" />
+        <Suspense fallback={<p className="post-meta" role="status">正在读取评论…</p>}>
+          <Comments refId={page.id} refType="Page" allowComment={page.allowComment} />
+        </Suspense>
       </div>
     </article>
   );

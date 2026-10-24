@@ -5,6 +5,8 @@ import { getPost } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
 import ArticleBody from "./article-body";
 import "./post-detail.css";
+import { Suspense } from "react";
+import Comments from "./comments";
 
 export default async function PostDetail({ params }: {
   params: Promise<{ category: string; slug: string }>;
@@ -43,6 +45,9 @@ export default async function PostDetail({ params }: {
       </header>
       <div className="post-list-content">
         <ArticleBody text={post.text} contentFormat={post.contentFormat} content={post.content} emptyText="这篇文章暂时没有可展示的正文。" />
+        <Suspense fallback={<p className="post-meta" role="status">正在读取评论…</p>}>
+          <Comments refId={post.id} refType="Post" allowComment={post.allowComment} />
+        </Suspense>
       </div>
     </article>
   );

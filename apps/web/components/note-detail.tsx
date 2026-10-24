@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { getNote } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
+import { Suspense } from "react";
 import ArticleBody from "./article-body";
+import Comments from "./comments";
 import "./post-detail.css";
 
 export default async function NoteDetail({ params }: { params: Promise<{ nid: string }> }) {
@@ -34,6 +36,9 @@ export default async function NoteDetail({ params }: { params: Promise<{ nid: st
       </header>
       <div className="post-list-content">
         <ArticleBody text={note.text} contentFormat={note.contentFormat} content={note.content} emptyText="这篇手记暂时没有可展示的正文。" />
+        <Suspense fallback={<p className="post-meta" role="status">正在读取评论…</p>}>
+          <Comments refId={note.id} refType="Note" allowComment={note.allowComment} />
+        </Suspense>
         {(note.newer || note.older) && (
           <nav className="post-pagination" aria-label="相邻手记">
             {note.newer ? <Link href={`/notes/${note.newer.nid}`}>较新：{note.newer.title}</Link> : <span />}
