@@ -112,4 +112,14 @@ export class ReaderService {
       })
       .lean()
   }
+
+  // 返回给访客的读者信息（评论列表、在线状态）不能带邮箱。
+  async findPublicReaderInIds(ids: string[]) {
+    return this.readerModel
+      .find({
+        _id: { $in: ids.map((id) => new Types.ObjectId(id)) },
+      })
+      .select({ email: 0, emailVerified: 0 })
+      .lean()
+  }
 }

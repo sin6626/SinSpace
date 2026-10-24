@@ -161,7 +161,9 @@ export class CommentController {
 
     const result = transformDataToPaginate(comments)
     const readerIds = this.commentService.collectThreadReaderIds(comments.docs)
-    const readers = await this.readerService.findReaderInIds(readerIds)
+    const readers = isAuthenticated
+      ? await this.readerService.findReaderInIds(readerIds)
+      : await this.readerService.findPublicReaderInIds(readerIds)
 
     Object.assign(result, {
       readers: keyBy(readers, 'id'),
@@ -210,7 +212,9 @@ export class CommentController {
 
     await this.commentService.fillAndReplaceAvatarUrl([data])
     if (data.readerId) {
-      const reader = await this.readerService.findReaderInIds([data.readerId])
+      const reader = isAuthenticated
+        ? await this.readerService.findReaderInIds([data.readerId])
+        : await this.readerService.findPublicReaderInIds([data.readerId])
       Object.assign(data, {
         reader: reader[0],
       })

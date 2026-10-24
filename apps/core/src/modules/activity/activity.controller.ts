@@ -100,7 +100,7 @@ export class ActivityController {
       .map((item) => item.readerId)
       .filter(Boolean) as string[]
     const readers = await this.readerService
-      .findReaderInIds(readerIds)
+      .findPublicReaderInIds(readerIds)
       .then((arr) => {
         return arr.map((item) => {
           return snakecaseKeysWithCompat({

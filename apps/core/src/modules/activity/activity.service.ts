@@ -389,7 +389,7 @@ export class ActivityService implements OnModuleInit, OnModuleDestroy {
     delete (presenceData as any).ts
     const serializedPresenceData = omit(presenceData, 'ip') as any
     if (data.readerId) {
-      const reader = await this.readerService.findReaderInIds([data.readerId])
+      const reader = await this.readerService.findPublicReaderInIds([data.readerId])
       if (reader.length) {
         Object.assign(serializedPresenceData, {
           reader: camelcaseKeys({
