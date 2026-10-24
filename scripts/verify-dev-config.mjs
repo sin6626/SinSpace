@@ -17,7 +17,8 @@ try {
   assert.equal(normal.dataRoot, directory)
   assert.equal(normal.database, 'shrio-import-20261014')
   assert.equal(normal.resourceBudget, null)
-  assert.equal(normal.coreEnv.MX_DATA_DIR, join(directory, '../apps/mix-space/apps/core/tmp'))
+  // 媒体默认放在本仓库 .local/media，不再依赖旧项目开发目录 tmp（2026-10-24 曾被定时清理删空）。
+  assert.equal(normal.coreEnv.MX_DATA_DIR, join(fileURLToPath(new URL('../', import.meta.url)), '.local/media'))
   assert.deepEqual(normal.ports, { mongo: 27018, redis: 6380, core: 2333, web: 2323, admin: 9528 })
   assert.equal('JWT_SECRET' in normal.coreEnv, false)
   const test = config(['--test'], { SIN_VERIFY: '1', SIN_MAX_RSS_MIB: '2560' })

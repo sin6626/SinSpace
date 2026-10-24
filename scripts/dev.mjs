@@ -27,7 +27,8 @@ const dataRoot = testing
   : resolve(process.env.MIX_SPACE_DATA_ROOT || join(root, '../ShrioRenovation/.local'))
 const mediaRoot = testing
   ? join(dataRoot, 'core')
-  : resolve(process.env.MIX_SPACE_MEDIA_ROOT || join(dataRoot, '../apps/mix-space/apps/core/tmp'))
+  // 上传文件（头像、普通文件、图标）的持久目录。图片按 Core 设计只走对象存储图床，不在本地存放。
+  : resolve(process.env.MIX_SPACE_MEDIA_ROOT || join(root, '.local/media'))
 const logs = join(root, testing ? '.local/verification/logs' : '.local/logs')
 const ports = testing
   ? { mongo: 27029, redis: 6391, core: 2533, web: 2523, admin: 9529 }

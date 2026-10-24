@@ -44,7 +44,7 @@
 
 - `MIX_SPACE_API_URL`：前端服务端请求地址。联合启动强制注入本次启动的本地 Core 地址；`dev:web` 可用此变量指定其他地址，默认本地 Core。部署时必须显式配置，不再默认访问线上博客。
 - `MIX_SPACE_DATA_ROOT`：默认相邻 `ShrioRenovation/.local`。复用其中的 `database`、`mongo/`、按库分目录的 `redis/`、`jwt-secret`。
-- `MIX_SPACE_MEDIA_ROOT`：默认旧 `ShrioRenovation/apps/mix-space/apps/core/tmp`，复用上传文件及认证附属文件。
+- `MIX_SPACE_MEDIA_ROOT`：默认本仓库 `.local/media`（2026-10-24 从旧 `ShrioRenovation/apps/mix-space/apps/core/tmp` 复制而来，旧目录保留未删）。存放头像、普通文件、图标；Core 设计上图片只走对象存储图床，未配置图床时后台上传图片会被拒绝。`static/image` 里只有从线上导入时复制的旧图片副本。
 
 生产环境在部署平台设置环境变量，直接部署 `apps/web` 时也可使用该应用的环境文件。接口基址由 `apps/web/lib/config.ts` 校验，SDK 由 `apps/web/lib/api.ts` 创建。导航调用 SDK 聚合方法；公开读取不携带管理凭据，8 秒超时；公开数据函数使用 Next 缓存，见[缓存与阅读宽度](./cache-and-layout.md)。
 
