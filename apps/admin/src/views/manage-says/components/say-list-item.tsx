@@ -249,10 +249,12 @@ export const SayEditModal = defineComponent({
               <label class="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                 作者
               </label>
+              {/* 作者/来源不是个人信息，关掉浏览器的地址、邮箱自动填充 */}
               <NInput
                 value={form.author}
                 onUpdateValue={(v) => (form.author = v)}
                 placeholder="谁说的？"
+                inputProps={{ autocomplete: 'off' }}
               />
             </div>
 
@@ -264,6 +266,7 @@ export const SayEditModal = defineComponent({
                 value={form.source}
                 onUpdateValue={(v) => (form.source = v)}
                 placeholder="出自哪里？"
+                inputProps={{ autocomplete: 'off' }}
               />
             </div>
           </div>
