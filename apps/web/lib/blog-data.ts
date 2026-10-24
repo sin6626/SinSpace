@@ -36,6 +36,17 @@ export async function getNavigationData() {
   };
 }
 
+// 站点对外地址取后台“网站地址”（Core 的 url.webUrl），sitemap、RSS 的完整链接都以它为准，不在前端写死域名。
+export async function getSiteUrl() {
+  "use cache";
+  cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
+  cacheTag("blog:navigation");
+  const { url } = await getApiClient().aggregate.getAggregateData();
+  const site = new URL(url.webUrl);
+  if (!["http:", "https:"].includes(site.protocol)) throw new Error("后台网站地址必须是 HTTP(S)。");
+  return site.href.replace(/\/$/, "");
+}
+
 export async function getCategories() {
   "use cache";
   cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
