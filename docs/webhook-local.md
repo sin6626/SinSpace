@@ -28,7 +28,7 @@ pnpm dev:admin
 | --- | --- |
 | Payload URL | `http://127.0.0.1:2323/api/webhooks/mix-space` |
 | Secret | 根 `.env.local` 中 `MIX_SPACE_WEBHOOK_SECRET` 的值 |
-| 触发事件 | 文章、手记、页面、分类、话题各自的 `_CREATE`/`_UPDATE`/`_DELETE`（共 15 个），外加 `CONTENT_REFRESH`；不要勾“全部事件” |
+| 触发事件 | 文章、手记、页面、分类、话题、说说（一言）、动态（思考）各自的 `_CREATE`/`_UPDATE`/`_DELETE`（共 21 个），外加 `CONTENT_REFRESH`；不要勾“全部事件” |
 | 触发范围 | 勾选“访客”和“系统”，合计 5 |
 | 启用状态 | 开启 |
 
@@ -46,9 +46,9 @@ pnpm dev:admin
 
 - 使用 `X-Webhook-Signature256`，对原始请求体做 HMAC-SHA256 与恒定时间比较。
 - 请求体限制 4MiB；无配置返回503，签名错误401，格式/事件错误400，超限413，缓存操作失败500。
-- 事件与失效标签（2026-10-23）：文章 → `blog:posts`、`blog:categories`；手记、话题 → `blog:notes`；页面 → `blog:pages`（导航）；分类 → `blog:categories`（导航、分类、文章列表）；`PROJECT_*` → `blog:projects`；`CONTENT_REFRESH`（备份恢复，载荷为字符串 `"restore_done"`）→ 全部公开标签。不会按请求提供任意缓存标签。
-- Core 的事件枚举没有作品事件，后台无法单独勾选；作品缓存因此缩短为 5 分钟更新。只有勾“全部事件”才会收到 `PROJECT_*`，但同时会收到访客上下线、阅读数等大量未接入事件并全部回 400，不建议。
-- 评论、说说、友链、动态等前端尚未展示的事件不接，勾选会在投递记录里显示 400。前端新增展示某类内容时，必须同时在 route.ts 的对照表里加上对应事件。
+- 事件与失效标签（2026-10-23）：文章 → `blog:posts`、`blog:categories`；手记、话题 → `blog:notes`；页面 → `blog:pages`（导航）；分类 → `blog:categories`（导航、分类、文章列表）；说说 `SAY_*` → `blog:says`；动态 `RECENTLY_*` → `blog:recently`（2026-10-24）；`PROJECT_*` → `blog:projects`；`LINK_*` → `blog:links`；`CONTENT_REFRESH`（备份恢复，载荷为字符串 `"restore_done"`）→ 全部公开标签。不会按请求提供任意缓存标签。
+- Core 的事件枚举没有作品事件，也没有友链增删改事件（只有 LINK_APPLY），后台无法单独勾选；作品、友链缓存因此缩短为 5 分钟更新。只有勾“全部事件”才会收到 `PROJECT_*`，但同时会收到访客上下线、阅读数等大量未接入事件并全部回 400，不建议。
+- 评论、友链申请（LINK_APPLY）等前端尚未展示的事件不接，勾选会在投递记录里显示 400。前端新增展示某类内容时，必须同时在 route.ts 的对照表里加上对应事件。
 - 不记录密钥或文章正文，不展示通知 UI，不修改文章。
 - Core 的签名不覆盖事件/时间戳请求头，本轮不声称提供防重放。重复通知只重复执行幂等失效。Core 的更新事件有约1秒防抖，通知本身异步。
 

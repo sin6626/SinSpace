@@ -1,8 +1,6 @@
 import { unstable_rethrow } from "next/navigation";
 import { getProjects } from "../lib/blog-data";
-
-// 后台填写的地址只放行 http(s)，避免 javascript: 等协议。
-const safeUrl = (value?: string) => value && /^https?:\/\//i.test(value) ? value : undefined;
+import { safeUrl } from "../lib/safe-url";
 
 export default async function ProjectList() {
   let projects: Awaited<ReturnType<typeof getProjects>>;

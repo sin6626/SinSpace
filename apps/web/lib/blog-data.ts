@@ -165,6 +165,54 @@ export async function getProjects() {
   }));
 }
 
+// 友链：Core 对访客只返回已通过、已失联、已封禁三种状态（审核中、已拒绝不返回）。
+// 友链没有增删改的 Webhook 事件（只有 LINK_APPLY），和作品一样缓存短一些。
+export async function getLinks() {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheTag("blog:links");
+  const data = await getApiClient().link.getAll();
+  return data.data.map(({ id, name, url, avatar, description, type, state, hide }) => ({
+    id, name, url, avatar, description, type, state, hide: Boolean(hide),
+  }));
+}
+
+export async function getSays(page: number) {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheTag("blog:says");
+  const { data, pagination } = await getApiClient().say.getAllPaginated(page, 20);
+  return {
+    data: data.map(({ id, text, author, source, created }) => ({ id, text, author, source, created })),
+    pagination: { ...pagination },
+  };
+}
+
+// 动态按 id 游标分页：before 取上一页最后一条的 id。
+export async function getRecently(before?: string) {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheTag("blog:recently");
+  const size = 20;
+  const { data } = await getApiClient().recently.getList({ before, size });
+  // 引用是 Core 直接读出的原文档，只取拼链接需要的字段。
+  const ref = (refType: unknown, value: unknown) => {
+    const doc = typeof value === "object" && value ? value as Record<string, unknown> : null;
+    if (!doc || typeof doc.title !== "string") return null;
+    const text = (key: string) => typeof doc[key] === "string" ? doc[key] as string : undefined;
+    return { type: String(refType), title: doc.title, slug: text("slug"), nid: typeof doc.nid === "number" ? doc.nid : undefined, categoryId: text("category") };
+  };
+  return {
+    data: data.map((item) => ({
+      id: item.id,
+      content: item.content,
+      created: item.created,
+      ref: ref(item.refType, item.ref),
+    })),
+    hasMore: data.length === size,
+  };
+}
+
 export async function getPage(slug: string) {
   "use cache";
   cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });

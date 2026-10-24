@@ -22,6 +22,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: path("posts") },
     { url: path("notes") },
     { url: path("projects") },
+    { url: path("friends") },
+    { url: path("says") },
+    { url: path("thinking") },
     ...navigation.pageMeta.map((page) => ({ url: path(page.slug) })),
     ...categories.map((category) => ({ url: path("categories", category.slug) })),
     ...posts.flatMap((post) => post.category

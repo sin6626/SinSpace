@@ -11,8 +11,12 @@ const kindTags = {
   PAGE: ["blog:pages"],
   CATEGORY: ["blog:categories"],
   TOPIC: ["blog:notes"],
-  // Core 的事件枚举没有 PROJECT_*，只有后台勾选“全部事件”时才会收到。
+  SAY: ["blog:says"],
+  RECENTLY: ["blog:recently"],
+  // Core 的事件枚举没有 PROJECT_*、LINK_*（友链只有 LINK_APPLY），只有后台勾选“全部事件”时才会收到；
+  // 列在这里也让备份恢复（CONTENT_REFRESH）时一并失效。
   PROJECT: ["blog:projects"],
+  LINK: ["blog:links"],
 };
 const eventTags = new Map<string, readonly string[]>(
   Object.entries(kindTags).flatMap(([kind, tags]) =>

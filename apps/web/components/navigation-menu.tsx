@@ -11,6 +11,12 @@ export type NavigationState =
   | { status: "loading" | "error" }
   | { status: "ready"; articles: NavigationLink[]; pages: NavigationLink[] };
 
+const moreLinks: NavigationLink[] = [
+  { label: "友链", href: "/friends" },
+  { label: "一言", href: "/says" },
+  { label: "思考", href: "/thinking" },
+];
+
 const verticalQuery = "(min-width: 640px)";
 function subscribe(onChange: () => void) {
   const query = window.matchMedia(verticalQuery);
@@ -97,6 +103,23 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
             >{label}</NavigationMenu.Link>
           </NavigationMenu.Item>
         ))}
+        {/* “更多”没有自己的页面，触发器是普通按钮，点击或悬停只展开子菜单 */}
+        <NavigationMenu.Item value="更多">
+          <NavigationMenu.Trigger className="navigation-Trigger">
+            <NavigationMenu.Icon className="navigation-Icon" aria-hidden="true">‹</NavigationMenu.Icon>更多
+          </NavigationMenu.Trigger>
+          <NavigationMenu.Content className="navigation-Content">
+            <ul className="navigation-FlexLinkList">
+              {moreLinks.map(({ label, href }) => (
+                <li key={href}>
+                  <NavigationMenu.Link className="navigation-LinkCard" active={pathname === href} closeOnClick render={<Link href={href} />}>
+                    <span className="navigation-LinkTitle">{label}</span>
+                  </NavigationMenu.Link>
+                </li>
+              ))}
+            </ul>
+          </NavigationMenu.Content>
+        </NavigationMenu.Item>
         {process.env.NODE_ENV !== "production" && (
           <NavigationMenu.Item>
             <NavigationMenu.Link

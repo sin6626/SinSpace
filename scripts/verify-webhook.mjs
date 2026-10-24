@@ -65,13 +65,16 @@ try {
     assert.deepEqual(await tagsFor(`CATEGORY_${action}`, JSON.stringify({ _id: id, name: '技术' })), ['blog:categories'])
     assert.deepEqual(await tagsFor(`TOPIC_${action}`, JSON.stringify({ id })), ['blog:notes'])
     assert.deepEqual(await tagsFor(`PROJECT_${action}`, JSON.stringify({ id })), ['blog:projects'])
+    assert.deepEqual(await tagsFor(`SAY_${action}`, JSON.stringify({ id })), ['blog:says'])
+    assert.deepEqual(await tagsFor(`RECENTLY_${action}`, JSON.stringify({ id })), ['blog:recently'])
+    assert.deepEqual(await tagsFor(`LINK_${action}`, JSON.stringify({ id })), ['blog:links'])
   }
-  assert.deepEqual((await tagsFor('CONTENT_REFRESH', '"restore_done"')).sort(), ['blog:categories', 'blog:notes', 'blog:pages', 'blog:posts', 'blog:projects'])
-  for (const event of ['COMMENT_CREATE', 'SAY_CREATE', 'VISITOR_ONLINE']) await expectStatus(event, JSON.stringify({ id }), 400)
+  assert.deepEqual((await tagsFor('CONTENT_REFRESH', '"restore_done"')).sort(), ['blog:categories', 'blog:links', 'blog:notes', 'blog:pages', 'blog:posts', 'blog:projects', 'blog:recently', 'blog:says'])
+  for (const event of ['COMMENT_CREATE', 'LINK_APPLY', 'VISITOR_ONLINE']) await expectStatus(event, JSON.stringify({ id }), 400)
   await expectStatus('NOTE_UPDATE', JSON.stringify({ id: 'bad' }), 400)
   failInvalidation = true
   await expectStatus('POST_UPDATE', JSON.stringify({ id }), 500)
-  console.log('PASS webhook signatures, raw UTF-8, input limits, health check, post/note/page/category/topic/project/restore tags, allowlist and cache failure')
+  console.log('PASS webhook signatures, raw UTF-8, input limits, health check, post/note/page/category/topic/say/recently/project/link/restore tags, allowlist and cache failure')
 } finally {
   if (previous === undefined) delete process.env.MIX_SPACE_WEBHOOK_SECRET
   else process.env.MIX_SPACE_WEBHOOK_SECRET = previous
