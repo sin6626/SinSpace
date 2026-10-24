@@ -61,9 +61,10 @@ export const createProvideSectionComponent = (
 
       watchEffect(() => {
         if (oauthData.value[type] === undefined) return
-        const { clientId, enabled } = oauthData.value[type]
+        const { clientId, clientSecret, enabled } = oauthData.value[type]
         isEnabled.value = enabled
         formValueRef.value.clientId = clientId
+        formValueRef.value.secret = clientSecret
       })
 
       const formRef = ref<null | FormInst>(null)
@@ -158,6 +159,7 @@ export const createProvideSectionComponent = (
                   formValueRef.value.secret = v
                 }}
                 placeholder="输入 Client Secret"
+                inputProps={{ autocomplete: 'new-password' }}
               />
             </NFormItem>
           </NForm>

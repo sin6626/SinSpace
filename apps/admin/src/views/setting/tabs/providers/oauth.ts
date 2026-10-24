@@ -6,6 +6,8 @@ export type OauthProviderType = 'github' | 'google'
 export interface OauthData {
   providers: ProvidersItem[]
   public: Partial<Record<OauthProviderType, ProviderPublicConfig>>
+  // SinPersonalSpace：Core 的后台配置接口会回显已保存的密钥，表单里掩码显示、可点眼睛查看。
+  secrets?: Partial<Record<OauthProviderType, { clientSecret?: string }>>
 }
 
 interface ProvidersItem {
@@ -20,7 +22,11 @@ interface ProviderPublicConfig {
 export type FlatOauthData = Partial<
   Record<
     OauthProviderType,
-    ProviderPublicConfig & { enabled: boolean; type: OauthProviderType }
+    ProviderPublicConfig & {
+      clientSecret: string
+      enabled: boolean
+      type: OauthProviderType
+    }
   >
 >
 
@@ -37,6 +43,7 @@ export function flattenOauthData(data: OauthData): FlatOauthData {
 
     flatData[providerType] = {
       clientId: publicConfig?.clientId ?? '',
+      clientSecret: data.secrets?.[providerType]?.clientSecret ?? '',
       enabled: provider?.enabled ?? false,
       type: providerType,
     }
