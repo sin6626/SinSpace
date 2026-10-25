@@ -113,3 +113,33 @@
 @media (max-width: 639px) {
   .article-body { font-size: 1.0625rem; }
 }
+
+/* 详情页阅读数旁的点赞按钮（article-stats.tsx）：与其他小按钮同样的直角实线风格 */
+.article-like {
+  padding: 0 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.article-like:disabled {
+  cursor: default;
+}
+
+.article-like[aria-pressed="true"] {
+  border-color: var(--foreground);
+  color: var(--foreground);
+}
+
+@media (hover: hover) {
+  .article-like:not(:disabled):hover {
+    background: var(--accent);
+  }
+}
+
+.article-like:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -1px;
+}

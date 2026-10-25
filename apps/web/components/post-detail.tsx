@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { getPost } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
+import { getApiUrl } from "../lib/config";
 import ArticleBody from "./article-body";
+import ArticleStats from "./article-stats";
 import "./post-detail.css";
 import { Suspense } from "react";
 import Comments from "./comments";
@@ -41,6 +43,7 @@ export default async function PostDetail({ params }: {
             {formatDate(post.created)}
           </time>
           {post.category && <Link href={`/categories/${encodeURIComponent(post.category.slug)}`}>{post.category.name}</Link>}
+          <ArticleStats apiUrl={getApiUrl()} id={post.id} type="post" read={post.count.read} like={post.count.like} />
         </div>
       </header>
       <div className="post-list-content">

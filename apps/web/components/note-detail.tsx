@@ -3,7 +3,9 @@ import { notFound, unstable_rethrow } from "next/navigation";
 import { getNote } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
 import { Suspense } from "react";
+import { getApiUrl } from "../lib/config";
 import ArticleBody from "./article-body";
+import ArticleStats from "./article-stats";
 import Comments from "./comments";
 import "./post-detail.css";
 
@@ -32,6 +34,7 @@ export default async function NoteDetail({ params }: { params: Promise<{ nid: st
           {note.topic && <span>{note.topic}</span>}
           {note.mood && <span>心情：{note.mood}</span>}
           {note.weather && <span>天气：{note.weather}</span>}
+          <ArticleStats apiUrl={getApiUrl()} id={note.id} type="note" read={note.count.read} like={note.count.like} />
         </div>
       </header>
       <div className="post-list-content">
