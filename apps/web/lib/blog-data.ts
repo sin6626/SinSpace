@@ -301,6 +301,47 @@ export async function getComments(refId: string, page: number) {
   };
 }
 
+// AI 摘要与翻译：只读取后台已生成的内容（onlyDb），前端从不触发生成，费用完全由后台控制。
+// 生成、修改摘要/翻译都不发 Webhook 事件，缓存 1 小时。站点原文是中文，翻译只列出非中文的语言。
+export const translationLanguages = { en: "English", ja: "日本語" } as const;
+export type TranslationLanguage = keyof typeof translationLanguages;
+export const isTranslationLanguage = (value: unknown): value is TranslationLanguage =>
+  typeof value === "string" && Object.hasOwn(translationLanguages, value);
+
+export async function getArticleAi(id: string, lang: "zh" | TranslationLanguage = "zh") {
+  "use cache";
+  cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
+  cacheTag("blog:ai", `blog:ai:${id}`);
+  const ai = getApiClient().ai;
+  const [summary, languages] = await Promise.all([
+    ai.getSummary({ articleId: id, lang, onlyDb: true }).catch(() => null),
+    ai.getAvailableLanguages(id).catch(() => []),
+  ]);
+  // Core 返回 { data: [...] }，SDK 类型写的是数组，两种都兼容。
+  const list: unknown = Array.isArray(languages) ? languages : (languages as { data?: unknown })?.data;
+  return {
+    summary: typeof summary?.summary === "string" && summary.summary.trim() ? summary.summary.trim() : null,
+    languages: Array.isArray(list) ? list.filter(isTranslationLanguage) : [],
+  };
+}
+
+export async function getArticleTranslation(id: string, lang: TranslationLanguage) {
+  "use cache";
+  cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
+  cacheTag("blog:ai", `blog:ai:${id}`);
+  const translation = await orNotFound(getApiClient().ai.getTranslation({ articleId: id, lang }));
+  if (!translation) return null;
+  const doc = translation as typeof translation & { contentFormat?: string; content?: string };
+  return {
+    title: doc.title,
+    text: doc.text,
+    contentFormat: doc.contentFormat,
+    ...lexicalContent(doc),
+    sourceLang: doc.sourceLang,
+    aiModel: doc.aiModel,
+  };
+}
+
 export async function getPage(slug: string) {
   "use cache";
   cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });

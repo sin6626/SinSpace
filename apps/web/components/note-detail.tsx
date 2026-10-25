@@ -5,13 +5,14 @@ import { formatDate } from "../lib/date";
 import { Suspense } from "react";
 import { getApiUrl } from "../lib/config";
 import ArticleBody from "./article-body";
+import { ArticleAiNotes, ArticleLanguages, loadArticleAi } from "./article-ai";
 import ArticleStats from "./article-stats";
 import Comments from "./comments";
 import { ArticleNotifications, ReadingCount } from "./notifications";
 import NoteUnlock from "./note-unlock";
 import "./post-detail.css";
 
-export default async function NoteDetail({ params }: { params: Promise<{ nid: string }> }) {
+export default async function NoteDetail({ params, searchParams }: { params: Promise<{ nid: string }>; searchParams?: Promise<{ lang?: string | string[] }> }) {
   const { nid: rawNid } = await params;
   if (!/^[1-9]\d*$/.test(rawNid) || !Number.isSafeInteger(Number(rawNid))) notFound();
   const href = `/notes/${rawNid}`;
@@ -38,12 +39,14 @@ export default async function NoteDetail({ params }: { params: Promise<{ nid: st
     );
   }
 
+  const ai = await loadArticleAi(note.id, (await searchParams)?.lang);
+  const body = ai.translation ?? note;
   return (
-    <article className="post-detail">
+    <article className="post-detail" lang={ai.lang ?? undefined}>
       <ArticleNotifications id={note.id} />
       <header className="page-heading">
         <Link href="/notes">返回手记列表</Link>
-        <h1 className="post-detail-title">{note.title}</h1>
+        <h1 className="post-detail-title">{body.title}</h1>
         <div className="post-meta">
           <time dateTime={note.created}>{formatDate(note.created)}</time>
           {note.topic && <span>{note.topic}</span>}
@@ -52,9 +55,11 @@ export default async function NoteDetail({ params }: { params: Promise<{ nid: st
           <ArticleStats apiUrl={getApiUrl()} id={note.id} type="note" read={note.count.read} like={note.count.like} />
           <ReadingCount apiUrl={getApiUrl()} id={note.id} />
         </div>
+        <ArticleLanguages href={href} ai={ai} />
       </header>
       <div className="post-list-content">
-        <ArticleBody text={note.text} contentFormat={note.contentFormat} content={note.content} emptyText="这篇手记暂时没有可展示的正文。" />
+        <ArticleAiNotes ai={ai} />
+        <ArticleBody text={body.text} contentFormat={body.contentFormat} content={body.content} emptyText="这篇手记暂时没有可展示的正文。" />
         {(note.newer || note.older) && (
           <nav className="post-pagination" aria-label="相邻手记">
             {note.newer ? <Link href={`/notes/${note.newer.nid}`}>较新：{note.newer.title}</Link> : <span />}

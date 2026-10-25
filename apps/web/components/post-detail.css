@@ -143,3 +143,34 @@
   outline: 2px solid var(--ring);
   outline-offset: -1px;
 }
+
+/* AI 摘要、翻译提示与阅读语言切换（article-ai.tsx） */
+.article-languages {
+  margin-top: 0.5rem;
+}
+
+/* 当前语言只用下划线标识，不加粗，避免切换时整行重排 */
+.article-languages a[aria-current="page"] {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.ai-summary {
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  border-left: 2px solid var(--border);
+  background: var(--muted);
+  line-height: 1.7;
+}
+
+.ai-summary-label {
+  margin-bottom: 0.25rem;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+}
+
+.ai-note {
+  margin-bottom: 1rem;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}

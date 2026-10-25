@@ -5,13 +5,15 @@ import { getPost, getTimeline } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
 import { getApiUrl } from "../lib/config";
 import ArticleBody from "./article-body";
+import { ArticleAiNotes, ArticleLanguages, loadArticleAi } from "./article-ai";
 import ArticleStats from "./article-stats";
 import "./post-detail.css";
 import { Suspense } from "react";
 import Comments from "./comments";
 
-export default async function PostDetail({ params }: {
+export default async function PostDetail({ params, searchParams }: {
   params: Promise<{ category: string; slug: string }>;
+  searchParams?: Promise<{ lang?: string | string[] }>;
 }) {
   const route = await params;
   let category: string;
@@ -31,13 +33,15 @@ export default async function PostDetail({ params }: {
     return <p className="post-list-content" role="alert">文章读取失败。<a href={href}>重试</a></p>;
   }
   if (!post) notFound();
+  const ai = await loadArticleAi(post.id, (await searchParams)?.lang);
+  const body = ai.translation ?? post;
 
   return (
-    <article className="post-detail">
+    <article className="post-detail" lang={ai.lang ?? undefined}>
       <ArticleNotifications id={post.id} />
       <header className="page-heading">
         <Link href="/posts">返回文章列表</Link>
-        <h1 className="post-detail-title">{post.title}</h1>
+        <h1 className="post-detail-title">{body.title}</h1>
         <div className="post-meta">
           <time dateTime={post.created}>
             {formatDate(post.created)}
@@ -46,9 +50,11 @@ export default async function PostDetail({ params }: {
           <ArticleStats apiUrl={getApiUrl()} id={post.id} type="post" read={post.count.read} like={post.count.like} />
           <ReadingCount apiUrl={getApiUrl()} id={post.id} />
         </div>
+        <ArticleLanguages href={href} ai={ai} />
       </header>
       <div className="post-list-content">
-        <ArticleBody text={post.text} contentFormat={post.contentFormat} content={post.content} emptyText="这篇文章暂时没有可展示的正文。" />
+        <ArticleAiNotes ai={ai} />
+        <ArticleBody text={body.text} contentFormat={body.contentFormat} content={body.content} emptyText="这篇文章暂时没有可展示的正文。" />
         <Suspense fallback={null}>
           <PostNeighbors id={post.id} />
         </Suspense>
