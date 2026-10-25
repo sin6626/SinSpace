@@ -39,15 +39,15 @@ export default async function NoteDetail({ params }: { params: Promise<{ nid: st
       </header>
       <div className="post-list-content">
         <ArticleBody text={note.text} contentFormat={note.contentFormat} content={note.content} emptyText="这篇手记暂时没有可展示的正文。" />
-        <Suspense fallback={<p className="post-meta" role="status">正在读取评论…</p>}>
-          <Comments refId={note.id} refType="Note" allowComment={note.allowComment} />
-        </Suspense>
         {(note.newer || note.older) && (
           <nav className="post-pagination" aria-label="相邻手记">
             {note.newer ? <Link href={`/notes/${note.newer.nid}`}>较新：{note.newer.title}</Link> : <span />}
             {note.older ? <Link href={`/notes/${note.older.nid}`}>较早：{note.older.title}</Link> : <span />}
           </nav>
         )}
+        <Suspense fallback={<p className="post-meta" role="status">正在读取评论…</p>}>
+          <Comments refId={note.id} refType="Note" allowComment={note.allowComment} />
+        </Suspense>
       </div>
     </article>
   );

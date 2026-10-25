@@ -1,7 +1,7 @@
 import { ArticleNotifications } from "./notifications";
 import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
-import { getPost } from "../lib/blog-data";
+import { getPost, getTimeline } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
 import { getApiUrl } from "../lib/config";
 import ArticleBody from "./article-body";
@@ -48,10 +48,30 @@ export default async function PostDetail({ params }: {
       </header>
       <div className="post-list-content">
         <ArticleBody text={post.text} contentFormat={post.contentFormat} content={post.content} emptyText="这篇文章暂时没有可展示的正文。" />
+        <Suspense fallback={null}>
+          <PostNeighbors id={post.id} />
+        </Suspense>
         <Suspense fallback={<p className="post-meta" role="status">正在读取评论…</p>}>
           <Comments refId={post.id} refType="Post" allowComment={post.allowComment} />
         </Suspense>
       </div>
     </article>
+  );
+}
+
+// 相邻文章：复用时间线缓存（全部已发布文章按发布时间倒序），读取失败时不显示。
+async function PostNeighbors({ id }: { id: string }) {
+  const posts = await getTimeline().then((items) => items.flatMap((item) => item.kind === "post" ? [item] : []), () => []);
+  const index = posts.findIndex((item) => item.id === id);
+  if (index < 0) return null;
+  const href = (item: (typeof posts)[number]) => `/posts/${encodeURIComponent(item.category.slug)}/${encodeURIComponent(item.slug)}`;
+  const newer = posts[index - 1];
+  const older = posts[index + 1];
+  if (!newer && !older) return null;
+  return (
+    <nav className="post-pagination" aria-label="相邻文章">
+      {newer ? <Link href={href(newer)}>较新：{newer.title}</Link> : <span />}
+      {older ? <Link href={href(older)}>较早：{older.title}</Link> : <span />}
+    </nav>
   );
 }
