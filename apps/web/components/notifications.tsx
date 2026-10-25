@@ -7,6 +7,8 @@ import { getNotification, notificationSettings } from "../lib/notification-copy"
 import "./notifications.css";
 
 const SocketContext = createContext<Socket | null>(null);
+// 全站在线人数：Core 在有人上线、下线时广播 VISITOR_ONLINE / VISITOR_OFFLINE，载荷带当前人数。
+const OnlineContext = createContext<number | null>(null);
 
 export default function Notifications({ url, children }: { url: string; children: React.ReactNode }) {
   return (
@@ -23,11 +25,14 @@ export default function Notifications({ url, children }: { url: string; children
 
 function Connection({ url, children }: { url: string; children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [online, setOnline] = useState<number | null>(null);
   // Base UI: 获取 Toast的管理器, 返回一个管理器, add方法是用于添加Toast 通知的
   const { add } = Toast.useToastManager();
   useEffect(() => {
     const connection = io(url, { transports: ["websocket"], autoConnect: false });
     const onMessage = (message: unknown) => {
+      const count = onlineCount(message);
+      if (count !== null) setOnline(count);
       const notification = getNotification(message);
       if (notification) add(notification);
     };
@@ -39,7 +44,48 @@ function Connection({ url, children }: { url: string; children: React.ReactNode 
       connection.disconnect();
     };
   }, [url, add]);
-  return <SocketContext value={socket}>{children}</SocketContext>;
+  return <SocketContext value={socket}><OnlineContext value={online}>{children}</OnlineContext></SocketContext>;
+}
+
+function onlineCount(message: unknown) {
+  if (!message || typeof message !== "object" || !("type" in message) || !("data" in message)) return null;
+  if (message.type !== "VISITOR_ONLINE" && message.type !== "VISITOR_OFFLINE") return null;
+  const data = message.data as { online?: unknown } | null;
+  return typeof data?.online === "number" ? data.online : null;
+}
+
+export function OnlineCount() {
+  const online = useContext(OnlineContext);
+  return online === null ? null : <p className="site-online">在线 {online} 人</p>;
+}
+
+// 正在阅读：每篇文章/手记一个房间（article-<id>，由 ArticleNotifications 加入），人数读 Core 的 /activity/online-count。
+// 只在标签页可见时每 30 秒刷新一次；数据都在 Core 内存里，不写库。
+export function ReadingCount({ apiUrl, id }: { apiUrl: string; id: string }) {
+  const socket = useContext(SocketContext);
+  const [count, setCount] = useState<number | null>(null);
+  useEffect(() => {
+    if (!socket) return;
+    let stopped = false;
+    const load = async () => {
+      if (document.hidden) return;
+      try {
+        const response = await fetch(`${apiUrl}/activity/online-count`);
+        const body = response.ok ? await response.json() as { rooms?: Record<string, number> } : null;
+        // Core 的响应会把对象键转成下划线命名，房间名 article-<id> 在这里变成 article_<id>。
+        if (!stopped && body) setCount(body.rooms?.[`article_${id}`] ?? body.rooms?.[`article-${id}`] ?? 0);
+      } catch {}
+    };
+    // 稍等加入房间的消息先到 Core。
+    const first = setTimeout(load, 1000);
+    const timer = setInterval(load, 30000);
+    return () => {
+      stopped = true;
+      clearTimeout(first);
+      clearInterval(timer);
+    };
+  }, [socket, apiUrl, id]);
+  return count ? <span>正在阅读 {count} 人</span> : null;
 }
 
 export function ArticleNotifications({ id }: { id: string }) {

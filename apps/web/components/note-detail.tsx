@@ -7,6 +7,7 @@ import { getApiUrl } from "../lib/config";
 import ArticleBody from "./article-body";
 import ArticleStats from "./article-stats";
 import Comments from "./comments";
+import { ArticleNotifications, ReadingCount } from "./notifications";
 import NoteUnlock from "./note-unlock";
 import "./post-detail.css";
 
@@ -39,6 +40,7 @@ export default async function NoteDetail({ params }: { params: Promise<{ nid: st
 
   return (
     <article className="post-detail">
+      <ArticleNotifications id={note.id} />
       <header className="page-heading">
         <Link href="/notes">返回手记列表</Link>
         <h1 className="post-detail-title">{note.title}</h1>
@@ -48,6 +50,7 @@ export default async function NoteDetail({ params }: { params: Promise<{ nid: st
           {note.mood && <span>心情：{note.mood}</span>}
           {note.weather && <span>天气：{note.weather}</span>}
           <ArticleStats apiUrl={getApiUrl()} id={note.id} type="note" read={note.count.read} like={note.count.like} />
+          <ReadingCount apiUrl={getApiUrl()} id={note.id} />
         </div>
       </header>
       <div className="post-list-content">

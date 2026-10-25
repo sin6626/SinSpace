@@ -1,4 +1,4 @@
-import { ArticleNotifications } from "./notifications";
+import { ArticleNotifications, ReadingCount } from "./notifications";
 import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { getPost, getTimeline } from "../lib/blog-data";
@@ -44,6 +44,7 @@ export default async function PostDetail({ params }: {
           </time>
           {post.category && <Link href={`/categories/${encodeURIComponent(post.category.slug)}`}>{post.category.name}</Link>}
           <ArticleStats apiUrl={getApiUrl()} id={post.id} type="post" read={post.count.read} like={post.count.like} />
+          <ReadingCount apiUrl={getApiUrl()} id={post.id} />
         </div>
       </header>
       <div className="post-list-content">

@@ -331,6 +331,13 @@ a:focus-visible,
   border: 1px solid var(--border);
 }
 
+/* 左栏底部的全站在线人数（notifications.tsx 的 OnlineCount） */
+.site-online {
+  margin-top: 0.75rem;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+}
+
 /* 时间线（components/timeline-list.tsx）：日期列固定宽度，标题可换行 */
 .timeline-year + .timeline-year {
   margin-top: 2rem;

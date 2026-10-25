@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ViewTransition } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
-import Notifications from "@/components/notifications";
+import Notifications, { OnlineCount } from "@/components/notifications";
 import { getApiUrl } from "../lib/config";
 import { getSiteUrl } from "../lib/blog-data";
 import { siteDescription, siteName } from "../lib/page-metadata";
@@ -60,6 +60,7 @@ export default function RootLayout({ children, details }: LayoutProps<"/">) {
               </div>
               <Navigation />
               <ThemeSwitcher />
+              <OnlineCount />
             </header>
             <ViewTransition default="page-switch">
               <main className="site-content" id="main-content" tabIndex={-1}>
