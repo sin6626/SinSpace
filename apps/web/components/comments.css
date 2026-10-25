@@ -243,3 +243,22 @@
   padding-top: 0;
   border-top: 0;
 }
+
+/* 友链页底部的申请区（friend-list.tsx） */
+.link-apply {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.link-apply h2 {
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.link-apply dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.25rem 1rem;
+}

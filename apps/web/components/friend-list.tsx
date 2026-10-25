@@ -1,12 +1,15 @@
 import { LinkState, LinkType } from "@mx-space/api-client";
 import { unstable_rethrow } from "next/navigation";
-import { getLinks } from "../lib/blog-data";
+import { getLinkApplyOpen, getLinks, getSiteUrl } from "../lib/blog-data";
+import { getApiUrl } from "../lib/config";
+import { siteDescription, siteName } from "../lib/page-metadata";
 import { safeUrl } from "../lib/safe-url";
+import LinkApplyForm from "./link-apply-form";
 
 type Link = Awaited<ReturnType<typeof getLinks>>[number];
 
 // 分组沿用 Shiro：隐藏的不显示；已通过的按类型分“朋友”“收藏”；失联的只列名字（不可访问，不给链接）；
-// 被封禁的不展示。友链申请表单暂未做。
+// 被封禁的不展示。页面底部是友链申请（后台开放申请时才有表单）。
 function LinkCards({ links }: { links: Link[] }) {
   return (
     <ul className="post-list">
@@ -69,7 +72,26 @@ export default async function FriendList() {
             <ul>{outdated.map((link) => <li key={link.id}>{link.name}</li>)}</ul>
           </details>
         )}
+        <LinkApply />
       </div>
     </>
+  );
+}
+
+// 申请区：先给出本站信息方便对方回加，再给申请表单。开关读取失败时按“未开放”处理，不影响上面的友链列表。
+async function LinkApply() {
+  const [open, site] = await Promise.all([getLinkApplyOpen().catch(() => false), getSiteUrl().catch(() => null)]);
+  return (
+    <section className="link-apply" aria-labelledby="link-apply-heading">
+      <h2 id="link-apply-heading">申请友链</h2>
+      {site && (
+        <dl className="post-meta">
+          <dt>站点名称</dt><dd>{siteName}</dd>
+          <dt>站点地址</dt><dd>{site}</dd>
+          <dt>一句话介绍</dt><dd>{siteDescription}</dd>
+        </dl>
+      )}
+      {open ? <LinkApplyForm apiUrl={getApiUrl()} /> : <p className="post-meta">暂未开放友链申请。</p>}
+    </section>
   );
 }

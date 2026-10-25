@@ -211,6 +211,14 @@ export async function getLinks() {
   }));
 }
 
+// 后台“友链设置”里是否开放申请。改动没有 Webhook 事件，缓存短一些。
+export async function getLinkApplyOpen() {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheTag("blog:links");
+  return Boolean(await getApiClient().link.canApplyLink());
+}
+
 export async function getSays(page: number) {
   "use cache";
   cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
