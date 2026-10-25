@@ -7,6 +7,7 @@ import { getApiUrl } from "../lib/config";
 import ArticleBody from "./article-body";
 import ArticleStats from "./article-stats";
 import Comments from "./comments";
+import NoteUnlock from "./note-unlock";
 import "./post-detail.css";
 
 export default async function NoteDetail({ params }: { params: Promise<{ nid: string }> }) {
@@ -21,8 +22,20 @@ export default async function NoteDetail({ params }: { params: Promise<{ nid: st
     return <p className="post-list-content" role="alert">手记读取失败。<a href={href}>重试</a></p>;
   }
   if (!note) notFound();
-  // 新前端暂不提供密码输入。
-  if (note.locked) return <p className="post-list-content" role="status">这篇手记设置了访问密码，暂不支持在这里查看。<Link href="/notes">返回手记列表</Link></p>;
+  // Core 对加密手记返回 403，标题也拿不到；输入密码后由服务端函数带密码读取正文。
+  if (note.locked) {
+    return (
+      <article className="post-detail">
+        <header className="page-heading">
+          <Link href="/notes">返回手记列表</Link>
+          <h1 className="post-detail-title">加密手记</h1>
+        </header>
+        <div className="post-list-content">
+          <NoteUnlock nid={Number(rawNid)} />
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article className="post-detail">

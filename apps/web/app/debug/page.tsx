@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ArticleBody from "@/components/article-body";
 import BlogNavigation from "@/components/navigation-menu";
+import NoteUnlock from "@/components/note-unlock";
 import ToastButtons from "./toast-buttons";
 
 export const metadata: Metadata = { title: "调试" };
@@ -86,8 +87,8 @@ export default function DebugPage() {
             <p className="post-list-content" role="alert">手记读取失败。<Link href="/debug">重试</Link></p>
             <p className="post-empty">还没有公开的手记。</p>
             <p className="post-empty">还没有作品。</p>
-            <p className="post-meta">note-detail.tsx：Core 对加密手记返回 403 时</p>
-            <p className="post-list-content" role="status">这篇手记设置了访问密码，暂不支持在这里查看。<Link href="/notes">返回手记列表</Link></p>
+            <p className="post-meta">note-detail.tsx：Core 对加密手记返回 403 时显示 note-unlock.tsx 的密码表单（真实组件，提交会请求 Core，这里只展示）</p>
+            <NoteUnlock nid={1} />
           </li>
           <li>
             <h2>时间线、友链、一言与思考</h2>
