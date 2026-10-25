@@ -5,6 +5,7 @@ import ArticleBody from "@/components/article-body";
 import BlogNavigation from "@/components/navigation-menu";
 import NoteUnlock from "@/components/note-unlock";
 import RecentlyAttitude from "@/components/recently-attitude";
+import SubscribeForm from "@/components/subscribe-form";
 import { getApiUrl } from "@/lib/config";
 import ToastButtons from "./toast-buttons";
 
@@ -116,6 +117,11 @@ export default function DebugPage() {
             <p className="post-meta" role="status">悄悄话已发送，只有博主能看到。</p>
             <p className="post-meta" role="alert">网络错误，评论没有发出去，请稍后重试。</p>
             <p className="post-meta">读者登录（reader-session.ts）：未登录显示“用 GitHub 登录 / 或以游客身份填写下方信息”，已登录显示“以 某某 的身份评论 · 退出”并隐藏昵称邮箱网址；关闭游客评论时只显示“用 GitHub 登录后评论”。</p>
+          </li>
+          <li>
+            <h2>邮件订阅</h2>
+            <p className="post-meta">subscribe-form.tsx（真实组件，提交会请求 Core；后台未开启订阅时 Core 会拒绝）。默认右栏只在后台开启订阅时显示它。</p>
+            <SubscribeForm apiUrl={getApiUrl()} types={["post_c", "note_c"]} />
           </li>
           <li>
             <h2>通知 Toast</h2>

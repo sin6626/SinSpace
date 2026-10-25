@@ -60,6 +60,16 @@ export async function getLoginProviders() {
   return Array.isArray(data) ? data.filter((provider) => provider === "github") : [];
 }
 
+// 邮件订阅：后台开启订阅且配置了邮件服务时才可用；只放行文章、手记两类（Core 的 allow_types）。
+export async function getSubscribeOptions() {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheTag("blog:navigation");
+  const status = await getApiClient().subscribe.check();
+  const types = (status.allowTypes ?? []).filter((type): type is "post_c" | "note_c" => type === "post_c" || type === "note_c");
+  return { enabled: Boolean(status.enable) && types.length > 0, types };
+}
+
 export async function getSiteUrl() {
   return (await getSiteSettings()).siteUrl;
 }
