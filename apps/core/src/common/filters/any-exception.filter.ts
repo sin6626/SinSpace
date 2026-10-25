@@ -8,6 +8,7 @@ import { EventManagerService } from '~/processors/helper/helper.event.service'
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import { getIp } from '../../utils/ip.util'
 import { BizException } from '../exceptions/biz.exception'
+import { redactUrl } from '~/utils/log-url.util'
 
 interface ErrorLike {
   readonly status: number
@@ -67,7 +68,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       (exception as any)?.response?.message ||
       (exception as ErrorLike)?.message ||
       ''
-    const url = request.raw?.url || request.url || 'Unknown URL'
+    const url = redactUrl(request.raw?.url || request.url || 'Unknown URL')
 
     if (status === HttpStatus.TOO_MANY_REQUESTS) {
       this.logger.warn(`IP: ${ip} 疑似遭到攻击 Path: ${decodeURI(url)}`)

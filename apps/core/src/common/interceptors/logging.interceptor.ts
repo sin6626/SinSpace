@@ -9,6 +9,7 @@ import { getNestExecutionContextRequest } from '~/transformers/get-req.transform
 import pc from 'picocolors'
 import { Observable } from 'rxjs'
 import { tap } from 'rxjs/operators'
+import { redactUrl } from '~/utils/log-url.util'
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -21,7 +22,7 @@ export class LoggingInterceptor implements NestInterceptor {
     next: CallHandler<any>,
   ): Observable<any> {
     const request = getNestExecutionContextRequest(context)
-    const content = `${request.method} -> ${request.url}`
+    const content = `${request.method} -> ${redactUrl(request.url)}`
     this.logger.debug(`+++ 收到请求：${content}`)
     const now = Date.now()
 
