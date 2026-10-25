@@ -242,6 +242,10 @@ export async function getRecently(before?: string) {
       content: item.content,
       created: item.created,
       ref: ref(item.refType, item.ref),
+      up: item.up ?? 0,
+      down: item.down ?? 0,
+      comments: (item as { comments?: number }).comments ?? 0,
+      allowComment: item.allowComment !== false,
     })),
     hasMore: data.length === size,
   };

@@ -226,3 +226,20 @@
   outline: 2px solid var(--ring);
   outline-offset: -1px;
 }
+
+/* 思考列表里每条的评论默认收起（thinking-list.tsx） */
+.thinking-comments {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.thinking-comments summary {
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.thinking-comments .comments {
+  margin-top: 0.75rem;
+  padding-top: 0;
+  border-top: 0;
+}

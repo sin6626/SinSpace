@@ -3,7 +3,7 @@
 import { useId, useState, type FormEvent } from "react";
 import { signInWithGitHub, signOut, useReaderSession } from "./reader-session";
 
-export type CommentRefType = "Post" | "Note" | "Page";
+export type CommentRefType = "Post" | "Note" | "Page" | "Recently";
 
 // allowGuest：后台是否允许游客评论；github：后台是否启用了 GitHub 登录。
 type Props = { apiUrl: string; allowGuest: boolean; github: boolean } & ({ refId: string; refType: CommentRefType; replyTo?: never } | { replyTo: { id: string; author: string }; refId?: never; refType?: never });

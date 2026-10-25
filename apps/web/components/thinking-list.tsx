@@ -2,7 +2,11 @@ import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { getCategories, getRecently } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
+import { Suspense } from "react";
+import { getApiUrl } from "../lib/config";
 import ArticleBody from "./article-body";
+import Comments from "./comments";
+import RecentlyAttitude from "./recently-attitude";
 
 type Item = Awaited<ReturnType<typeof getRecently>>["data"][number];
 
@@ -15,7 +19,7 @@ function refHref(ref: NonNullable<Item["ref"]>, categories: { id: string; slug: 
   return null;
 }
 
-// 思考（Core 的“动态”）：正文按 Markdown 显示，附带引用的文章/手记/页面。点赞、评论暂未做。
+// 思考（Core 的“动态”）：正文按 Markdown 显示，附带引用的文章/手记/页面，可赞/踩和评论（评论默认收起）。
 export default async function ThinkingList({ searchParams }: { searchParams: Promise<{ before?: string | string[] }> }) {
   const { before } = await searchParams;
   if (before !== undefined && (typeof before !== "string" || !/^[a-f\d]{24}$/i.test(before))) notFound();
@@ -46,7 +50,16 @@ export default async function ThinkingList({ searchParams }: { searchParams: Pro
                   <p className="post-meta">
                     <time dateTime={item.created}>{formatDate(item.created)}</time>
                     {item.ref && (href ? <Link href={href}>引用：{item.ref.title}</Link> : <span>引用：{item.ref.title}</span>)}
+                    <RecentlyAttitude apiUrl={getApiUrl()} id={item.id} up={item.up} down={item.down} />
                   </p>
+                  {(item.allowComment || item.comments > 0) && (
+                    <details className="thinking-comments">
+                      <summary>评论 {item.comments}</summary>
+                      <Suspense fallback={<p className="post-meta" role="status">正在读取评论…</p>}>
+                        <Comments refId={item.id} refType="Recently" allowComment={item.allowComment} />
+                      </Suspense>
+                    </details>
+                  )}
                 </li>
               );
             })}
