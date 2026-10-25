@@ -22,7 +22,7 @@ vm.runInNewContext(bodyCode, {
 const module = { exports: {} }
 vm.runInNewContext(code, {
   module, exports: module.exports,
-  require: (id) => id.endsWith('.css') ? {} : id === '../lib/date' ? { formatDate: (v) => String(v) } : id === './notifications' ? { ArticleNotifications: () => null } : id === './article-body' ? articleBody.exports : id === './comments' ? { default: () => null } : id === './article-stats' ? { default: ({ read }) => `阅读 ${read}` } : id === '../lib/config' ? { getApiUrl: () => 'http://api.test' } : id === '../lib/blog-data' ? { getPost: async (...args) => { request = args; if (failure === 'missing') return null; if (failure) throw failure; return post } } : require(id),
+  require: (id) => id.endsWith('.css') ? {} : id === '../lib/date' ? { formatDate: (v) => String(v) } : id === './notifications' ? { ArticleNotifications: () => null, ReadingCount: () => null } : id === './article-body' ? articleBody.exports : id === './comments' ? { default: () => null } : id === './article-stats' ? { default: ({ read }) => `阅读 ${read}` } : id === '../lib/config' ? { getApiUrl: () => 'http://api.test' } : id === '../lib/blog-data' ? { getPost: async (...args) => { request = args; if (failure === 'missing') return null; if (failure) throw failure; return post } } : require(id),
 })
 const render = (category = 'study%26think', slug = 'test') => module.exports.default({ params: Promise.resolve({ category, slug }) })
 const html = renderToStaticMarkup(await render())
