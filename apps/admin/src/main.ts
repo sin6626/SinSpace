@@ -7,6 +7,7 @@ import { VueQueryPlugin } from '@tanstack/vue-query'
 
 import { queryClient } from '~/lib/query-client'
 import { piniaStore } from '~/stores'
+import { disableBrowserAutofill } from '~/utils/disable-autofill'
 import { bus } from '~/utils/event-bus'
 
 import App from './App'
@@ -14,6 +15,9 @@ import App from './App'
 import './index.css'
 
 import { router } from './router'
+
+// 弹层会挂到 body 上，所以从 body 开始监听，赶在应用挂载之前。
+disableBrowserAutofill()
 
 const app = createApp(App)
 
