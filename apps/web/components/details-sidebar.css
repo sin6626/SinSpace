@@ -54,7 +54,7 @@
 
 /* 选中态只改边框和底色，不改字重：加粗会让文字变宽，整片标签重新换行 */
 .tag-chip[aria-current="page"] {
-  border-color: var(--foreground);
+  border-color: var(--primary);
   background: var(--accent);
 }
 
@@ -80,7 +80,7 @@
 .subscribe-types button {
   margin-left: auto;
   padding: 0.25rem 0.75rem;
-  border: 1px solid var(--foreground);
+  border: 1px solid var(--primary);
   background: var(--background);
   color: var(--foreground);
   font: inherit;

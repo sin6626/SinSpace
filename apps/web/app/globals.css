@@ -13,11 +13,50 @@
   --muted-foreground: light-dark(#52525b, #a1a1aa);
   --accent: light-dark(#f4f4f5, #27272a);        /*悬停*/
   --accent-active: light-dark(#e4e4e7, #3f3f46); /*按下*/
-  --ring: var(--foreground);
+  /* 强调色：链接、当前项、主按钮、焦点框、选中文字都用它。默认方案“墨”就是前景色（纯灰阶）。 */
+  --primary: var(--foreground);
+  --link: var(--primary);
+  /* 语义色：目前只有报错文字用到 */
+  --danger: light-dark(#b91c1c, #f87171);
+  --success: light-dark(#15803d, #4ade80);
+  --ring: var(--primary);
   --shadow-popup: 0.25rem 0.25rem 0 light-dark(rgb(0 0 0 / 12%), transparent);
+  /* 手记正文与标题用衬线体，和后台手记编辑器（Haklex noteTheme）一致 */
+  --font-serif: "Noto Serif CJK SC", "Source Han Serif SC", "Source Han Serif", "source-han-serif-sc", "Songti SC", STSong, serif;
   --z-popup: 2;
   --z-toast: 3;
   --z-skip-link: 4;
+}
+
+/* 配色方案（设计系统对照用，2026-10-26）：<html data-palette> 切换，形状仍是直角 + 硬投影。
+   选定后把选中方案的值并进上面的 :root，删掉其余方案和 /debug 里的切换器。 */
+:root[data-palette="indigo"] {
+  /* 靛蓝：中性灰底 + 克莱因蓝强调，偏技术感 */
+  --border: light-dark(#dde2ec, #262b37);
+  --primary: light-dark(#0038b8, #8ea8ff);
+  --shadow-popup: 0.25rem 0.25rem 0 light-dark(rgb(0 56 184 / 22%), rgb(142 168 255 / 18%));
+}
+
+:root[data-palette="paper"] {
+  /* 暖纸：米白纸色底 + 朱砂强调，偏书卷气，和手记衬线体更搭 */
+  --background: light-dark(#faf7f0, #14110d);
+  --foreground: light-dark(#2a251f, #ebe3d5);
+  --border: light-dark(#e3d9c6, #3a3229);
+  --muted: light-dark(#f2ebdd, #1e1a15);
+  --muted-foreground: light-dark(#6d6253, #a89d8b);
+  --accent: light-dark(#efe6d4, #29231c);
+  --accent-active: light-dark(#e5d9c1, #352d24);
+  --primary: light-dark(#b8410e, #f0874a);
+  --shadow-popup: 0.25rem 0.25rem 0 light-dark(rgb(42 37 31 / 16%), rgb(0 0 0 / 50%));
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+/* 报错文字统一用语义色 */
+[role="alert"] {
+  color: var(--danger);
 }
 
 :root[data-theme="light"] {
@@ -261,6 +300,7 @@ a:focus-visible,
 /* 当前分类只用下划线标识，不加粗：加粗会变宽，切换分类时整行重新换行 */
 .post-categories [aria-current="page"] {
   text-decoration: underline;
+  text-decoration-color: var(--primary);
   text-underline-offset: 0.3em;
 }
 

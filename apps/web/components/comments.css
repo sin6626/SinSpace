@@ -197,7 +197,7 @@
 }
 
 .comment-form button[type="submit"] {
-  border-color: var(--foreground);
+  border-color: var(--primary);
 }
 
 .comment-form button:disabled {

@@ -42,7 +42,7 @@ export default async function NoteDetail({ params, searchParams }: { params: Pro
   const ai = await loadArticleAi(note.id, (await searchParams)?.lang);
   const body = ai.translation ?? note;
   return (
-    <article className="post-detail" lang={ai.lang ?? undefined}>
+    <article className="post-detail note-detail" lang={ai.lang ?? undefined}>
       <ArticleNotifications id={note.id} />
       <header className="page-heading">
         <Link href="/notes">返回手记列表</Link>
@@ -59,7 +59,7 @@ export default async function NoteDetail({ params, searchParams }: { params: Pro
       </header>
       <div className="post-list-content">
         <ArticleAiNotes ai={ai} />
-        <ArticleBody text={body.text} contentFormat={body.contentFormat} content={body.content} emptyText="这篇手记暂时没有可展示的正文。" />
+        <ArticleBody text={body.text} contentFormat={body.contentFormat} content={body.content} emptyText="这篇手记暂时没有可展示的正文。" variant="note" />
         {(note.newer || note.older) && (
           <nav className="post-pagination" aria-label="相邻手记">
             {note.newer ? <Link href={`/notes/${note.newer.nid}`}>较新：{note.newer.title}</Link> : <span />}

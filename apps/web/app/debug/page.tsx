@@ -7,6 +7,7 @@ import NoteUnlock from "@/components/note-unlock";
 import RecentlyAttitude from "@/components/recently-attitude";
 import SubscribeForm from "@/components/subscribe-form";
 import { getApiUrl } from "@/lib/config";
+import PaletteSwitcher from "./palette-switcher";
 import ToastButtons from "./toast-buttons";
 
 export const metadata: Metadata = { title: "调试" };
@@ -45,6 +46,11 @@ export default function DebugPage() {
       </header>
       <div className="post-list-content">
         <ul className="post-list">
+          <li>
+            <h2>配色方案（对照用）</h2>
+            <p className="post-meta">选定后只保留一套，切换器会删除。选择记在本机，换页面也生效。</p>
+            <PaletteSwitcher />
+          </li>
           <li>
             <h2>导航菜单</h2>
             <p className="post-meta">navigation.tsx 的加载占位</p>

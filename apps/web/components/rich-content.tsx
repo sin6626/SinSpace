@@ -54,7 +54,8 @@ function parseContent(content: string): SerializedEditorState | null {
 }
 
 // children 是服务端渲染好的 Markdown（来自 text），JSON 无效或渲染出错时显示它。
-export default function RichContent({ content, apiUrl, children }: { content: string; apiUrl: string; children: ReactNode }) {
+// variant：文章用无衬线（article），手记用 Haklex 的衬线手记主题（note），和后台编辑器一致。
+export default function RichContent({ content, apiUrl, variant = "article", children }: { content: string; apiUrl: string; variant?: "article" | "note"; children: ReactNode }) {
   const theme = useResolvedTheme();
   const value = useMemo(() => parseContent(content), [content]);
   if (!value) return children;
@@ -63,7 +64,7 @@ export default function RichContent({ content, apiUrl, children }: { content: st
       <div className="article-rich">
         <ExcalidrawConfigProvider apiUrl={apiUrl}>
           <EmbedRendererProvider value={embedRenderers}>
-            <ShiroRenderer rendererConfig={rendererConfig} value={value} theme={theme} />
+            <ShiroRenderer rendererConfig={rendererConfig} value={value} theme={theme} variant={variant} />
           </EmbedRendererProvider>
         </ExcalidrawConfigProvider>
       </div>

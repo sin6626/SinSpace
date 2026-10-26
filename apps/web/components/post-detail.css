@@ -66,6 +66,10 @@
   font-size: 1.25rem;
 }
 
+.article-body a {
+  color: var(--link);
+}
+
 .article-body a,
 .post-detail header a {
   text-decoration: underline;
@@ -129,8 +133,8 @@
 }
 
 .article-like[aria-pressed="true"] {
-  border-color: var(--foreground);
-  color: var(--foreground);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 @media (hover: hover) {
@@ -152,6 +156,7 @@
 /* 当前语言只用下划线标识，不加粗，避免切换时整行重排 */
 .article-languages a[aria-current="page"] {
   text-decoration: underline;
+  text-decoration-color: var(--primary);
   text-underline-offset: 0.25em;
 }
 
@@ -173,4 +178,25 @@
   margin-bottom: 1rem;
   color: var(--muted-foreground);
   font-size: 0.875rem;
+}
+
+/* 手记：标题与 Markdown 正文用衬线体；富文本由 Haklex 的手记主题（variant="note"）负责 */
+.note-detail .post-detail-title,
+.article-body-note {
+  font-family: var(--font-serif);
+}
+
+/* Haklex 富文本自带一套颜色（强调色是蓝色），而且主题类直接定义在渲染器根元素上，
+   必须在同一元素上覆盖，链接、引用条、强调色才会跟随站点配色方案。 */
+.article-rich .rich-content {
+  --rc-text: var(--foreground);
+  --rc-text-tertiary: var(--muted-foreground);
+  --rc-bg: var(--background);
+  --rc-border: var(--border);
+  --rc-hr-border: var(--border);
+  --rc-accent: var(--primary);
+  --rc-accent-light: color-mix(in srgb, var(--primary) 14%, transparent);
+  --rc-link: var(--link);
+  --rc-quote-border: var(--primary);
+  --rc-quote-bg: var(--muted);
 }

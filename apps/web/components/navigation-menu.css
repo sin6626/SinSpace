@@ -321,3 +321,13 @@
     transition: none;
   }
 }
+
+/* 当前所在的一级项与子菜单项：强调色下划线，不改字重（避免整行重排） */
+.navigation-Trigger[aria-current="page"],
+.navigation-Trigger[data-active],
+.navigation-LinkCard[data-active] .navigation-LinkTitle {
+  text-decoration: underline;
+  text-decoration-color: var(--primary);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.35em;
+}

@@ -34,7 +34,7 @@
 }
 
 .article-toc a[aria-current="location"] {
-  border-inline-start-color: var(--foreground);
+  border-inline-start-color: var(--primary);
   color: var(--foreground);
 }
 

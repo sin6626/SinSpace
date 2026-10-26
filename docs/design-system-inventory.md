@@ -49,3 +49,15 @@ Haklex 渲染器用自己的 `--rc-*` 变量（`@haklex/rich-style-token`）：�
 2. 品牌色 / 强调色，以及成功 / 警告 / 错误语义色。
 3. 字体：中文是否用网络字体；手记是否沿用 Shiro 的衬线体。
 4. 字号、间距、圆角、阴影的阶梯（把上面散落的取值收敛成固定几档）。
+
+## 对照方案（2026-10-26，待用户选定）
+
+用户决定：保留直角 + 硬投影，手记用衬线体，先出几套配色对照。
+
+- 新增变量：`--primary`（强调色：链接、当前项、主按钮边框、焦点框、选中文字）、`--link`、`--danger` / `--success`、`--font-serif`。组件里的当前态（导航、分类、标签、目录、语言切换、点赞）都改用 `--primary`。
+- 三套方案，`<html data-palette>` 切换，`/debug` 顶部“配色方案”切换器（记在 localStorage 的 `palette`，layout 首屏脚本应用）：
+  - **墨**（默认）：纯灰阶，强调色就是前景色，和现在一致。
+  - **靛蓝**：中性灰底 + 克莱因蓝 `#0038b8`（深色 `#8ea8ff`），投影带蓝色。
+  - **暖纸**：米白纸色底 `#faf7f0` + 朱砂 `#b8410e`（深色 `#f0874a`），整体偏暖，和手记衬线体更搭。
+- 富文本：`post-detail.css` 在 Haklex 根元素 `.rich-content` 上把 `--rc-text/bg/border/accent/link/quote-*` 映射到站点变量；手记传 `variant="note"`（Haklex 思源宋体主题），Markdown 手记正文与手记标题用 `--font-serif`。
+- 选定后：把选中方案的值并进 `:root`，删除其余方案块、`app/debug/palette-switcher.tsx` 与 layout 里的 palette 脚本；再把上面散落的字号、间距收敛成固定几档。
