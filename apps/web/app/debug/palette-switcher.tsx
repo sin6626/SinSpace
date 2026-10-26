@@ -9,8 +9,7 @@ import "@/components/theme-switcher.css";
 const storageKey = "palette";
 const options = [
   { value: "ink", label: "墨" },
-  { value: "indigo", label: "靛蓝" },
-  { value: "paper", label: "暖纸" },
+  { value: "night", label: "夜空" },
 ];
 const listeners = new Set<() => void>();
 
