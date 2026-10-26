@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useId, useState, type FormEvent } from "react";
 import { refreshAfterWrite } from "./cache-actions";
-import { signInWithGitHub, signOut, useReaderSession } from "./reader-session";
+import { signInWithGitHub, signOut, useLoginError, useReaderSession } from "./reader-session";
 
 export type CommentRefType = "Post" | "Note" | "Page" | "Recently";
 
@@ -23,6 +23,7 @@ export default function CommentForm({ apiUrl, allowGuest, github, refId, refType
   const id = useId();
   const router = useRouter();
   const session = useReaderSession(apiUrl);
+  const loginError = useLoginError();
   const reader = session.status === "reader" ? session.reader : null;
   const [open, setOpen] = useState(!replyTo);
   const [status, setStatus] = useState<{ type: "idle" | "sending" } | { type: "done" | "error"; message: string }>({ type: "idle" });
@@ -83,6 +84,7 @@ export default function CommentForm({ apiUrl, allowGuest, github, refId, refType
       <div className="comment-identity">
         <button type="button" onClick={login} disabled={status.type === "sending"}>用 GitHub 登录后评论</button>
         {status.type === "error" && <p className="post-meta" role="alert">{status.message}</p>}
+        {!replyTo && loginError && <p className="post-meta" role="alert">{loginError}</p>}
       </div>
     );
   }
@@ -101,6 +103,7 @@ export default function CommentForm({ apiUrl, allowGuest, github, refId, refType
           <span className="post-meta">或以游客身份填写下方信息</span>
         </div>
       )}
+      {!replyTo && loginError && <p className="post-meta" role="alert">{loginError}</p>}
       {!reader && <div className="comment-fields">
         <label htmlFor={`${id}-author`}>昵称</label>
         <input id={`${id}-author`} name="author" required maxLength={20} autoComplete="nickname" />
