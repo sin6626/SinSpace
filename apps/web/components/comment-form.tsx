@@ -1,6 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useId, useState, type FormEvent } from "react";
+import { refreshAfterWrite } from "./cache-actions";
 import { signInWithGitHub, signOut, useReaderSession } from "./reader-session";
 
 export type CommentRefType = "Post" | "Note" | "Page" | "Recently";
@@ -19,6 +21,7 @@ async function readError(response: Response) {
 // 游客填昵称、邮箱、网址（交给浏览器自动填充，不在本地另存）；GitHub 登录后的读者走读者接口，身份取自 Core 的登录 Cookie。
 export default function CommentForm({ apiUrl, allowGuest, github, refId, refType, replyTo }: Props) {
   const id = useId();
+  const router = useRouter();
   const session = useReaderSession(apiUrl);
   const reader = session.status === "reader" ? session.reader : null;
   const [open, setOpen] = useState(!replyTo);
@@ -51,8 +54,11 @@ export default function CommentForm({ apiUrl, allowGuest, github, refId, refType
         type: "done",
         message: body.isWhispers
           ? "悄悄话已发送，只有博主能看到。"
-          : "评论已发送。博主开启审核时，通过后才会显示；列表约一分钟内更新。",
+          : "评论已发送。博主开启审核时，通过后才会显示。",
       });
+      // 列表有缓存，发完让评论与思考列表的缓存立即失效并刷新，否则看起来像没发出去（再点会被 Core 的 20 秒防重拦成 409）。
+      await refreshAfterWrite(["comments", "recently"]);
+      router.refresh();
     } catch {
       setStatus({ type: "error", message: "网络错误，评论没有发出去，请稍后重试。" });
     }
