@@ -14,6 +14,7 @@ const { redactUrl } = module.exports
 assert.equal(redactUrl('/notes/nid/3?password=hunter2&single=1'), '/notes/nid/3?password=***&single=1')
 assert.equal(redactUrl('/a?single=1&Password=x#top'), '/a?single=1&Password=***#top')
 assert.equal(redactUrl('/auth/x?token=abc'), '/auth/x?token=***')
+assert.equal(redactUrl('/subscribe/unsubscribe?email=a%40b.com&cancelToken=xyz'), '/subscribe/unsubscribe?email=***&cancelToken=***', '退订链接的邮箱与令牌')
 assert.equal(redactUrl('/posts?page=2&passwordHint=keep'), '/posts?page=2&passwordHint=keep', '只匹配完整参数名')
 assert.equal(redactUrl('/notes/password/1'), '/notes/password/1', '路径里的同名片段不处理')
-console.log('PASS core log URLs hide password/token/secret query values and keep everything else')
+console.log('PASS core log URLs hide password/token/secret/cancelToken/email query values and keep everything else')
