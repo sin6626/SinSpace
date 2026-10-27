@@ -5,6 +5,7 @@ import { getPost, getTimeline } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
 import { getApiUrl } from "../lib/config";
 import ArticleBody from "./article-body";
+import ArticleToc from "./article-toc";
 import { ArticleAiNotes, ArticleLanguages, loadArticleAi } from "./article-ai";
 import ArticleStats from "./article-stats";
 import "./post-detail.css";
@@ -62,6 +63,8 @@ export default async function PostDetail({ params, searchParams }: {
           <Comments refId={post.id} refType="Post" allowComment={post.allowComment} />
         </Suspense>
       </div>
+      {/* 文章目录：宽屏悬浮在正文右侧留白里，窄屏隐藏（globals.css 的 .site-details） */}
+      <aside className="site-details" aria-label="文章目录"><ArticleToc /></aside>
     </article>
   );
 }

@@ -58,7 +58,7 @@ function getActiveId() {
 }
 
 // children 是没有标题时显示的默认右栏内容。
-export default function ArticleToc({ children }: { children: ReactNode }) {
+export default function ArticleToc({ children = null }: { children?: ReactNode }) {
   // 服务端拿不到正文 DOM，先不渲染，避免先闪默认内容再变成目录。
   const entries = useSyncExternalStore<Entry[] | null>(subscribeContent, getEntries, () => null);
   const activeId = useSyncExternalStore(subscribeScroll, getActiveId, () => null);

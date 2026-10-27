@@ -1,0 +1,146 @@
+/* 手机全屏夜空菜单（mobile-menu.tsx）。只在 640px 以下出现，桌面用顶部横排导航。 */
+.mobile-menu-trigger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-left: auto;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+/* 两条横线的菜单图标 */
+.mobile-menu-trigger span,
+.mobile-menu-trigger span::before {
+  display: block;
+  width: 1.125rem;
+  height: 1.5px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+}
+
+.mobile-menu-trigger span {
+  position: relative;
+  translate: 0 -3px;
+}
+
+.mobile-menu-trigger span::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  width: 0.75rem;
+}
+
+.mobile-menu-trigger:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 639px) {
+  .mobile-menu-trigger {
+    display: inline-flex;
+  }
+
+  .site-header .navigation-Root,
+  .site-header .site-header-tools {
+    display: none;
+  }
+}
+
+.mobile-menu {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-popup);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4) var(--space-6) var(--space-8);
+  overflow-y: auto;
+  background:
+    radial-gradient(1.5px 1.5px at 12% 18%, var(--band-star) 50%, transparent 100%),
+    radial-gradient(1px 1px at 28% 42%, var(--band-star) 50%, transparent 100%),
+    radial-gradient(1px 1px at 46% 12%, var(--band-star) 50%, transparent 100%),
+    radial-gradient(2px 2px at 78% 22%, var(--band-star) 50%, transparent 100%),
+    radial-gradient(1px 1px at 88% 48%, var(--band-star) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 64% 66%, var(--band-star) 50%, transparent 100%),
+    radial-gradient(1px 1px at 18% 78%, var(--band-star) 50%, transparent 100%),
+    radial-gradient(ellipse 80% 50% at 80% 0%, color-mix(in srgb, var(--primary) 18%, transparent), transparent 70%),
+    linear-gradient(to bottom, var(--band-sky), var(--background) 70%);
+  background-color: var(--background);
+  transition: opacity var(--duration-base) var(--ease-out), translate var(--duration-base) var(--ease-out);
+}
+
+.mobile-menu[data-starting-style],
+.mobile-menu[data-ending-style] {
+  opacity: 0;
+  translate: 0 -0.75rem;
+}
+
+.mobile-menu-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 2.5rem;
+}
+
+.mobile-menu-title {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  font-weight: 400;
+}
+
+.mobile-menu-corners {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-12);
+}
+
+.mobile-menu-corners a {
+  display: block;
+  padding: var(--space-2) 0;
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.mobile-menu-more {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  margin-top: var(--space-8);
+  color: var(--muted-foreground);
+}
+
+.mobile-menu-more a {
+  display: block;
+  padding: var(--space-1) 0;
+}
+
+.mobile-menu a[aria-current="page"] {
+  color: var(--primary);
+}
+
+.mobile-menu a:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.mobile-menu-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-menu {
+    transition: none;
+  }
+}

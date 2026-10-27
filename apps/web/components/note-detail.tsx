@@ -5,6 +5,7 @@ import { formatDate } from "../lib/date";
 import { Suspense } from "react";
 import { getApiUrl } from "../lib/config";
 import ArticleBody from "./article-body";
+import ArticleToc from "./article-toc";
 import { ArticleAiNotes, ArticleLanguages, loadArticleAi } from "./article-ai";
 import ArticleStats from "./article-stats";
 import Comments from "./comments";
@@ -70,6 +71,8 @@ export default async function NoteDetail({ params, searchParams }: { params: Pro
           <Comments refId={note.id} refType="Note" allowComment={note.allowComment} />
         </Suspense>
       </div>
+      {/* 文章目录：宽屏悬浮在正文右侧留白里，窄屏隐藏（globals.css 的 .site-details） */}
+      <aside className="site-details" aria-label="文章目录"><ArticleToc /></aside>
     </article>
   );
 }

@@ -4,6 +4,7 @@ import { NavigationMenu } from "@base-ui/react/navigation-menu";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import MobileMenu from "./mobile-menu";
 import "./navigation-menu.css";
 
 type NavigationLink = { label: string; href: string };
@@ -62,7 +63,11 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
     </li>
   ));
 
+  const devLinks = process.env.NODE_ENV !== "production" ? [{ label: "调试", href: "/debug" }] : [];
+
   return (
+    <>
+    <MobileMenu corners={[{ label: "首页", href: "/" }, ...corners]} more={[...pages, ...moreLinks, ...devLinks]} />
     <NavigationMenu.Root
       className="navigation-Root"
       aria-label="主导航"
@@ -134,5 +139,6 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
         </NavigationMenu.Positioner>
       </NavigationMenu.Portal>
     </NavigationMenu.Root>
+    </>
   );
 }

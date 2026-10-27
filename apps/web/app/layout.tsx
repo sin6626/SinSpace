@@ -52,7 +52,7 @@ async function SiteName() {
   return (await getSiteSettings().catch(() => null))?.name ?? siteName;
 }
 
-export default function RootLayout({ children, details }: LayoutProps<"/">) {
+export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="zh-CN"
@@ -88,10 +88,6 @@ export default function RootLayout({ children, details }: LayoutProps<"/">) {
                 {children}
               </main>
             </ViewTransition>
-            {/* 补充信息来自平行路由 app/@details（目录、搜索与标签），宽屏悬浮在正文右侧 */}
-            <aside className="site-details" aria-label="补充信息">
-              {details}
-            </aside>
             <SiteFooter />
           </div>
         </Notifications>

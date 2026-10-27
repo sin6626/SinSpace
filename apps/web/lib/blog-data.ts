@@ -38,7 +38,8 @@ export async function getNavigationData() {
   }
   return {
     categories: data.categories.map(({ name, slug }) => ({ name, slug })),
-    pageMeta: data.pageMeta.map(({ title, slug }) => ({ title, slug })),
+    // 后台页面按“排序”字段排列（关于我在关于本站前面）。
+    pageMeta: [...data.pageMeta].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map(({ title, slug }) => ({ title, slug })),
   };
 }
 

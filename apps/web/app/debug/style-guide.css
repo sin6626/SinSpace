@@ -1,0 +1,97 @@
+/* /debug 样式指南的排版（只在开发环境出现） */
+.debug-sections > li + li {
+  margin-top: var(--space-12);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--border);
+}
+
+.guide-heading {
+  margin: var(--space-8) 0 var(--space-3);
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.guide-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+}
+
+.guide-swatches li {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.guide-swatch {
+  height: 3rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.guide-swatches code,
+.guide-type code,
+.guide-spaces code {
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.guide-type {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.guide-serif {
+  font-family: var(--font-serif);
+  font-size: var(--text-lg);
+}
+
+.guide-spaces {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.guide-spaces li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.guide-spaces span {
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+}
+
+.guide-radii {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.guide-radii li {
+  padding: var(--space-4);
+  background: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.guide-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.guide-gap {
+  margin-top: var(--space-4);
+}
+
+.debug-sections h2 {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-xl);
+  font-weight: 600;
+}

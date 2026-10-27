@@ -7,6 +7,7 @@ import NoteUnlock from "@/components/note-unlock";
 import RecentlyAttitude from "@/components/recently-attitude";
 import SubscribeForm from "@/components/subscribe-form";
 import { getApiUrl } from "@/lib/config";
+import StyleGuide from "./style-guide";
 import ToastButtons from "./toast-buttons";
 
 export const metadata: Metadata = { title: "调试" };
@@ -41,10 +42,13 @@ export default function DebugPage() {
     <>
       <header className="page-heading">
         <h1>调试</h1>
-        <p className="post-meta">仅开发环境可见，集中展示平时不容易看到的组件状态。</p>
+        <p className="post-meta">仅开发环境可见：设计系统的样式指南，以及平时不容易看到的组件状态。</p>
       </header>
       <div className="post-list-content">
-        <ul className="post-list">
+        <ul className="debug-sections">
+          <li>
+            <StyleGuide />
+          </li>
           <li>
             <h2>导航菜单</h2>
             <p className="post-meta">navigation.tsx 的加载占位</p>

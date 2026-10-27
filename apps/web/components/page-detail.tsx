@@ -1,6 +1,7 @@
 import { notFound, unstable_rethrow } from "next/navigation";
 import { getPage } from "../lib/blog-data";
 import ArticleBody from "./article-body";
+import ArticleToc from "./article-toc";
 import "./post-detail.css";
 import { Suspense } from "react";
 import Comments from "./comments";
@@ -35,6 +36,8 @@ export default async function PageDetail({ params }: { params: Promise<{ slug: s
           <Comments refId={page.id} refType="Page" allowComment={page.allowComment} />
         </Suspense>
       </div>
+      {/* 文章目录：宽屏悬浮在正文右侧留白里，窄屏隐藏（globals.css 的 .site-details） */}
+      <aside className="site-details" aria-label="文章目录"><ArticleToc /></aside>
     </article>
   );
 }
