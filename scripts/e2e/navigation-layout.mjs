@@ -5,6 +5,7 @@
 // 需要先运行 pnpm dev（默认 http://127.0.0.1:2323，可用 WEB_URL 覆盖）。用法：pnpm e2e
 import assert from "node:assert/strict";
 import { openBrowser, sleep } from "../headless-browser.mjs";
+import { clickNav } from "./helpers.mjs";
 
 const base = process.env.WEB_URL ?? "http://127.0.0.1:2323";
 
@@ -16,14 +17,6 @@ const fingerprint = `(() => {
     titleLeft: title ? Math.round(title.getBoundingClientRect().left) : null,
     skyBand: getComputedStyle(document.querySelector(".site-shell"), "::before").content !== "none",
   };
-})()`;
-
-// 点顶部导航里指向 href 的链接（真实的站内跳转），等地址变了再等页面渲染完
-const clickNav = (href) => `(async () => {
-  document.querySelector('.navigation-List a[href="${href}"]').click();
-  for (let i = 0; i < 100 && location.pathname !== "${href}"; i++) await new Promise((r) => setTimeout(r, 50));
-  await new Promise((r) => setTimeout(r, 1500));
-  return location.pathname;
 })()`;
 
 // 每条路线：先整页打开 start，再依次点导航跳到后面的地址；最后一站的指纹要等于直接打开它的指纹

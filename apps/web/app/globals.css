@@ -403,6 +403,13 @@ a:focus-visible,
   }
 }
 
+.site-page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+}
+
 .site-content {
   flex: 1;
   width: 100%;
@@ -785,12 +792,14 @@ a:focus-visible,
   animation: none;
 }
 
+/* 换页：像夜里眼睛重新对焦。离开的页面轻轻失焦、上浮、淡出；稍等一拍，新页面从模糊里对上焦，从下方浮上来。
+   不做任何缩放（过渡层宽度在所有页面上都一样，见 layout.tsx 的 .site-page；回归测试 pnpm e2e）。 */
 ::view-transition-old(.page-switch) {
-  animation: page-switch-out 120ms ease-in both;
+  animation: page-leave 200ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
 ::view-transition-new(.page-switch) {
-  animation: page-switch-in 180ms ease-out both;
+  animation: page-enter 520ms var(--ease-out) 100ms both;
 }
 
 /* 开灯 / 熄灯（theme-switcher.tsx）：新的颜色在旧画面上淡入，像天色慢慢变化 */
@@ -802,12 +811,20 @@ html:active-view-transition-type(theme)::view-transition-new(root) {
   from { opacity: 0; }
 }
 
-@keyframes page-switch-out {
-  to { opacity: 0; }
+@keyframes page-leave {
+  to {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(-6px);
+  }
 }
 
-@keyframes page-switch-in {
-  from { opacity: 0; transform: translateY(0.75rem); }
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(16px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

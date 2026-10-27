@@ -6,7 +6,7 @@ import MoonTip from "./moon-tip";
 import { useResolvedTheme } from "./use-resolved-theme";
 
 // 首页第一屏的夜空：一张铺满的 WebGL 画布，片元着色器里画出天空渐变、淡淡的星云、三层闪烁的星星、
-// 偶尔划过的流星，以及按访客当天真实月相照亮的月亮。开灯时整片天空在 0.6 秒内过渡到黄昏。悬停月亮显示今晚的月相（moon-tip.tsx）。
+// 偶尔划过的流星，以及按访客当天真实月相照亮的月亮。星星和银河绕北天极缓缓转动（像真的在看夜空）。开灯时整片天空在 0.6 秒内过渡到黄昏。悬停月亮显示今晚的月相（moon-tip.tsx）。
 // 场景离开视野或标签页隐藏时停止绘制；“减少动态效果”时只画一帧静止的夜空；浏览器不支持 WebGL 时退回 CSS 渐变。
 
 const vertexSource = `
@@ -21,6 +21,7 @@ uniform float uTime;
 uniform float uLight;   // 0 夜里，1 黄昏
 uniform float uPhase;   // 月相：0 新月，0.5 满月
 uniform vec3 uMoon;     // 月亮圆心（像素）和半径（像素）
+uniform float uSpin;    // 星空绕北天极转过的角度（弧度）
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 vec2 hash2(vec2 p) { return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453); }
@@ -66,18 +67,25 @@ void main() {
   vec3 sky = mix(mix(nightLow, nightTop, pow(uv.y, 0.8)), mix(duskLow, duskTop, pow(uv.y, 0.9)), uLight);
   sky += mix(vec3(0.12, 0.05, 0.16), vec3(0.18, 0.08, 0.04), uLight) * pow(1.0 - uv.y, 3.0);
 
-  // 星云：一条斜着的银河，噪声让它有云絮感，缓慢流动
-  vec2 q = p * 1.6 + vec2(t * 0.004, 0.0);
-  float band = exp(-pow((uv.y - 0.45 - (uv.x - 0.5) * 0.55) * 3.2, 2.0));
+  // 周日运动：星星和银河一起绕画面左上方外面的北天极逆时针转（地球自转），离天极越远走得越快；
+  // 天空渐变、地平线的光、流星和月亮不跟着转。下面的星云、星星都在转过的坐标 sp 里取样。
+  float aspect = uResolution.x / uResolution.y;
+  vec2 pole = vec2(0.3 * aspect, 1.08);
+  vec2 sp = pole + mat2(cos(uSpin), -sin(uSpin), sin(uSpin), cos(uSpin)) * (p - pole);
+  vec2 suv = sp / vec2(aspect, 1.0);
+
+  // 星云：一条斜着的银河，噪声让它有云絮感
+  vec2 q = sp * 1.6;
+  float band = exp(-pow((suv.y - 0.45 - (suv.x - 0.5) * 0.55) * 3.2, 2.0));
   float cloud = fbm(q * 2.0 + fbm(q * 1.3));
   vec3 nebula = mix(vec3(0.36, 0.22, 0.58), vec3(0.8, 0.46, 0.76), cloud) * band * pow(cloud, 2.4) * 0.4;
   sky += nebula * (1.0 - uLight * 0.8);
 
   // 三层星星：远处的小而密，近处的大而疏；银河里星星更多
   float starAmount = 1.0 - uLight * 0.85;
-  vec3 stars = starLayer(p, 140.0, 0.10 + band * 0.22, 0.06, t) * 0.8
-             + starLayer(p + 3.1, 70.0, 0.08 + band * 0.12, 0.07, t * 0.8)
-             + starLayer(p + 7.7, 26.0, 0.07, 0.06, t * 0.6) * 1.5;
+  vec3 stars = starLayer(sp, 140.0, 0.10 + band * 0.22, 0.06, t) * 0.8
+             + starLayer(sp + 3.1, 70.0, 0.08 + band * 0.12, 0.07, t * 0.8)
+             + starLayer(sp + 7.7, 26.0, 0.07, 0.06, t * 0.6) * 1.5;
   sky += stars * starAmount;
 
   // 流星：每 23 秒一颗，划过约 1 秒，起点和方向每次不同
@@ -120,6 +128,13 @@ void main() {
   gl_FragColor = vec4(sky, 1.0);
 }
 `;
+
+// 星空转一圈的时间。真实的地球自转一圈约 24 小时，肉眼看不出在动，这里加快到 30 分钟一圈；
+// 角度按真实时钟算，刷新页面后星空接着上次的位置，不会跳回起点。
+const skyTurnSeconds = 30 * 60;
+function skyAngle(time: number) {
+  return ((time / 1000) % skyTurnSeconds) / skyTurnSeconds * Math.PI * 2;
+}
 
 function compile(gl: WebGLRenderingContext, type: number, source: string) {
   const shader = gl.createShader(type);
@@ -174,6 +189,7 @@ export default function Starfield() {
       light: gl.getUniformLocation(program, "uLight"),
       phase: gl.getUniformLocation(program, "uPhase"),
       moon: gl.getUniformLocation(program, "uMoon"),
+      spin: gl.getUniformLocation(program, "uSpin"),
     };
     gl.uniform1f(uniforms.phase, moonPhase(Date.now()));
 
@@ -217,6 +233,7 @@ export default function Starfield() {
       light += Math.sign(lightTarget.current - light) * Math.min(Math.abs(lightTarget.current - light), step / 0.6);
       gl.uniform1f(uniforms.light, light);
       gl.uniform1f(uniforms.time, reduceMotion ? 8 : (now - start) / 1000);
+      gl.uniform1f(uniforms.spin, skyAngle(Date.now()));
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
 

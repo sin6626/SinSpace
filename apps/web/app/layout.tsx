@@ -93,10 +93,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 </div>
               </div>
             </header>
+            {/* 视图过渡套在铺满整行的 .site-page 上，而不是宽度随页面变化的 main：
+                否则首页（全宽）和内页（48rem）之间切换时，过渡层会在两种宽度间变形，整页画面被压缩 */}
             <ViewTransition default="page-switch">
-              <main className="site-content" id="main-content" tabIndex={-1}>
-                {children}
-              </main>
+              <div className="site-page">
+                <main className="site-content" id="main-content" tabIndex={-1}>
+                  {children}
+                </main>
+              </div>
             </ViewTransition>
             <SiteFooter />
           </div>
