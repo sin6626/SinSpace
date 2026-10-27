@@ -49,15 +49,25 @@ function Section<T>({ title, note, allHref, items, empty, className, children }:
   );
 }
 
-// 表格般对齐的一行：日期 | 标题 | 右侧附加信息，不画边框，整行可点。
-function Row({ href, created, title, extra, serif }: { href: string | null; created: string; title: string; extra?: ReactNode; serif?: boolean }) {
+// 竖向时间线的一条：前面一颗小星，上面一行日期和附加信息，下面一行标题；整条可点。
+function TimelineItem({ href, created, title, meta, serif, pinned }: {
+  href: string | null;
+  created: string;
+  title: string;
+  meta?: ReactNode;
+  serif?: boolean;
+  pinned?: boolean;
+}) {
   return (
-    <li className="home-row">
-      <time dateTime={created}>{formatDate(created)}</time>
-      <span className={serif ? "home-row-title is-serif" : "home-row-title"}>
+    <li className={pinned ? "home-timeline-item is-pinned" : "home-timeline-item"}>
+      <span className="home-timeline-node" aria-hidden="true" />
+      <span className="home-timeline-meta">
+        <time dateTime={created}>{formatDate(created)}</time>
+        {meta}
+      </span>
+      <span className={serif ? "home-timeline-title is-serif" : "home-timeline-title"}>
         {href ? <Link className="card-link" href={href}>{title}</Link> : title}
       </span>
-      {extra && <span className="home-row-extra">{extra}</span>}
     </li>
   );
 }
@@ -74,33 +84,34 @@ export default async function HomeLatest() {
       <div className="home-main">
         <Section title="文章" note="学到的、想明白的" allHref="/posts" items={posts} empty="还没有已发布的文章。">
           {(items) => (
-            <ul className="home-rows">
+            <ol className="home-timeline">
               {items.map((post) => (
-                <Row
+                <TimelineItem
                   key={post.id}
                   href={postHref(post)}
                   created={post.created}
                   title={post.title}
-                  extra={<>{post.pinned && <span className="badge">置顶</span>}{post.category?.name}</>}
+                  pinned={post.pinned}
+                  meta={<>{post.category && <span>{post.category.name}</span>}{post.pinned && <span className="badge">置顶</span>}</>}
                 />
               ))}
-            </ul>
+            </ol>
           )}
         </Section>
         <Section title="手记" note="写给自己的心里话" allHref="/notes" items={notes} empty="还没有公开的手记。">
           {(items) => (
-            <ul className="home-rows">
+            <ol className="home-timeline">
               {items.map((note) => (
-                <Row
+                <TimelineItem
                   key={note.id}
                   href={`/notes/${note.nid}`}
                   created={note.created}
                   title={note.title}
                   serif
-                  extra={[note.mood, note.weather].filter(Boolean).join(" · ") || note.topic}
+                  meta={<span>{[note.mood, note.weather].filter(Boolean).join(" · ") || note.topic}</span>}
                 />
               ))}
-            </ul>
+            </ol>
           )}
         </Section>
       </div>
