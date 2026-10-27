@@ -11,3 +11,6 @@ tmp
 
 temp.ts
 dist
+
+# Core 从线上下载的内置模板缓存（邮件模板等）
+/assets
