@@ -1,19 +1,21 @@
 "use client";
 
 import { Popover } from "@base-ui/react/popover";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import SubscribeForm from "./subscribe-form";
 import "./site-actions.css";
 
-type Props = { apiUrl: string; likes: number | null; subscribeTypes: ("post_c" | "note_c")[] | null };
+type Props = { apiUrl: string; siteName: string; likes: number | null; subscribeTypes: ("post_c" | "note_c")[] | null };
 
 // 首屏底部的“喜欢本站”和“订阅”（同 Shiro 首页底部的两个按钮）。
 // 喜欢：浏览器直接 POST Core 的 /like_this（按访客 IP 每天一次，经 Next 转发会变成所有人共用服务器 IP），成功后计数就地 +1。
 // 订阅：点按钮才浮出订阅表单；后台没开订阅时不显示这个按钮。
-export default function SiteActions({ apiUrl, likes, subscribeTypes }: Props) {
+export default function SiteActions({ apiUrl, siteName, likes, subscribeTypes }: Props) {
   const [count, setCount] = useState(likes);
   const [liked, setLiked] = useState(false);
   const [message, setMessage] = useState("");
+  // 订阅浮层打开时光标直接落在邮箱输入框里；触屏时不聚焦输入框，免得一打开就弹出软键盘挡住浮层
+  const emailRef = useRef<HTMLInputElement>(null);
 
   async function like() {
     if (liked) return;
@@ -47,8 +49,17 @@ export default function SiteActions({ apiUrl, likes, subscribeTypes }: Props) {
           </Popover.Trigger>
           <Popover.Portal>
             <Popover.Positioner className="site-action-positioner" side="top" sideOffset={12}>
-              <Popover.Popup className="site-action-popup">
-                <SubscribeForm apiUrl={apiUrl} types={subscribeTypes} />
+              <Popover.Popup className="site-action-popup" initialFocus={(type) => (type === "touch" ? true : emailRef.current)}>
+                <div className="subscribe-header">
+                  <span className="subscribe-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5" /><path d="m4.5 7 7.5 6 7.5-6" /></svg>
+                  </span>
+                  <Popover.Title className="subscribe-title">邮件订阅</Popover.Title>
+                  <Popover.Close className="subscribe-close" aria-label="关闭">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                  </Popover.Close>
+                </div>
+                <SubscribeForm apiUrl={apiUrl} types={subscribeTypes} siteName={siteName} emailRef={emailRef} />
               </Popover.Popup>
             </Popover.Positioner>
           </Popover.Portal>

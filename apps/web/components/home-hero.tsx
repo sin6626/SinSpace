@@ -1,6 +1,6 @@
 import { unstable_rethrow } from "next/navigation";
 import { Suspense } from "react";
-import { getOwner, getSiteLikes, getSiteSettings, getSubscribeOptions, siteDescription } from "../lib/blog-data";
+import { getOwner, getSiteLikes, getSiteSettings, getSubscribeOptions, siteDescription, siteName } from "../lib/blog-data";
 import { getApiUrl } from "../lib/config";
 import ScrollHint from "./scroll-hint";
 import SiteActions from "./site-actions";
@@ -55,8 +55,8 @@ async function Portrait() {
 
 // 喜欢本站的计数和订阅开关都是缓存数据，读不到时按钮照常显示（计数隐藏、订阅按钮不出现）。
 async function Actions() {
-  const [likes, subscribe] = await Promise.all([getSiteLikes().catch(() => null), getSubscribeOptions().catch(() => null)]);
-  return <SiteActions apiUrl={getApiUrl()} likes={likes} subscribeTypes={subscribe?.enabled ? subscribe.types : null} />;
+  const [likes, subscribe, settings] = await Promise.all([getSiteLikes().catch(() => null), getSubscribeOptions().catch(() => null), getSiteSettings().catch(() => null)]);
+  return <SiteActions apiUrl={getApiUrl()} siteName={settings?.name ?? siteName} likes={likes} subscribeTypes={subscribe?.enabled ? subscribe.types : null} />;
 }
 
 async function Motto() {
