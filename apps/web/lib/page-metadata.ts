@@ -1,12 +1,11 @@
 import "server-only";
 import type { Metadata } from "next";
 import { unstable_rethrow } from "next/navigation";
-import { getCategories, getNote, getPage, getPost } from "./blog-data";
+import { getCategories, getNote, getPage, getPost, siteName } from "./blog-data";
 
 // 详情页的 <title>、描述和分享卡片。复用页面正文同一份 "use cache" 数据，不会多请求一次 Core。
 // 地址非法、内容不存在或读取失败时退回布局的默认值，错误提示和 404 由正文负责。
-export const siteName = "Sin Personal Space";
-export const siteDescription = "技术文章、个人作品与生活记录。";
+export { siteDescription, siteName } from "./blog-data";
 
 function describe(title: string, description?: string | null, type: "article" | "website" = "article"): Metadata {
   const text = description?.trim() || undefined;

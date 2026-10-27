@@ -2,6 +2,10 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { getApiClient } from "./api";
 
+// 站名和描述以后台 SEO 设置为准（getSiteSettings），这两个值只是读取失败时的兜底。
+export const siteName = "Sin’s Space";
+export const siteDescription = "夜深里也有月亮和星星陪我作伴";
+
 // "use cache" 函数抛出的错误会丢掉 SDK 附带的 HTTP status，
 // 所以 404/403 要在缓存函数内部转成普通返回值，组件据此调用 notFound()。
 function httpStatus(error: unknown) {
@@ -37,16 +41,19 @@ export async function getNavigationData() {
 }
 
 // 站点级设置。对外地址取后台“网站地址”（Core 的 url.webUrl），sitemap、RSS 的完整链接都以它为准，不在前端写死域名；
-// 评论开关取后台“评论设置”（是否关闭评论、是否允许游客评论）。
+// 评论开关取后台“评论设置”（是否关闭评论、是否允许游客评论）；站名和一句话描述取后台 SEO 设置，前端不写死。
 export async function getSiteSettings() {
   "use cache";
-  cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
+  // 改站名、描述、评论设置都没有 Webhook 事件，缓存短一些，后台改完 5 分钟内生效。
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
   cacheTag("blog:navigation");
-  const { url, commentOptions } = await getApiClient().aggregate.getAggregateData();
+  const { url, commentOptions, seo } = await getApiClient().aggregate.getAggregateData();
   const site = new URL(url.webUrl);
   if (!["http:", "https:"].includes(site.protocol)) throw new Error("后台网站地址必须是 HTTP(S)。");
   return {
     siteUrl: site.href.replace(/\/$/, ""),
+    name: seo?.title?.trim() || siteName,
+    description: seo?.description?.trim() || siteDescription,
     comments: { disabled: Boolean(commentOptions?.disableComment), allowGuest: commentOptions?.allowGuestComment !== false },
   };
 }

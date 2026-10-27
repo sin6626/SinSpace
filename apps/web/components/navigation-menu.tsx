@@ -3,7 +3,7 @@
 import { NavigationMenu } from "@base-ui/react/navigation-menu";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useRef, useState } from "react";
 import "./navigation-menu.css";
 
 type NavigationLink = { label: string; href: string };
@@ -11,19 +11,21 @@ export type NavigationState =
   | { status: "loading" | "error" }
   | { status: "ready"; articles: NavigationLink[]; pages: NavigationLink[] };
 
+// 一级导航是 space 的四个角落：作品、文章、手记、碎碎念（Core 的速记）。
+const corners: NavigationLink[] = [
+  { label: "作品", href: "/projects" },
+  { label: "文章", href: "/posts" },
+  { label: "手记", href: "/notes" },
+  { label: "碎碎念", href: "/thinking" },
+];
+
 const moreLinks: NavigationLink[] = [
   { label: "时间线", href: "/timeline" },
   { label: "友链", href: "/friends" },
   { label: "一言", href: "/says" },
-  { label: "思考", href: "/thinking" },
 ];
 
-const verticalQuery = "(min-width: 640px)";
-function subscribe(onChange: () => void) {
-  const query = window.matchMedia(verticalQuery);
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-}
+const isCurrent = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
 export default function BlogNavigation({ state }: { state: NavigationState }) {
   const pathname = usePathname();
@@ -37,87 +39,80 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
     setOpenItem(null);
   }
   const router = useRouter();
-  const vertical = useSyncExternalStore(
-    subscribe,
-    () => window.matchMedia(verticalQuery).matches,
-    () => false,
+  // “文章”本身是链接（点击跳转），悬停或聚焦时展开分类子菜单。
+  // 后台“页面”（关于我、关于本站）和时间线、友链、一言收在“更多”里。
+  const pages = state.status === "ready" ? state.pages : [];
+  const articles = state.status === "ready" ? state.articles : [];
+  const status = (empty: string, links: NavigationLink[]) => (
+    <>
+      {state.status === "loading" && <li className="navigation-message" role="status">正在读取导航…</li>}
+      {state.status === "error" && (
+        <li className="navigation-message" role="status">
+          导航读取失败。<button className="navigation-retry" type="button" onClick={() => router.refresh()}>重试</button>
+        </li>
+      )}
+      {state.status === "ready" && !links.length && empty && <li className="navigation-message">{empty}</li>}
+    </>
   );
-  // 一级项本身就是链接（点击跳转），悬停或聚焦时展开子菜单。
-  // Sin 的子菜单是后台“页面”（关于我、关于本站），文章的子菜单是分类。
-  const menus = [
-    { title: "Sin", href: "/", empty: "暂无页面", links: state.status === "ready" ? state.pages : [] },
-    { title: "文章", href: "/posts", empty: "暂无分类", links: state.status === "ready" ? state.articles : [] },
-  ];
+  const subLinks = (links: NavigationLink[]) => links.map(({ label, href }) => (
+    <li key={href}>
+      <NavigationMenu.Link className="navigation-LinkCard" active={pathname === href} closeOnClick render={<Link href={href} />}>
+        <span className="navigation-LinkTitle">{label}</span>
+      </NavigationMenu.Link>
+    </li>
+  ));
 
   return (
     <NavigationMenu.Root
       className="navigation-Root"
       aria-label="主导航"
-      orientation={vertical ? "vertical" : "horizontal"}
       closeDelay={500}
       value={openItem}
       onValueChange={setOpenItem}
     >
       <NavigationMenu.List className="navigation-List">
-        {menus.map(({ title, href, empty, links }) => (
-          <NavigationMenu.Item key={title} value={title}>
+        <NavigationMenu.Item>
+          <NavigationMenu.Link className="navigation-Trigger" active={pathname === "/"} render={<Link href="/" />}>首页</NavigationMenu.Link>
+        </NavigationMenu.Item>
+        {corners.map(({ label, href }) => href === "/posts" ? (
+          <NavigationMenu.Item key={href} value={label}>
             {/* nativeButton={false}：触发器渲染成链接，回车/点击交给链接跳转，Base UI 负责展开子菜单 */}
             <NavigationMenu.Trigger
               className="navigation-Trigger"
               nativeButton={false}
               render={<Link href={href} />}
+              data-current={isCurrent(pathname, href) || pathname.startsWith("/categories/") ? "" : undefined}
               aria-current={pathname === href ? "page" : undefined}
               onPointerDown={(event) => { lastPointerType.current = event.pointerType; }}
               onClick={(event) => {
                 // 触屏没有悬停：子菜单未展开时第一次点按只展开、不跳转；展开后再点才跳转。
-                if (lastPointerType.current === "touch" && openItem !== title) event.preventDefault();
+                if (lastPointerType.current === "touch" && openItem !== label) event.preventDefault();
               }}
             >
-              <NavigationMenu.Icon className="navigation-Icon" aria-hidden="true">‹</NavigationMenu.Icon>{title}
+              {label}<NavigationMenu.Icon className="navigation-Icon" aria-hidden="true">⌄</NavigationMenu.Icon>
             </NavigationMenu.Trigger>
             <NavigationMenu.Content className="navigation-Content">
               <ul className="navigation-FlexLinkList">
-                {links.map(({ label, href }) => (
-                  <li key={href}>
-                    <NavigationMenu.Link className="navigation-LinkCard" active={pathname === href} closeOnClick render={<Link href={href} />}>
-                      <span className="navigation-LinkTitle">{label}</span>
-                    </NavigationMenu.Link>
-                  </li>
-                ))}
-                {state.status === "loading" && <li className="navigation-message" role="status">正在读取导航…</li>}
-                {state.status === "error" && (
-                  <li className="navigation-message" role="status">
-                    导航读取失败。<button className="navigation-retry" type="button" onClick={() => router.refresh()}>重试</button>
-                  </li>
-                )}
-                {state.status === "ready" && !links.length && <li className="navigation-message">{empty}</li>}
+                {subLinks(articles)}
+                {status("暂无分类", articles)}
               </ul>
             </NavigationMenu.Content>
           </NavigationMenu.Item>
-        ))}
-        {[{ label: "作品", href: "/projects" }, { label: "手记", href: "/notes" }].map(({ label, href }) => (
+        ) : (
           <NavigationMenu.Item key={href}>
-            <NavigationMenu.Link
-              className="navigation-Trigger"
-              active={pathname === href || pathname.startsWith(`${href}/`)}
-              render={<Link href={href} />}
-            >{label}</NavigationMenu.Link>
+            <NavigationMenu.Link className="navigation-Trigger" active={isCurrent(pathname, href)} render={<Link href={href} />}>{label}</NavigationMenu.Link>
           </NavigationMenu.Item>
         ))}
         {/* “更多”没有自己的页面，触发器是普通按钮，点击或悬停只展开子菜单 */}
         <NavigationMenu.Item value="更多">
           <NavigationMenu.Trigger className="navigation-Trigger">
-            <NavigationMenu.Icon className="navigation-Icon" aria-hidden="true">‹</NavigationMenu.Icon>更多
+            更多<NavigationMenu.Icon className="navigation-Icon" aria-hidden="true">⌄</NavigationMenu.Icon>
           </NavigationMenu.Trigger>
           <NavigationMenu.Content className="navigation-Content">
             <ul className="navigation-FlexLinkList">
-              {moreLinks.map(({ label, href }) => (
-                <li key={href}>
-                  <NavigationMenu.Link className="navigation-LinkCard" active={pathname === href} closeOnClick render={<Link href={href} />}>
-                    <span className="navigation-LinkTitle">{label}</span>
-                  </NavigationMenu.Link>
-                </li>
-              ))}
+              {subLinks(pages)}
+              {status("", pages)}
+              {subLinks(moreLinks)}
             </ul>
           </NavigationMenu.Content>
         </NavigationMenu.Item>
@@ -132,9 +127,8 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
         )}
       </NavigationMenu.List>
       <NavigationMenu.Portal>
-        <NavigationMenu.Positioner className="navigation-Positioner" side={vertical ? "left" : "bottom"} align="start" sideOffset={8} collisionPadding={8}>
+        <NavigationMenu.Positioner className="navigation-Positioner" side="bottom" align="start" sideOffset={8} collisionPadding={8}>
           <NavigationMenu.Popup className="navigation-Popup">
-            <NavigationMenu.Arrow className="navigation-Arrow" />
             <NavigationMenu.Viewport className="navigation-Viewport" />
           </NavigationMenu.Popup>
         </NavigationMenu.Positioner>

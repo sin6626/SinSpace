@@ -5,11 +5,12 @@ import { ToggleGroup } from "@base-ui/react/toggle-group";
 import { useSyncExternalStore } from "react";
 import "./theme-switcher.css";
 
+// 默认熄灯（深色），这是站点的主场；开灯是浅色，跟随系统由 color-scheme 决定。
 type Theme = "light" | "dark" | "system";
 const storageKey = "theme";
 const options: { value: Theme; label: string }[] = [
-  { value: "light", label: "浅色" },
-  { value: "dark", label: "深色" },
+  { value: "light", label: "开灯" },
+  { value: "dark", label: "熄灯" },
   { value: "system", label: "跟随系统" },
 ];
 const listeners = new Set<() => void>();
@@ -17,13 +18,13 @@ const listeners = new Set<() => void>();
 function read(): Theme {
   try {
     const value = localStorage.getItem(storageKey);
-    return value === "light" || value === "dark" ? value : "system";
+    return value === "light" || value === "system" ? value : "dark";
   } catch {
-    return "system";
+    return "dark";
   }
 }
 
-// 跟随系统时去掉 data-theme，由 globals.css 的 color-scheme: light dark 决定。
+// 跟随系统时去掉 data-theme，由 globals.css 的 color-scheme: light dark 决定。熄灯是默认值，不写入存储。
 function applyToDocument(theme: Theme) {
   if (theme === "system") delete document.documentElement.dataset.theme;
   else document.documentElement.dataset.theme = theme;
@@ -46,7 +47,7 @@ function subscribe(onChange: () => void) {
 
 function choose(theme: Theme) {
   try {
-    if (theme === "system") localStorage.removeItem(storageKey);
+    if (theme === "dark") localStorage.removeItem(storageKey);
     else localStorage.setItem(storageKey, theme);
   } catch {}
   applyToDocument(theme);
@@ -54,7 +55,7 @@ function choose(theme: Theme) {
 }
 
 export default function ThemeSwitcher() {
-  const theme = useSyncExternalStore(subscribe, read, () => "system" as const);
+  const theme = useSyncExternalStore(subscribe, read, () => "dark" as const);
   return (
     <ToggleGroup
       className="theme-switcher"

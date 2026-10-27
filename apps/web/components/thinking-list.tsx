@@ -29,7 +29,7 @@ export default async function ThinkingList({ searchParams }: { searchParams: Pro
     [result, categories] = await Promise.all([getRecently(before), getCategories()]);
   } catch (error) {
     unstable_rethrow(error);
-    return <p className="post-list-content" role="alert">思考读取失败。<a href={before ? `/thinking?before=${before}` : "/thinking"}>重试</a></p>;
+    return <p className="post-list-content" role="alert">碎碎念读取失败。<a href={before ? `/thinking?before=${before}` : "/thinking"}>重试</a></p>;
   }
   if (before && !result.data.length) notFound();
   const last = result.data.at(-1);
@@ -37,7 +37,7 @@ export default async function ThinkingList({ searchParams }: { searchParams: Pro
   return (
     <>
       <header className="page-heading">
-        <h1>思考</h1>
+        <h1>碎碎念</h1>
       </header>
       <div className="post-list-content">
         {result.data.length ? (
@@ -64,9 +64,9 @@ export default async function ThinkingList({ searchParams }: { searchParams: Pro
               );
             })}
           </ul>
-        ) : <p className="post-empty">还没有思考。</p>}
+        ) : <p className="post-empty">还没有碎碎念。</p>}
         {(before || (result.hasMore && last)) && (
-          <nav className="post-pagination" aria-label="思考分页">
+          <nav className="post-pagination" aria-label="碎碎念分页">
             {before ? <Link href="/thinking">回到最新</Link> : <span />}
             {result.hasMore && last ? <Link href={`/thinking?before=${last.id}`} rel="next">更早</Link> : <span />}
           </nav>

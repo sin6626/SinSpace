@@ -19,39 +19,41 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.375rem;
+  gap: var(--space-1);
   height: 2rem;
-  padding: 0 0.75rem;
+  padding: 0 var(--space-3);
   margin: 0;
   outline: 0;
   border: 0;
+  border-radius: var(--radius-full);
   background-color: transparent;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   font-weight: 400;
   line-height: 1.25rem;
-  color: var(--foreground);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  transition: background-color var(--duration-fast), color var(--duration-fast);
   -webkit-user-select: none;
   user-select: none;
   text-decoration: none;
 
-  @media (max-width: 500px) {
-    padding: 0 0.5rem;
-  }
-
   @media (hover: hover) {
     &:hover {
       background-color: var(--accent);
+      color: var(--foreground);
     }
   }
 
-  &[data-pressed] {
+  &[data-pressed],
+  &[data-popup-open] {
     background-color: var(--accent);
+    color: var(--foreground);
   }
 
   &:focus-visible {
     outline: 2px solid var(--ring);
-    outline-offset: -1px;
+    outline-offset: 1px;
   }
 }
 
@@ -120,8 +122,9 @@
   overflow: visible;
   box-sizing: border-box;
   outline: 0;
-  border: 1px solid var(--foreground);
-  background-color: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--surface);
   color: var(--foreground);
   box-shadow: var(--shadow-popup);
   transform-origin: var(--transform-origin);
@@ -148,7 +151,7 @@
   transition:
     opacity calc(var(--duration) * 0.5) ease,
     transform var(--duration) var(--easing);
-  padding: 0.5rem;
+  padding: var(--space-2);
   width: calc(100vw - 40px);
   height: 100%;
 
@@ -205,11 +208,12 @@
   display: block;
   width: 100%;
   height: 100%;
-  padding: 0.5rem;
+  padding: var(--space-2) var(--space-3);
   text-decoration: none;
   color: inherit;
   text-align: left;
   border: 0;
+  border-radius: var(--radius-sm);
   background-color: transparent;
 
   @media (hover: hover) {
@@ -220,95 +224,34 @@
 
   &:focus-visible {
     outline: 2px solid var(--ring);
-    outline-offset: -1px;
+    outline-offset: -2px;
   }
 }
 
 .navigation-LinkTitle {
-  margin: 0 0 4px;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   font-weight: 400;
-  line-height: 1rem;
+  line-height: 1.25rem;
+  white-space: nowrap;
 }
 
-.navigation-Arrow {
-  display: block;
-  position: relative;
-  width: 12px;
-  height: 6px;
-  overflow: clip;
-  transition:
-    left var(--duration) var(--easing),
-    right var(--duration) var(--easing);
-
-  &[data-side='top'] {
-    bottom: -6px;
-    rotate: 180deg;
-  }
-
-  &[data-side='bottom'] {
-    top: -6px;
-    rotate: 0deg;
-  }
-
-  &[data-side='left'] {
-    right: -9px;
-    rotate: 90deg;
-  }
-
-  &[data-side='right'] {
-    left: -9px;
-    rotate: -90deg;
-  }
-
-  &::before {
-    content: '';
-    display: block;
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    box-sizing: border-box;
-    width: calc(6px * sqrt(2));
-    height: calc(6px * sqrt(2));
-    border: 1px solid var(--foreground);
-    background-color: var(--background);
-    transform: translate(-50%, 50%) rotate(45deg);
-  }
-}
-
-/* Adapt the official example to the existing sidebar and aligned labels. */
+/* 顶部横排导航的适配 */
 .navigation-Root {
   min-width: 0;
 }
 
 .navigation-List {
   flex-wrap: wrap;
-}
-
-.navigation-Trigger {
-  position: relative;
-  justify-content: flex-start;
-  text-align: left;
+  gap: var(--space-1);
 }
 
 .navigation-Icon {
-  position: absolute;
-  left: 0;
+  font-size: 0.75em;
+  line-height: 1;
 }
 
 .navigation-Positioner {
   z-index: var(--z-popup);
-}
-
-@media (min-width: 640px) {
-  .navigation-List {
-    flex-direction: column;
-  }
-
-  .navigation-Trigger {
-    width: 100%;
-    justify-content: space-between;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -316,18 +259,15 @@
   .navigation-Positioner,
   .navigation-Popup,
   .navigation-Popup[data-ending-style],
-  .navigation-Content,
-  .navigation-Arrow {
+  .navigation-Content {
     transition: none;
   }
 }
 
-/* 当前所在的一级项与子菜单项：强调色下划线，不改字重（避免整行重排） */
-.navigation-Trigger[aria-current="page"],
+/* 当前所在的一级项与子菜单项：强调色文字 + 淡底色，不改字重（避免整行重排） */
 .navigation-Trigger[data-active],
-.navigation-LinkCard[data-active] .navigation-LinkTitle {
-  text-decoration: underline;
-  text-decoration-color: var(--primary);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.35em;
+.navigation-Trigger[data-current],
+.navigation-LinkCard[data-active] {
+  background-color: var(--primary-soft);
+  color: var(--primary);
 }

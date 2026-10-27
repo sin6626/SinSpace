@@ -1,10 +1,11 @@
-/* Base UI ToggleGroup hero example: https://github.com/mui/base-ui/blob/v1.9.0/docs/src/app/(docs)/react/components/toggle-group/demos/hero/css-modules/index.module.css
-   颜色已换成 globals.css 的语义变量，深色由 light-dark() 处理。 */
+/* 开灯 / 熄灯 / 跟随系统（theme-switcher.tsx，Base UI ToggleGroup）：胶囊形分段按钮，当前项是强调色淡底。 */
 .theme-switcher {
   display: flex;
-  gap: 1px;
-  padding: 1px;
-  border: 1px solid var(--foreground);
+  gap: 2px;
+  width: fit-content;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
 }
 
 .theme-switcher-item {
@@ -12,20 +13,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
+  height: 1.75rem;
+  padding: 0 var(--space-3);
   margin: 0;
   border: none;
-  border-radius: 0;
+  border-radius: var(--radius-full);
   background-color: transparent;
-  color: var(--foreground);
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  transition: background-color var(--duration-fast), color var(--duration-fast);
   -webkit-user-select: none;
   user-select: none;
 
   @media (hover: hover) {
     &:hover:not([data-disabled]) {
       background-color: var(--accent);
+      color: var(--foreground);
     }
   }
 
@@ -33,16 +37,10 @@
     background-color: var(--accent-active);
   }
 
-  &[data-pressed] {
-    background-color: var(--foreground);
-    color: var(--background);
-  }
-
-  @media (hover: hover) {
-    &[data-pressed]:hover:not([data-disabled]) {
-      background-color: var(--foreground);
-      color: var(--background);
-    }
+  &[data-pressed],
+  &[data-pressed]:hover {
+    background-color: var(--primary-soft);
+    color: var(--primary);
   }
 
   &:focus-visible {
@@ -51,16 +49,4 @@
     position: relative;
     z-index: 1;
   }
-}
-
-/* 适配：官方示例是图标按钮，这里是文字，宽度改为随文字。 */
-.theme-switcher {
-  width: fit-content;
-  margin-top: 1.5rem;
-}
-
-.theme-switcher-item {
-  width: auto;
-  padding: 0 0.5rem;
-  font-size: 0.75rem;
 }

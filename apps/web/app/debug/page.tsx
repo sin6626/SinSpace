@@ -7,7 +7,6 @@ import NoteUnlock from "@/components/note-unlock";
 import RecentlyAttitude from "@/components/recently-attitude";
 import SubscribeForm from "@/components/subscribe-form";
 import { getApiUrl } from "@/lib/config";
-import PaletteSwitcher from "./palette-switcher";
 import ToastButtons from "./toast-buttons";
 
 export const metadata: Metadata = { title: "调试" };
@@ -46,11 +45,6 @@ export default function DebugPage() {
       </header>
       <div className="post-list-content">
         <ul className="post-list">
-          <li>
-            <h2>配色方案（对照用）</h2>
-            <p className="post-meta">选定后只保留一套，切换器会删除。选择记在本机，换页面也生效。</p>
-            <PaletteSwitcher />
-          </li>
           <li>
             <h2>导航菜单</h2>
             <p className="post-meta">navigation.tsx 的加载占位</p>
@@ -100,7 +94,7 @@ export default function DebugPage() {
             <NoteUnlock nid={1} />
           </li>
           <li>
-            <h2>时间线、友链、一言与思考</h2>
+            <h2>时间线、友链、一言与碎碎念</h2>
             <p className="post-meta">timeline/friends/says/thinking 的加载占位，timeline-list.tsx、friend-list.tsx、say-list.tsx、thinking-list.tsx 的读取失败与空列表</p>
             <p className="post-list-content" role="status">正在读取时间线…</p>
             <p className="post-empty">还没有内容。</p>
@@ -108,7 +102,7 @@ export default function DebugPage() {
             <p className="post-list-content" role="alert">友链读取失败。<Link href="/debug">重试</Link></p>
             <p className="post-empty">还没有友链。</p>
             <p className="post-empty">还没有一言。</p>
-            <p className="post-empty">还没有思考。</p>
+            <p className="post-empty">还没有碎碎念。</p>
             <p className="post-meta">recently-attitude.tsx 的赞/踩（真实组件，点击会请求 Core）：<RecentlyAttitude apiUrl={getApiUrl()} id="000000000000000000000000" up={3} down={1} /></p>
           </li>
           <li>

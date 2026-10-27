@@ -1,12 +1,11 @@
-import { getNotes, getPosts, getSiteUrl } from "@/lib/blog-data";
-import { siteDescription, siteName } from "@/lib/page-metadata";
+import { getNotes, getPosts, getSiteSettings } from "@/lib/blog-data";
 
 // RSS 2.0：最新 10 条文章与手记，标题、链接和文章摘要；全文请读者点进站点阅读。
 const escape = (value: string) =>
   value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[char]!);
 
 export async function GET() {
-  const [site, posts, notes] = await Promise.all([getSiteUrl(), getPosts(1), getNotes(1)]);
+  const [{ siteUrl: site, name: siteName, description: siteDescription }, posts, notes] = await Promise.all([getSiteSettings(), getPosts(1), getNotes(1)]);
   const link = (...segments: string[]) => `${site}/${segments.map(encodeURIComponent).join("/")}`;
   // 文章列表置顶在前，这里统一按发布时间重新排序。
   const items = [
