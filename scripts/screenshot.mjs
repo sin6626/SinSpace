@@ -26,7 +26,12 @@ for (const s of shots) {
   const loaded = new Promise((r) => listeners.push((m) => m.method === "Page.loadEventFired" && r()));
   await send("Page.navigate", { url: s.url });
   await loaded; await sleep(s.wait ?? 3500);
-  if (s.eval) { await send("Runtime.evaluate", { expression: s.eval, awaitPromise: true }); await sleep(800); }
+  if (s.eval) {
+    // 脚本有返回值时打印出来，方便顺带做交互检查（例如滚动过程的采样）
+    const evaluated = await send("Runtime.evaluate", { expression: s.eval, awaitPromise: true, returnByValue: true });
+    if (evaluated.result?.result?.value !== undefined) console.log("eval", s.out, JSON.stringify(evaluated.result.result.value));
+    await sleep(800);
+  }
   const shot = await send("Page.captureScreenshot", { format: "jpeg", quality: 80, captureBeyondViewport: false });
   writeFileSync(s.out, Buffer.from(shot.result.data, "base64"));
   await send("Page.removeScriptToEvaluateOnNewDocument", { identifier: script.result.identifier });

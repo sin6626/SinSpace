@@ -1,6 +1,7 @@
 import { unstable_rethrow } from "next/navigation";
 import { Suspense } from "react";
 import { getOwner, getSiteSettings, siteDescription } from "../lib/blog-data";
+import ScrollHint from "./scroll-hint";
 import Starfield from "./starfield";
 import "./home-hero.css";
 
@@ -78,10 +79,10 @@ export default function HomeHero() {
           </Suspense>
         </div>
       </div>
-      <a className="home-hero-bottom" href="#home-room">
+      <ScrollHint className="home-hero-bottom" target="home-room">
         <small><Suspense fallback={siteDescription}><Motto /></Suspense></small>
         <span className="home-hero-arrow" aria-hidden="true">⌄</span>
-      </a>
+      </ScrollHint>
     </section>
   );
 }

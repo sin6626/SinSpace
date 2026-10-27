@@ -218,11 +218,137 @@
   max-width: none;
 }
 
+/* 首屏下面的内容比正文宽：首页的导航也跟着放宽，左右边缘对齐 */
 .home-room {
-  max-width: var(--article-max-width);
+  max-width: var(--home-width);
   margin-inline: auto;
-  padding-top: var(--space-8);
+  padding: var(--space-12) var(--space-6) 0;
   scroll-margin-top: var(--header-height);
+}
+
+.site-shell:has(.home-hero) {
+  --home-width: 72rem;
+}
+
+.site-shell:has(.home-hero) .site-header-inner,
+.site-shell:has(.home-hero) .site-footer-inner {
+  max-width: var(--home-width);
+}
+
+/* 双栏：左栏文章和手记上下排，右栏碎碎念单独一栏；作品在两栏下面 */
+.home-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  gap: var(--space-12) var(--space-16);
+  align-items: start;
+}
+
+.home-works {
+  grid-column: 1 / -1;
+}
+
+.home-columns .home-section + .home-section {
+  margin-top: var(--space-12);
+}
+
+.home-columns .home-works {
+  margin-top: 0;
+}
+
+/* 表格般对齐的行：日期列固定宽度、等宽数字，标题占满中间，右侧信息靠右；不画边框，悬停时整行淡底 */
+.home-rows {
+  display: grid;
+}
+
+.home-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin-inline: calc(-1 * var(--space-3));
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--duration-fast);
+}
+
+.home-row time,
+.home-murmurs time {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.home-row-title {
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color var(--duration-fast);
+}
+
+.home-row-title.is-serif {
+  font-family: var(--font-serif);
+}
+
+.home-row-extra {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .home-row:has(.card-link:hover) {
+    background: var(--muted);
+  }
+
+  .home-row:has(.card-link:hover) .home-row-title {
+    color: var(--primary);
+  }
+}
+
+.home-row:has(.card-link:focus-visible) {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* 右栏碎碎念：日期在上、正文在下，一条条往下排，和左栏同样的行距节奏 */
+.home-murmurs {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.home-murmurs li {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.home-murmurs p {
+  line-height: var(--leading-normal);
+}
+
+@media (max-width: 1023px) {
+  .home-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 639px) {
+  .home-room {
+    padding-inline: var(--space-4);
+  }
+
+  .home-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+  }
+
+  .home-row-extra {
+    display: none;
+  }
 }
 
 /* 导航在夜空上是透明的，往下滚出第一屏时渐渐变成半透明的夜色条（滚动驱动动画，不支持的浏览器保持半透明） */
