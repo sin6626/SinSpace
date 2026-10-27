@@ -38,12 +38,12 @@ export default function SubscribeForm({ apiUrl, types }: { apiUrl: string; types
   return (
     <form className="details-section subscribe-form" onSubmit={submit} aria-labelledby={`${id}-heading`}>
       <h2 id={`${id}-heading`}>邮件订阅</h2>
-      <input className="sidebar-search-input" aria-label="订阅邮箱" name="email" type="email" required maxLength={50} placeholder="你的邮箱" autoComplete="email" />
+      <input className="field" aria-label="订阅邮箱" name="email" type="email" required maxLength={50} placeholder="你的邮箱" autoComplete="email" />
       <div className="subscribe-types">
         {types.map((type) => (
           <label key={type}><input type="checkbox" name="types" value={type} defaultChecked /> {typeLabels[type]}</label>
         ))}
-        <button type="submit" disabled={status.type === "sending"}>{status.type === "sending" ? "订阅中…" : "订阅"}</button>
+        <button className="btn btn-primary" type="submit" disabled={status.type === "sending"}>{status.type === "sending" ? "订阅中…" : "订阅"}</button>
       </div>
       {(status.type === "done" || status.type === "error") && (
         <p className="details-message" role={status.type === "error" ? "alert" : "status"}>{status.message}</p>

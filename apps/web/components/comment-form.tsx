@@ -75,14 +75,14 @@ export default function CommentForm({ apiUrl, allowGuest, github, refId, refType
   }
 
   if (replyTo && !open) {
-    return <button className="comment-reply-button" type="button" onClick={() => setOpen(true)}>回复</button>;
+    return <button className="btn btn-ghost btn-sm comment-reply-button" type="button" onClick={() => setOpen(true)}>回复</button>;
   }
   // 不允许游客评论时，未登录的访客只能先登录。
   if (!reader && !allowGuest) {
     if (session.status === "loading" || !github) return null;
     return (
       <div className="comment-identity">
-        <button type="button" onClick={login} disabled={status.type === "sending"}>用 GitHub 登录后评论</button>
+        <button className="btn" type="button" onClick={login} disabled={status.type === "sending"}>用 GitHub 登录后评论</button>
         {status.type === "error" && <p className="post-meta" role="alert">{status.message}</p>}
         {!replyTo && loginError && <p className="post-meta" role="alert">{loginError}</p>}
       </div>
@@ -95,29 +95,29 @@ export default function CommentForm({ apiUrl, allowGuest, github, refId, refType
           {/* eslint-disable-next-line @next/next/no-img-element -- GitHub 头像，不走 next/image 白名单 */}
           {reader.image && <img className="comment-avatar" src={reader.image} alt="" width={28} height={28} />}
           <span>以 <strong>{reader.name}</strong> 的身份评论</span>
-          {!replyTo && <button type="button" onClick={() => void signOut(apiUrl)}>退出</button>}
+          {!replyTo && <button className="btn btn-ghost btn-sm" type="button" onClick={() => void signOut(apiUrl)}>退出</button>}
         </div>
       ) : !replyTo && github && session.status === "guest" && (
         <div className="comment-identity">
-          <button type="button" onClick={login} disabled={status.type === "sending"}>用 GitHub 登录</button>
+          <button className="btn" type="button" onClick={login} disabled={status.type === "sending"}>用 GitHub 登录</button>
           <span className="post-meta">或以游客身份填写下方信息</span>
         </div>
       )}
       {!replyTo && loginError && <p className="post-meta" role="alert">{loginError}</p>}
       {!reader && <div className="comment-fields">
         <label htmlFor={`${id}-author`}>昵称</label>
-        <input id={`${id}-author`} name="author" required maxLength={20} autoComplete="nickname" />
+        <input className="field" id={`${id}-author`} name="author" required maxLength={20} autoComplete="nickname" />
         <label htmlFor={`${id}-mail`}>邮箱（不公开）</label>
-        <input id={`${id}-mail`} name="mail" type="email" required maxLength={50} autoComplete="email" placeholder="用于头像和回复通知" />
+        <input className="field" id={`${id}-mail`} name="mail" type="email" required maxLength={50} autoComplete="email" placeholder="用于头像和回复通知" />
         <label htmlFor={`${id}-url`}>网站（可选）</label>
-        <input id={`${id}-url`} name="url" type="url" maxLength={50} autoComplete="url" placeholder="https://" />
+        <input className="field" id={`${id}-url`} name="url" type="url" maxLength={50} autoComplete="url" placeholder="https://" />
       </div>}
       <label htmlFor={`${id}-text`}>{replyTo ? `回复 @${replyTo.author}` : "评论内容"}</label>
-      <textarea id={`${id}-text`} name="text" required maxLength={500} rows={replyTo ? 3 : 4} placeholder="支持 Markdown，最多 500 字" />
+      <textarea className="field" id={`${id}-text`} name="text" required maxLength={500} rows={replyTo ? 3 : 4} placeholder="支持 Markdown，最多 500 字" />
       <div className="comment-actions">
         <label><input type="checkbox" name="whisper" /> 悄悄话（仅博主可见）</label>
-        {replyTo && <button type="button" onClick={() => { setOpen(false); setStatus({ type: "idle" }); }}>取消</button>}
-        <button type="submit" disabled={status.type === "sending"}>{status.type === "sending" ? "发送中…" : "发送"}</button>
+        {replyTo && <button className="btn btn-ghost" type="button" onClick={() => { setOpen(false); setStatus({ type: "idle" }); }}>取消</button>}
+        <button className="btn btn-primary" type="submit" disabled={status.type === "sending"}>{status.type === "sending" ? "发送中…" : "发送"}</button>
       </div>
       {(status.type === "done" || status.type === "error") && (
         <p className="post-meta" role={status.type === "error" ? "alert" : "status"}>{status.message}</p>

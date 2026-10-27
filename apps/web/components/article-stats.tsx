@@ -65,7 +65,7 @@ export default function ArticleStats({ apiUrl, id, type, read, like }: Props) {
   return (
     <>
       <span>阅读 {read}</span>
-      <button className="article-like" type="button" onClick={thumbsUp} aria-pressed={liked} disabled={liked}>
+      <button className="toggle-chip" type="button" onClick={thumbsUp} aria-pressed={liked} disabled={liked}>
         {liked ? "已赞" : "点赞"} {likes}
       </button>
       {message && <span role="alert">{message}</span>}

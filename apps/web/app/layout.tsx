@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ViewTransition } from "react";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Serif_SC } from "next/font/google";
 import Notifications, { OnlineCount } from "@/components/notifications";
 import { getApiUrl } from "../lib/config";
 import { getSiteSettings, siteName } from "../lib/blog-data";
@@ -19,6 +19,15 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// 手记的衬线体：思源宋体（Noto Serif SC），由 Next 自托管、按字切片。只声明字体，不预加载；
+// 浏览器只在页面真的用到衬线字（手记、首页手记预览）时才下载对应的切片。
+const notoSerif = Noto_Serif_SC({
+  variable: "--font-note-serif",
+  subsets: ["latin"],
+  preload: false,
+  display: "swap",
 });
 
 // 服务端默认输出 data-theme="dark"（熄灯）；保存过“开灯”或“跟随系统”时在绘制前改掉。
@@ -48,7 +57,7 @@ export default function RootLayout({ children, details }: LayoutProps<"/">) {
     <html
       lang="zh-CN"
       data-theme="dark"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${notoSerif.variable} h-full antialiased`}
       // 下面的脚本会在水合前设置 data-theme，属性与服务端不同是预期的。
       suppressHydrationWarning
     >

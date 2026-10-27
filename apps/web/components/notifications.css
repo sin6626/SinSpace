@@ -31,8 +31,9 @@
   margin: 0 auto;
   box-sizing: border-box;
   width: 100%;
-  border: 1px solid var(--foreground);
-  background-color: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--surface);
   color: var(--foreground);
   box-shadow: var(--shadow-popup);
   transform-origin: bottom center;
@@ -107,8 +108,8 @@
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.75rem;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
   overflow: hidden;
   transition: opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -130,14 +131,15 @@
 }
 
 .notification-title {
-  font-weight: 700;
-  font-size: 0.875rem;
+  font-weight: 600;
+  font-size: var(--text-sm);
   line-height: 1.25rem;
   margin: 0;
 }
 
 .notification-description {
-  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
   line-height: 1.25rem;
   margin: 0;
 }
@@ -149,20 +151,20 @@
   justify-content: center;
   gap: 0.5rem;
   height: 2rem;
-  padding: 0 0.75rem;
-  border: 1px solid var(--foreground);
-  border-radius: 0;
-  background-color: var(--background);
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background-color: var(--muted);
   color: var(--foreground);
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   font-weight: 400;
   line-height: 1;
   white-space: nowrap;
 
   @media (hover: hover) {
     &:hover:not([data-disabled]) {
-      background-color: var(--accent);
+      background-color: var(--accent-active);
     }
   }
 
@@ -172,12 +174,11 @@
 
   &[data-disabled] {
     color: var(--muted-foreground);
-    border-color: var(--muted-foreground);
   }
 
   &:focus-visible {
     outline: 2px solid var(--ring);
-    outline-offset: -1px;
+    outline-offset: 2px;
   }
 }
 

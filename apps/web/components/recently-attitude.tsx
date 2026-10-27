@@ -42,8 +42,8 @@ export default function RecentlyAttitude({ apiUrl, id, up, down }: { apiUrl: str
 
   return (
     <>
-      <button className="article-like" type="button" aria-pressed={current.mine === "up"} disabled={pending} onClick={() => vote("up")}>赞 {current.up}</button>
-      <button className="article-like" type="button" aria-pressed={current.mine === "down"} disabled={pending} onClick={() => vote("down")}>踩 {current.down}</button>
+      <button className="toggle-chip" type="button" aria-pressed={current.mine === "up"} disabled={pending} onClick={() => vote("up")}>赞 {current.up}</button>
+      <button className="toggle-chip" type="button" aria-pressed={current.mine === "down"} disabled={pending} onClick={() => vote("down")}>踩 {current.down}</button>
     </>
   );
 }

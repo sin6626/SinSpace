@@ -19,9 +19,9 @@ export default function NoteUnlock({ nid }: { nid: number }) {
     <form className="comment-form note-unlock" action={action}>
       <p>这篇手记设置了访问密码。</p>
       <label htmlFor={`${id}-password`}>访问密码</label>
-      <input id={`${id}-password`} name="password" type="password" required maxLength={100} autoComplete="off" />
+      <input className="field" id={`${id}-password`} name="password" type="password" required maxLength={100} autoComplete="off" />
       <div className="comment-actions">
-        <button type="submit" disabled={pending}>{pending ? "验证中…" : "查看手记"}</button>
+        <button className="btn btn-primary" type="submit" disabled={pending}>{pending ? "验证中…" : "查看手记"}</button>
       </div>
       {state && <p className="post-meta" role="alert">{state.message}</p>}
     </form>

@@ -66,7 +66,7 @@
   --layout-max-width: 72rem;  /*顶部导航*/
   --article-max-width: 48rem; /*单栏正文*/
   --header-height: 3.5rem;
-  --font-serif: "Noto Serif CJK SC", "Source Han Serif SC", "Source Han Serif", "source-han-serif-sc", "Songti SC", STSong, serif;
+  --font-serif: var(--font-note-serif), "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", STSong, serif; /*只用于手记，字体在 layout.tsx 加载*/
   --z-header: 2;
   --z-popup: 3;
   --z-toast: 4;
@@ -110,6 +110,146 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), "PingFang SC", "Microsoft YaHei", sans-serif;
+  accent-color: var(--primary); /*复选框等原生控件*/
+}
+
+/* 基础控件：全站按钮与输入框都用这两组类名，组件里不再各写一份。
+   按钮 6px 圆角；默认是淡底，主要操作用强调色底（.btn-primary），次要操作透明（.btn-ghost）。 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 2.25rem;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  color: var(--foreground);
+  font: inherit;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--duration-fast), color var(--duration-fast), opacity var(--duration-fast), transform var(--duration-fast);
+}
+
+@media (hover: hover) {
+  .btn:not(:disabled):hover {
+    background: var(--accent-active);
+  }
+}
+
+.btn:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+@media (hover: hover) {
+  .btn-primary:not(:disabled):hover {
+    background: var(--primary);
+    opacity: 0.88;
+  }
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--muted-foreground);
+}
+
+@media (hover: hover) {
+  .btn-ghost:not(:disabled):hover {
+    background: var(--accent);
+    color: var(--foreground);
+  }
+}
+
+.btn-sm {
+  height: 1.75rem;
+  padding: 0 var(--space-3);
+  font-size: var(--text-xs);
+}
+
+/* 输入框：淡边框、表面底色，聚焦时强调色描边和一圈淡光 */
+.field {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 2.5rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--foreground);
+  font: inherit;
+  font-size: var(--text-sm);
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.field::placeholder {
+  color: var(--muted-foreground);
+}
+
+.field:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+textarea.field {
+  line-height: var(--leading-normal);
+  resize: vertical;
+}
+
+/* 小的开关按钮（点赞、赞/踩）：胶囊形，按下后是强调色淡底 */
+.toggle-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 1.75rem;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--muted-foreground);
+  font: inherit;
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition: background-color var(--duration-fast), color var(--duration-fast), border-color var(--duration-fast);
+}
+
+@media (hover: hover) {
+  .toggle-chip:not(:disabled):hover {
+    background: var(--accent);
+    color: var(--foreground);
+  }
+}
+
+.toggle-chip[aria-pressed="true"] {
+  border-color: transparent;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.toggle-chip:disabled {
+  cursor: default;
+}
+
+.toggle-chip:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
 
 .skip-link {
@@ -250,7 +390,10 @@ a:focus-visible,
   }
 }
 
+/* 页脚盖在悬浮的目录上面：滚到底时目录像滑到页脚下面 */
 .site-footer {
+  position: relative;
+  z-index: 1;
   margin-top: var(--space-16);
   background: var(--muted);
 }

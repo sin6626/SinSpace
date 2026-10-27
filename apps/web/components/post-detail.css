@@ -1,5 +1,5 @@
 .post-detail-title {
-  margin-top: 1rem;
+  margin-top: var(--space-4);
   overflow-wrap: anywhere;
 }
 
@@ -17,6 +17,7 @@
 /* 图片加载失败：透明的 <img> 仍占满宽度，会把提示挤到框外，让它脱离排版后提示才能居中 */
 .article-rich .rr-image-frame.rr-image-error {
   border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
 }
 
 .article-rich .rr-image-img[data-state="error"] {
@@ -27,23 +28,24 @@
 /* 外框和提示共用 rr-image-error 类名，用 span 区分出提示 */
 .article-rich .rr-image-frame > span.rr-image-error {
   position: relative;
-  padding: 0.25rem 0.75rem;
+  padding: var(--space-1) var(--space-3);
   border: 1px solid var(--border);
-  border-radius: 0;
-  background: var(--background);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
   color: var(--muted-foreground);
   white-space: nowrap;
 }
 
+/* Markdown 正文（article-body.tsx）：与 Haklex 富文本同样的 16px / 1.8 行高，标题、引用、代码块的样子也对齐 */
 .article-body {
   max-width: var(--article-max-width);
-  font-size: 1.125rem;
-  line-height: 1.85;
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
   overflow-wrap: anywhere;
 }
 
 .article-body > * + * {
-  margin-top: 1rem;
+  margin-top: 1.1em;
 }
 
 .article-body h1,
@@ -52,18 +54,24 @@
 .article-body h4,
 .article-body h5,
 .article-body h6 {
-  margin-top: 2rem;
+  margin-top: 2em;
   font-weight: 600;
-  line-height: 1.4;
+  line-height: var(--leading-tight);
 }
 
 .article-body h1,
 .article-body h2 {
-  font-size: 1.5rem;
+  font-size: var(--text-xl);
 }
 
 .article-body h3 {
-  font-size: 1.25rem;
+  font-size: var(--text-lg);
+}
+
+.article-body h4,
+.article-body h5,
+.article-body h6 {
+  font-size: var(--text-base);
 }
 
 .article-body a {
@@ -73,6 +81,7 @@
 .article-body a,
 .post-detail header a {
   text-decoration: underline;
+  text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
 }
 
@@ -83,11 +92,20 @@
 
 .article-body ul { list-style: disc; }
 .article-body ol { list-style: decimal; }
+.article-body li + li { margin-top: 0.35em; }
+.article-body li::marker { color: var(--muted-foreground); }
 
+/* 引用：强调色淡底，没有竖线（和富文本的引用一致） */
 .article-body blockquote {
-  padding-left: 1rem;
-  border-left: 3px solid var(--border);
-  color: var(--muted-foreground);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.article-body hr {
+  margin-block: 2.5em;
+  border: 0;
+  border-top: 1px solid var(--border);
 }
 
 .article-body pre,
@@ -97,93 +115,83 @@
 }
 
 .article-body pre {
-  padding: 1rem;
+  padding: var(--space-4);
+  border-radius: var(--radius-sm);
   background: var(--muted);
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
 }
 
 .article-body code { font-family: var(--font-geist-mono), monospace; }
+
+.article-body :not(pre) > code {
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  background: var(--muted);
+  font-size: 0.875em;
+}
 
 /* Shiki 代码高亮（article-body.tsx）：输出同时带浅色和深色变量，按当前主题取色 */
 .article-body .code-block .shiki,
 .article-body .code-block .shiki span {
   color: light-dark(var(--shiki-light), var(--shiki-dark));
 }
-.article-body table { display: block; border-collapse: collapse; }
+
+.article-body table { display: block; border-collapse: collapse; font-size: var(--text-sm); }
 .article-body th,
-.article-body td { padding: 0.5rem; border: 1px solid var(--border); }
-.article-body img { max-width: 100%; height: auto; }
+.article-body td { padding: var(--space-2) var(--space-3); border: 1px solid var(--border); }
+.article-body th { background: var(--muted); font-weight: 600; }
+.article-body img { max-width: 100%; height: auto; border-radius: var(--radius-sm); }
 
-@media (max-width: 639px) {
-  .article-body { font-size: 1.0625rem; }
-}
-
-/* 详情页阅读数旁的点赞按钮（article-stats.tsx）：与其他小按钮同样的直角实线风格 */
-.article-like {
-  padding: 0 0.5rem;
-  border: 1px solid var(--border);
-  background: var(--background);
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-
-.article-like:disabled {
-  cursor: default;
-}
-
-.article-like[aria-pressed="true"] {
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-@media (hover: hover) {
-  .article-like:not(:disabled):hover {
-    background: var(--accent);
-  }
-}
-
-.article-like:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: -1px;
+/* 详情页标题区：元信息、阅读数和点赞在一行里垂直居中 */
+.post-detail .page-heading .post-meta {
+  align-items: center;
 }
 
 /* AI 摘要、翻译提示与阅读语言切换（article-ai.tsx） */
 .article-languages {
-  margin-top: 0.5rem;
+  margin-top: var(--space-2);
 }
 
-/* 当前语言只用下划线标识，不加粗，避免切换时整行重排 */
+/* 当前语言用强调色，不加粗，避免切换时整行重排 */
 .article-languages a[aria-current="page"] {
-  text-decoration: underline;
+  color: var(--primary);
   text-decoration-color: var(--primary);
-  text-underline-offset: 0.25em;
 }
 
 .ai-summary {
-  margin-bottom: 1.5rem;
-  padding: 0.75rem 1rem;
-  border-left: 2px solid var(--border);
+  margin-bottom: var(--space-8);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
   background: var(--muted);
-  line-height: 1.7;
+  line-height: var(--leading-relaxed);
 }
 
 .ai-summary-label {
-  margin-bottom: 0.25rem;
-  color: var(--muted-foreground);
-  font-size: 0.8125rem;
+  margin-bottom: var(--space-1);
+  color: var(--primary);
+  font-size: var(--text-xs);
+}
+
+.ai-summary-label::before {
+  content: "✦ ";
 }
 
 .ai-note {
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
   color: var(--muted-foreground);
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
 }
 
-/* 手记：标题与 Markdown 正文用衬线体；富文本由 Haklex 的手记主题（variant="note"）负责 */
+/* 手记：标题与 Markdown 正文用衬线体；富文本用 Haklex 的手记主题（variant="note"），字体换成站点加载的思源宋体 */
 .note-detail .post-detail-title,
 .article-body-note {
   font-family: var(--font-serif);
+}
+
+.note-detail .article-rich .rich-content {
+  --rc-font-family: var(--font-serif);
+  --rc-font-family-serif: var(--font-serif);
 }
 
 /* Haklex 富文本自带一套颜色（强调色是蓝色），而且主题类直接定义在渲染器根元素上，

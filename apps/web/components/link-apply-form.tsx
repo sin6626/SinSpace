@@ -38,22 +38,22 @@ export default function LinkApplyForm({ apiUrl }: { apiUrl: string }) {
     <form className="comment-form" onSubmit={submit} aria-label="申请友链">
       <div className="comment-fields">
         <label htmlFor={`${id}-author`}>你的名字</label>
-        <input id={`${id}-author`} name="author" required maxLength={20} autoComplete="nickname" />
+        <input className="field" id={`${id}-author`} name="author" required maxLength={20} autoComplete="nickname" />
         <label htmlFor={`${id}-name`}>站点名称</label>
-        <input id={`${id}-name`} name="name" required maxLength={20} autoComplete="off" />
+        <input className="field" id={`${id}-name`} name="name" required maxLength={20} autoComplete="off" />
         <label htmlFor={`${id}-url`}>站点地址</label>
-        <input id={`${id}-url`} name="url" type="url" required pattern="https://.+" title="需要以 https:// 开头" placeholder="https://" autoComplete="url" />
+        <input className="field" id={`${id}-url`} name="url" type="url" required pattern="https://.+" title="需要以 https:// 开头" placeholder="https://" autoComplete="url" />
       </div>
       <div className="comment-fields">
         <label htmlFor={`${id}-avatar`}>头像地址（可选）</label>
-        <input id={`${id}-avatar`} name="avatar" type="url" maxLength={200} placeholder="https://" autoComplete="off" />
+        <input className="field" id={`${id}-avatar`} name="avatar" type="url" maxLength={200} placeholder="https://" autoComplete="off" />
         <label htmlFor={`${id}-description`}>一句话介绍（可选）</label>
-        <input id={`${id}-description`} name="description" maxLength={50} autoComplete="off" />
+        <input className="field" id={`${id}-description`} name="description" maxLength={50} autoComplete="off" />
         <label htmlFor={`${id}-email`}>邮箱（可选，不公开）</label>
-        <input id={`${id}-email`} name="email" type="email" maxLength={50} placeholder="接收审核结果" autoComplete="email" />
+        <input className="field" id={`${id}-email`} name="email" type="email" maxLength={50} placeholder="接收审核结果" autoComplete="email" />
       </div>
       <div className="comment-actions">
-        <button type="submit" disabled={status.type === "sending"}>{status.type === "sending" ? "提交中…" : "提交申请"}</button>
+        <button className="btn btn-primary" type="submit" disabled={status.type === "sending"}>{status.type === "sending" ? "提交中…" : "提交申请"}</button>
       </div>
       {(status.type === "done" || status.type === "error") && (
         <p className="post-meta" role={status.type === "error" ? "alert" : "status"}>{status.message}</p>
