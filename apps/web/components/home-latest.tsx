@@ -19,8 +19,9 @@ async function load<T>(read: () => Promise<T>) {
   }
 }
 
-function Section<T>({ title, allHref, items, empty, children }: {
+function Section<T>({ title, note, allHref, items, empty, children }: {
   title: string;
+  note: string;
   allHref: string;
   items: T[] | null;
   empty: string;
@@ -30,6 +31,7 @@ function Section<T>({ title, allHref, items, empty, children }: {
     <section className="home-section" aria-label={title}>
       <div className="home-section-heading">
         <h2>{title}</h2>
+        <p>{note}</p>
         <Link href={allHref}>全部 →</Link>
       </div>
       {items === null ? (
@@ -49,7 +51,7 @@ export default async function HomeLatest() {
   ]);
   return (
     <div className="post-list-content">
-      <Section title="碎碎念" allHref="/thinking" items={murmurs} empty="今晚还没有碎碎念。">
+      <Section title="碎碎念" note="平日里的小事和小快乐" allHref="/thinking" items={murmurs} empty="今晚还没有碎碎念。">
         {(items) => (
           <ul className="murmur-preview">
             {items.map((item) => (
@@ -61,13 +63,13 @@ export default async function HomeLatest() {
           </ul>
         )}
       </Section>
-      <Section title="手记" allHref="/notes" items={notes} empty="还没有公开的手记。">
+      <Section title="手记" note="写给自己的心里话" allHref="/notes" items={notes} empty="还没有公开的手记。">
         {(items) => <ul className="note-list">{items.map((note) => <li key={note.id}><NoteEntry note={note} headingLevel={3} /></li>)}</ul>}
       </Section>
-      <Section title="文章" allHref="/posts" items={posts} empty="还没有已发布的文章。">
+      <Section title="文章" note="学到的、想明白的" allHref="/posts" items={posts} empty="还没有已发布的文章。">
         {(items) => <ul className="post-list">{items.map((post) => <li key={post.id}><PostCard post={{ ...post, href: postHref(post) }} headingLevel={3} /></li>)}</ul>}
       </Section>
-      <Section title="作品" allHref="/projects" items={projects} empty="还没有作品。">
+      <Section title="作品" note="亲手做出来的东西" allHref="/projects" items={projects} empty="还没有作品。">
         {(items) => <ul className="project-grid">{items.map((project) => <li key={project.id}><ProjectCard project={project} headingLevel={3} /></li>)}</ul>}
       </Section>
     </div>

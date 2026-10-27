@@ -56,7 +56,7 @@ function onlineCount(message: unknown) {
 
 export function OnlineCount() {
   const online = useContext(OnlineContext);
-  return online === null ? null : <p className="site-online">在线 {online} 人</p>;
+  return online === null ? null : <p className="site-online"><span className="site-online-dot" aria-hidden="true" />此刻有 {online} 人在这里</p>;
 }
 
 // 正在阅读：每篇文章/手记一个房间（article-<id>，由 ArticleNotifications 加入），人数读 Core 的 /activity/online-count。
@@ -85,7 +85,7 @@ export function ReadingCount({ apiUrl, id }: { apiUrl: string; id: string }) {
       clearInterval(timer);
     };
   }, [socket, apiUrl, id]);
-  return count ? <span>正在阅读 {count} 人</span> : null;
+  return count ? <span className="site-online"><span className="site-online-dot" aria-hidden="true" />{count} 人正在读</span> : null;
 }
 
 export function ArticleNotifications({ id }: { id: string }) {

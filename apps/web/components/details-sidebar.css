@@ -1,8 +1,56 @@
 /* 列表页顶部的筛选栏（post-sidebar / note-sidebar / sidebar-search）与页脚邮件订阅（subscribe-form）。 */
-.list-toolbar {
+/* 列表页：标题和数量在左，小搜索框在右；分类、标签抽屉在下面一行 */
+.list-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.list-search {
+  position: relative;
+  width: min(100%, 15rem);
+}
+
+.list-search svg {
+  position: absolute;
+  top: 50%;
+  left: var(--space-3);
+  width: 1rem;
+  height: 1rem;
+  translate: 0 -50%;
+  fill: none;
+  stroke: var(--muted-foreground);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.list-search .field {
+  min-height: 2.25rem;
+  padding-left: 2.25rem;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  border-color: transparent;
+}
+
+.list-search .field:focus-visible {
+  background: var(--surface);
+}
+
+.list-filters {
   display: grid;
   gap: var(--space-3);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+.list-filters:empty {
+  display: none;
+}
+
+.list-filters .post-categories {
+  margin-bottom: 0;
 }
 
 .details-section + .details-section {
@@ -26,11 +74,18 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-1) 0;
+  padding: var(--space-1) var(--space-3);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-full);
   color: var(--muted-foreground);
   font-size: var(--text-sm);
   cursor: pointer;
   list-style: none;
+}
+
+.tag-drawer[open] summary {
+  border-style: solid;
+  color: var(--foreground);
 }
 
 .tag-drawer summary::-webkit-details-marker {
@@ -99,27 +154,50 @@
   font-size: var(--text-xs);
 }
 
-/* 页脚邮件订阅（subscribe-form.tsx） */
+/* 页脚邮件订阅（subscribe-form.tsx）：标题、一句说明，输入框和按钮同一行，订阅类型在下面 */
 .subscribe-form {
   display: grid;
-  gap: var(--space-3);
-  max-width: 28rem;
+  gap: var(--space-2);
 }
 
 .subscribe-form h2 {
-  margin-bottom: 0;
-  color: var(--foreground);
   font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.subscribe-hint {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+}
+
+.subscribe-row {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.subscribe-row .field {
+  flex: 1;
+  min-width: 0;
 }
 
 .subscribe-types {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   gap: var(--space-2) var(--space-4);
-  font-size: var(--text-sm);
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
 }
 
-.subscribe-types button {
-  margin-left: auto;
+.subscribe-types label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* 手机上搜索框单独一行，铺满宽度 */
+@media (max-width: 639px) {
+  .list-search {
+    width: 100%;
+  }
 }

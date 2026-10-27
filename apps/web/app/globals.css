@@ -319,34 +319,58 @@ a:focus-visible,
   backdrop-filter: blur(12px) saturate(140%);
 }
 
+/* 导航和正文对齐：同一条 48rem 的中线，站名左边与正文左边对齐，图标按钮与正文右边对齐 */
 .site-header-inner {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2) var(--space-6);
-  max-width: var(--layout-max-width);
+  gap: var(--space-2) var(--space-4);
+  max-width: var(--article-max-width);
   min-height: var(--header-height);
   margin-inline: auto;
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-6);
 }
 
 .site-brand {
+  margin-right: auto;
   font-size: var(--text-base);
   font-weight: 600;
+  letter-spacing: 0.01em;
   white-space: nowrap;
 }
 
 .site-header-tools {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  margin-left: auto;
+  gap: var(--space-1);
 }
 
+/* 在线人数：一个轻轻呼吸的小绿点 */
 .site-online {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   color: var(--muted-foreground);
   font-size: var(--text-xs);
   white-space: nowrap;
+}
+
+.site-online-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: var(--radius-full);
+  background: var(--success);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 60%, transparent);
+  animation: online-breathe 2.4s ease-out infinite;
+}
+
+@keyframes online-breathe {
+  70%, 100% { box-shadow: 0 0 0 0.375rem transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-online-dot {
+    animation: none;
+  }
 }
 
 .site-content {
@@ -395,23 +419,63 @@ a:focus-visible,
   position: relative;
   z-index: 1;
   margin-top: var(--space-16);
-  background: var(--muted);
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--muted) 60%, var(--background));
 }
 
 .site-footer-inner {
   display: grid;
-  gap: var(--space-6);
+  gap: var(--space-8);
   max-width: var(--article-max-width);
   margin-inline: auto;
-  padding: var(--space-8) var(--space-6) var(--space-12);
+  padding: var(--space-12) var(--space-6) var(--space-8);
+}
+
+.site-footer-top {
+  display: grid;
+  gap: var(--space-8);
+}
+
+@media (min-width: 640px) {
+  .site-footer-top {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    align-items: start;
+  }
+}
+
+.site-footer-name {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.site-footer-about p + p {
+  margin-top: var(--space-2);
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
 }
 
 .site-footer-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border);
   color: var(--muted-foreground);
   font-size: var(--text-sm);
+}
+
+.site-footer-meta nav {
+  display: flex;
+  gap: var(--space-6);
+}
+
+@media (hover: hover) {
+  .site-footer-meta a:hover {
+    color: var(--primary);
+  }
 }
 
 .navigation-message {
@@ -571,7 +635,7 @@ a:focus-visible,
   line-height: 1.5rem;
 }
 
-/* 首页四个角落的分区标题 */
+/* 首页四个角落的分区标题：标题、一句说明、右边“全部” */
 .home-section + .home-section {
   margin-top: var(--space-12);
 }
@@ -579,14 +643,19 @@ a:focus-visible,
 .home-section-heading {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--space-3);
   margin-bottom: var(--space-4);
 }
 
 .home-section-heading h2 {
   font-size: var(--text-xl);
   font-weight: 600;
+}
+
+.home-section-heading p {
+  margin-right: auto;
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
 }
 
 .home-section-heading a {
@@ -695,4 +764,40 @@ html:active-view-transition-type(theme)::view-transition-new(root) {
   ::view-transition-new(*) {
     animation: none !important;
   }
+}
+
+/* 空状态（404 等）：居中，大号的数字像远处的星座 */
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-16) var(--space-6);
+  text-align: center;
+}
+
+.empty-state-code {
+  color: color-mix(in srgb, var(--primary) 70%, transparent);
+  font-family: var(--font-serif);
+  font-size: 4.5rem;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 2rem color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+.empty-state h1 {
+  font-size: var(--text-xl);
+  font-weight: 600;
+}
+
+.empty-state p:not(.empty-state-code) {
+  max-width: 28rem;
+  color: var(--muted-foreground);
+}
+
+.empty-state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }

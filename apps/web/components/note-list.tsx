@@ -5,7 +5,7 @@ import { getNotes } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
 import { readText } from "../lib/search-params";
 import { NoteSearch, NotesByTopic } from "./note-filter";
-import NoteSidebar from "./note-sidebar";
+import NoteTopicDrawer from "./note-sidebar";
 import SidebarSearch from "./sidebar-search";
 import "./details-sidebar.css";
 import "./corners.css";
@@ -41,13 +41,10 @@ export default async function NoteList({ searchParams }: { searchParams: Promise
   const { page: rawPage = "1", q, topic } = await searchParams;
   const keyword = readText(q);
   const topicSlug = readText(topic, 100);
-  const toolbar = (
-    <Suspense fallback={<div className="list-toolbar"><SidebarSearch action="/notes" label="搜索手记" defaultValue={keyword} /></div>}>
-      <NoteSidebar keyword={keyword} activeTopic={topicSlug || undefined} />
-    </Suspense>
-  );
-  if (keyword) return <NoteSearch keyword={keyword} toolbar={toolbar} />;
-  if (topicSlug) return <NotesByTopic slug={topicSlug} toolbar={toolbar} />;
+  const search = <SidebarSearch action="/notes" label="搜索手记" defaultValue={keyword} />;
+  const topics = <Suspense fallback={null}><NoteTopicDrawer activeTopic={topicSlug || undefined} /></Suspense>;
+  if (keyword) return <NoteSearch keyword={keyword} search={search} filters={topics} />;
+  if (topicSlug) return <NotesByTopic slug={topicSlug} search={search} filters={topics} />;
   if (typeof rawPage !== "string" || !/^[1-9]\d*$/.test(rawPage)) notFound();
   const page = Number(rawPage);
   if (!Number.isSafeInteger(page)) notFound();
@@ -65,12 +62,15 @@ export default async function NoteList({ searchParams }: { searchParams: Promise
 
   return (
     <>
-      <header className="page-heading">
-        <h1>手记</h1>
-        <p className="post-meta">共 {pagination.total} 篇手记</p>
+      <header className="page-heading list-heading">
+        <div>
+          <h1>手记</h1>
+          <p className="post-meta">共 {pagination.total} 篇手记</p>
+        </div>
+        {search}
       </header>
       <div className="post-list-content">
-        {toolbar}
+        <div className="list-filters">{topics}</div>
         {notes.length ? (
           <ul className="note-list">
             {notes.map((note) => (

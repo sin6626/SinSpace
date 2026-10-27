@@ -1,4 +1,5 @@
 import Link from "next/link";
+import "./corners.css";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { getSays } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
@@ -27,9 +28,9 @@ export default async function SayList({ searchParams }: { searchParams: Promise<
       </header>
       <div className="post-list-content">
         {says.length ? (
-          <ul className="post-list">
+          <ul className="say-list">
             {says.map((say) => (
-              <li key={say.id}>
+              <li key={say.id} className="say-card">
                 <blockquote>
                   <p>{say.text}</p>
                   {(say.author || say.source) && (
@@ -39,7 +40,7 @@ export default async function SayList({ searchParams }: { searchParams: Promise<
                     </footer>
                   )}
                 </blockquote>
-                <p className="post-meta"><time dateTime={say.created}>{formatDate(say.created)}</time></p>
+                <time className="say-date" dateTime={say.created}>{formatDate(say.created)}</time>
               </li>
             ))}
           </ul>

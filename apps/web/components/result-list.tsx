@@ -5,21 +5,25 @@ import { formatDate } from "../lib/date";
 export type ResultItem = { key: string; href: string; title: string; created: string; meta?: string };
 
 // 搜索与标签/话题筛选的结果列表，文章和手记共用。
-export default function ResultList({ title, summary, items, emptyText, toolbar }: {
+export default function ResultList({ title, summary, items, emptyText, search, filters }: {
   title: string;
   summary: string;
   items: ResultItem[] | null;
   emptyText: string;
-  toolbar?: ReactNode;
+  search?: ReactNode;
+  filters?: ReactNode;
 }) {
   return (
     <>
-      <header className="page-heading">
-        <h1>{title}</h1>
-        {summary && <p className="post-meta">{summary}</p>}
+      <header className="page-heading list-heading">
+        <div>
+          <h1>{title}</h1>
+          {summary && <p className="post-meta">{summary}</p>}
+        </div>
+        {search}
       </header>
       <div className="post-list-content">
-        {toolbar}
+        {filters && <div className="list-filters">{filters}</div>}
         {items === null ? (
           <p className="post-empty" role="alert">读取失败，请稍后重试。</p>
         ) : items.length ? (

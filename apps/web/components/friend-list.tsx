@@ -4,24 +4,30 @@ import { getLinkApplyOpen, getLinks, getSiteSettings } from "../lib/blog-data";
 import { getApiUrl } from "../lib/config";
 import { safeUrl } from "../lib/safe-url";
 import LinkApplyForm from "./link-apply-form";
+import "./corners.css";
 
 type Link = Awaited<ReturnType<typeof getLinks>>[number];
 
 // 分组沿用 Shiro：隐藏的不显示；已通过的按类型分“朋友”“收藏”；失联的只列名字（不可访问，不给链接）；
 // 被封禁的不展示。页面底部是友链申请（后台开放申请时才有表单）。
+// 每个朋友一张小卡片：圆形头像、站名、一句话，整张可点（新窗口打开）。
 function LinkCards({ links }: { links: Link[] }) {
   return (
-    <ul className="post-list">
+    <ul className="friend-grid">
       {links.map((link) => {
         const url = safeUrl(link.url);
         const avatar = safeUrl(link.avatar);
         return (
-          <li key={link.id} className="project-item">
-            {/* eslint-disable-next-line @next/next/no-img-element -- 友链头像来自任意域名，不走 next/image 白名单 */}
-            {avatar && <img className="project-avatar" src={avatar} alt="" width={48} height={48} loading="lazy" />}
-            <article>
-              <h3>{url ? <a href={url} target="_blank" rel="noopener noreferrer">{link.name}</a> : link.name}</h3>
-              {link.description && <p className="post-summary">{link.description}</p>}
+          <li key={link.id}>
+            <article className="friend-card">
+              {avatar ? (
+                // eslint-disable-next-line @next/next/no-img-element -- 友链头像来自任意域名，不走 next/image 白名单
+                <img className="friend-avatar" src={avatar} alt="" width={48} height={48} loading="lazy" />
+              ) : <span className="friend-avatar is-letter" aria-hidden="true">{Array.from(link.name.trim())[0] ?? "✦"}</span>}
+              <div>
+                <h3>{url ? <a className="card-link" href={url} target="_blank" rel="noopener noreferrer">{link.name}</a> : link.name}</h3>
+                {link.description && <p>{link.description}</p>}
+              </div>
             </article>
           </li>
         );
@@ -54,19 +60,19 @@ export default async function FriendList() {
       <div className="post-list-content">
         {!friends.length && !collections.length && !outdated.length && <p className="post-empty">还没有友链。</p>}
         {friends.length > 0 && (
-          <section aria-labelledby="friends-heading">
+          <section className="friend-section" aria-labelledby="friends-heading">
             <h2 id="friends-heading">我的朋友</h2>
             <LinkCards links={friends} />
           </section>
         )}
         {collections.length > 0 && (
-          <section aria-labelledby="collections-heading">
+          <section className="friend-section" aria-labelledby="collections-heading">
             <h2 id="collections-heading">我的收藏</h2>
             <LinkCards links={collections} />
           </section>
         )}
         {outdated.length > 0 && (
-          <details>
+          <details className="friend-outdated">
             <summary>以下站点无法访问，已失联</summary>
             <ul>{outdated.map((link) => <li key={link.id}>{link.name}</li>)}</ul>
           </details>

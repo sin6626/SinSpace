@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { getCategories, getPosts } from "../lib/blog-data";
 import { readText } from "../lib/search-params";
 import { PostSearch, PostsByTag } from "./post-filter";
-import PostSidebar from "./post-sidebar";
+import PostTagDrawer from "./post-sidebar";
 import SidebarSearch from "./sidebar-search";
 import { formatDate } from "../lib/date";
 import "./details-sidebar.css";
@@ -31,15 +31,15 @@ export function PostCard({ post, headingLevel = 2 }: { post: PostCardData; headi
   const Heading = headingLevel === 2 ? "h2" : "h3";
   return (
     <article className="post-card">
-      <Heading>{post.href ? <Link className="card-link" href={post.href}>{post.title}</Link> : post.title}</Heading>
-      {post.summary && <p className="post-card-summary">{post.summary}</p>}
-      <div className="post-meta">
-        {post.pinned && <span className="badge">置顶</span>}
+      <div className="post-meta post-card-meta">
         <time dateTime={post.created}>{formatDate(post.created)}</time>
         {post.category ? (
           <Link href={`/categories/${encodeURIComponent(post.category.slug)}`}>{post.category.name}</Link>
         ) : <span>未分类</span>}
+        {post.pinned && <span className="badge">置顶</span>}
       </div>
+      <Heading>{post.href ? <Link className="card-link" href={post.href}>{post.title}</Link> : post.title}</Heading>
+      {post.summary && <p className="post-card-summary">{post.summary}</p>}
     </article>
   );
 }
@@ -51,15 +51,12 @@ export default async function PostList({ searchParams, params }: PostListProps) 
   const [{ page: rawPage = "1", q, tag }, route] = await Promise.all([searchParams, params]);
   const keyword = route ? "" : readText(q);
   const activeTag = !route && typeof tag === "string" && tag.trim() ? tag.slice(0, 100) : undefined;
-  // 列表顶部的搜索和标签：标签要读接口，单独 Suspense，不挡住列表。
-  const toolbar = (
-    <Suspense fallback={<div className="list-toolbar"><SidebarSearch action="/posts" label="搜索文章" defaultValue={keyword} /></div>}>
-      <PostSidebar keyword={keyword} activeTag={activeTag} />
-    </Suspense>
-  );
+  // 搜索框放在标题右边；标签抽屉要读接口，单独 Suspense，不挡住列表。
+  const search = <SidebarSearch action="/posts" label="搜索文章" defaultValue={keyword} />;
+  const tags = <Suspense fallback={null}><PostTagDrawer activeTag={activeTag} /></Suspense>;
   // 搜索和标签只作用于 /posts；标签名原样保留（后台有带空格的标签）。
-  if (keyword) return <PostSearch keyword={keyword} toolbar={toolbar} />;
-  if (activeTag) return <PostsByTag name={activeTag} toolbar={toolbar} />;
+  if (keyword) return <PostSearch keyword={keyword} search={search} filters={tags} />;
+  if (activeTag) return <PostsByTag name={activeTag} search={search} filters={tags} />;
   if (typeof rawPage !== "string" || !/^[1-9]\d*$/.test(rawPage)) notFound();
   const page = Number(rawPage);
   if (!Number.isSafeInteger(page)) notFound();
@@ -89,12 +86,15 @@ export default async function PostList({ searchParams, params }: PostListProps) 
 
   return (
     <>
-      <header className="page-heading">
-        <h1>{category?.name ?? "文章"}</h1>
-        <p className="post-meta">共 {pagination.total} 篇文章</p>
+      <header className="page-heading list-heading">
+        <div>
+          <h1>{category?.name ?? "文章"}</h1>
+          <p className="post-meta">共 {pagination.total} 篇文章</p>
+        </div>
+        {search}
       </header>
       <div className="post-list-content">
-        {toolbar}
+        <div className="list-filters">
         <nav className="post-categories" aria-label="文章分类">
           <Link href="/posts" aria-current={!category ? "page" : undefined}>全部文章</Link>
           {categories.map((item) => (
@@ -103,6 +103,8 @@ export default async function PostList({ searchParams, params }: PostListProps) 
             </Link>
           ))}
         </nav>
+        {tags}
+        </div>
         {posts.length ? (
           <ul className="post-list">
             {posts.map((post) => (

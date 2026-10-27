@@ -42,6 +42,14 @@
   transition: color var(--duration-base);
 }
 
+.post-card-meta {
+  align-items: center;
+  margin-top: 0;
+  margin-bottom: var(--space-2);
+  font-size: var(--text-xs);
+  letter-spacing: 0.02em;
+}
+
 .post-card-summary {
   display: -webkit-box;
   margin-top: var(--space-2);
@@ -250,6 +258,138 @@
 .murmur-preview time {
   display: block;
   margin-top: var(--space-1);
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+}
+
+/* 友链：圆形头像的小卡片，两列 */
+.friend-section + .friend-section {
+  margin-top: var(--space-12);
+}
+
+.friend-section h2 {
+  margin-bottom: var(--space-4);
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.friend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  gap: var(--space-3);
+}
+
+.friend-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: 100%;
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  transition: border-color var(--duration-base), transform var(--duration-base) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .friend-card:has(.card-link:hover) {
+    border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+    transform: translateY(-2px);
+  }
+}
+
+.friend-card:has(.card-link:focus-visible) {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.friend-avatar {
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+}
+
+.friend-avatar.is-letter {
+  display: grid;
+  place-items: center;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.friend-card h3 {
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.friend-card p {
+  margin-top: var(--space-1);
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+}
+
+.friend-outdated {
+  margin-top: var(--space-8);
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+}
+
+.friend-outdated summary {
+  cursor: pointer;
+}
+
+/* 一言：大号引文，作者与出处在下面 */
+.say-list {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.say-card {
+  position: relative;
+  padding: var(--space-6) var(--space-6) var(--space-4) var(--space-12);
+  border-radius: var(--radius-md);
+  background: var(--muted);
+}
+
+.say-card::before {
+  content: "“";
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-4);
+  color: var(--primary);
+  font-family: var(--font-serif);
+  font-size: 3rem;
+  line-height: 1;
+  opacity: 0.6;
+}
+
+.say-card blockquote > p {
+  font-size: var(--text-lg);
+  line-height: var(--leading-normal);
+}
+
+.say-card footer {
+  gap: var(--space-2);
+}
+
+.say-card cite {
+  font-style: normal;
+}
+
+.say-card cite::before {
+  content: "《";
+}
+
+.say-card cite::after {
+  content: "》";
+}
+
+.say-date {
+  display: block;
+  margin-top: var(--space-2);
   color: var(--muted-foreground);
   font-size: var(--text-xs);
 }

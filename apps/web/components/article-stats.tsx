@@ -6,12 +6,12 @@ import { refreshArticle } from "./cache-actions";
 
 const noSubscribe = () => () => {};
 
-type Props = { apiUrl: string; id: string; type: "post" | "note"; read: number; like: number };
+type Props = { apiUrl: string; id: string; type: "post" | "note"; like: number };
 
-// 阅读数与点赞。两者都直接从浏览器发到 Core：点赞按访客 IP 去重，经 Next 转发会变成所有人共用服务器 IP。
+// 文末的“喜欢”按钮，并在浏览器里上报阅读（阅读数由详情页标题区直接显示）。两者都直接从浏览器发到 Core：点赞按访客 IP 去重，经 Next 转发会变成所有人共用服务器 IP。
 // 数字来自页面缓存，可能比实际略旧；本次点赞成功后就地 +1。
 // Core 的阅读上报不去重，这里每个浏览器标签页只报一次；点赞状态记在本地，换浏览器后由 Core 按 IP 判断。
-export default function ArticleStats({ apiUrl, id, type, read, like }: Props) {
+export default function ArticleStats({ apiUrl, id, type, like }: Props) {
   const router = useRouter();
   const likedKey = `liked:${type}:${id}`;
   const [likedCount, setLikedCount] = useState<{ base: number; value: number } | null>(null);
@@ -64,9 +64,10 @@ export default function ArticleStats({ apiUrl, id, type, read, like }: Props) {
 
   return (
     <>
-      <span>阅读 {read}</span>
-      <button className="toggle-chip" type="button" onClick={thumbsUp} aria-pressed={liked} disabled={liked}>
-        {liked ? "已赞" : "点赞"} {likes}
+      <button className="like-button" type="button" onClick={thumbsUp} aria-pressed={liked} disabled={liked}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" /></svg>
+        <span>{liked ? "谢谢你的喜欢" : "喜欢这篇"}</span>
+        <span className="like-count">{likes}</span>
       </button>
       {message && <span role="alert">{message}</span>}
     </>

@@ -6,7 +6,7 @@ import ResultList from "./result-list";
 type Note = { id: string; nid: number; title: string; created: string };
 const toItems = (notes: Note[]) => notes.map((note) => ({ key: note.id, href: `/notes/${note.nid}`, title: note.title, created: note.created }));
 
-export async function NoteSearch({ keyword, toolbar }: { keyword: string; toolbar: ReactNode }) {
+export async function NoteSearch({ keyword, search, filters }: { keyword: string; search: ReactNode; filters: ReactNode }) {
   let result: Awaited<ReturnType<typeof searchNotes>> | null = null;
   try {
     result = await searchNotes(keyword);
@@ -16,10 +16,10 @@ export async function NoteSearch({ keyword, toolbar }: { keyword: string; toolba
   const summary = result
     ? `搜索“${keyword}”，共 ${result.total} 篇${result.total > result.data.length ? `，显示前 ${result.data.length} 篇` : ""}`
     : `搜索“${keyword}”`;
-  return <ResultList title="搜索手记" summary={summary} items={result && toItems(result.data)} emptyText="没有匹配的手记，换个关键词试试。" toolbar={toolbar} />;
+  return <ResultList title="搜索手记" summary={summary} items={result && toItems(result.data)} emptyText="没有匹配的手记，换个关键词试试。" search={search} filters={filters} />;
 }
 
-export async function NotesByTopic({ slug, toolbar }: { slug: string; toolbar: ReactNode }) {
+export async function NotesByTopic({ slug, search, filters }: { slug: string; search: ReactNode; filters: ReactNode }) {
   let topics: Awaited<ReturnType<typeof getTopics>> | null = null;
   try {
     topics = await getTopics();
@@ -37,5 +37,5 @@ export async function NotesByTopic({ slug, toolbar }: { slug: string; toolbar: R
       unstable_rethrow(error);
     }
   }
-  return <ResultList title={topic ? `话题：${topic.name}` : "话题"} summary={result ? `共 ${result.total} 篇` : ""} items={result && toItems(result.data)} emptyText="这个话题下还没有公开的手记。" toolbar={toolbar} />;
+  return <ResultList title={topic ? `话题：${topic.name}` : "话题"} summary={result ? `共 ${result.total} 篇` : ""} items={result && toItems(result.data)} emptyText="这个话题下还没有公开的手记。" search={search} filters={filters} />;
 }

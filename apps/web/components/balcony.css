@@ -145,9 +145,10 @@
   left: 50%;
   translate: -50% 0;
   padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--border);
   border-radius: var(--radius-full);
-  background: rgb(255 255 255 / 8%);
-  color: rgb(243 238 250 / 82%);
+  background: color-mix(in srgb, var(--background) 72%, transparent);
+  color: var(--foreground);
   font-size: var(--text-sm);
   white-space: nowrap;
   backdrop-filter: blur(6px);
@@ -165,8 +166,8 @@
 
 @media (hover: hover) {
   .balcony-down:hover {
-    background: rgb(255 255 255 / 16%);
-    color: #fff;
+    border-color: color-mix(in srgb, var(--primary) 50%, transparent);
+    color: var(--primary);
   }
 }
 
@@ -232,21 +233,25 @@
   }
 }
 
-/* 场景下面的自我介绍（home-intro.tsx） */
+/* 场景下面的自我介绍（home-intro.tsx）：一张淡底卡片，头像带一圈强调色微光 */
 .home-intro {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
-  padding: 0 var(--space-6) var(--space-12);
+  gap: var(--space-6);
+  margin: 0 var(--space-6) var(--space-16);
+  padding: var(--space-6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 9%, var(--surface)), var(--surface) 60%);
 }
 
 .home-intro-avatar {
   flex-shrink: 0;
-  width: 4rem;
-  height: 4rem;
+  width: 4.5rem;
+  height: 4.5rem;
   border-radius: var(--radius-full);
   object-fit: cover;
-  box-shadow: var(--shadow-soft);
+  box-shadow: 0 0 0 3px var(--surface), 0 0 0 4px color-mix(in srgb, var(--primary) 55%, transparent), 0 0 1.5rem color-mix(in srgb, var(--primary) 30%, transparent);
 }
 
 .home-intro-name {
@@ -254,15 +259,54 @@
   font-weight: 600;
 }
 
-.home-intro p {
+.home-intro-text {
   margin-top: var(--space-1);
   color: var(--muted-foreground);
   line-height: var(--leading-normal);
 }
 
-.home-intro a {
-  display: inline-block;
-  margin-top: var(--space-2);
-  color: var(--primary);
+.home-intro-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-3);
   font-size: var(--text-sm);
+}
+
+.home-intro-links a {
+  color: var(--primary);
+}
+
+@media (hover: hover) {
+  .home-intro-links a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+}
+
+@media (max-width: 639px) {
+  .home-intro {
+    margin-inline: var(--space-4);
+    padding: var(--space-4);
+    gap: var(--space-4);
+  }
+
+  .home-intro-avatar {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+}
+
+/* 场景底部渐渐融进页面背景，“回屋里”时不是一刀切 */
+.balcony::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 5rem;
+  background: linear-gradient(to bottom, transparent, var(--background));
+  pointer-events: none;
+}
+
+.balcony-down {
+  z-index: 1;
 }

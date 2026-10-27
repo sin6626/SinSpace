@@ -41,21 +41,22 @@ export default async function PostDetail({ params, searchParams }: {
     <article className="post-detail" lang={ai.lang ?? undefined}>
       <ArticleNotifications id={post.id} />
       <header className="page-heading">
-        <Link href="/posts">返回文章列表</Link>
+        <nav className="detail-crumb" aria-label="位置">
+          <Link href="/posts">文章</Link>
+          {post.category && <><span aria-hidden="true">/</span><Link href={`/categories/${encodeURIComponent(post.category.slug)}`}>{post.category.name}</Link></>}
+        </nav>
         <h1 className="post-detail-title">{body.title}</h1>
-        <div className="post-meta">
-          <time dateTime={post.created}>
-            {formatDate(post.created)}
-          </time>
-          {post.category && <Link href={`/categories/${encodeURIComponent(post.category.slug)}`}>{post.category.name}</Link>}
-          <ArticleStats apiUrl={getApiUrl()} id={post.id} type="post" read={post.count.read} like={post.count.like} />
+        <div className="post-meta detail-meta">
+          <time dateTime={post.created}>{formatDate(post.created)}</time>
+          <span>阅读 {post.count.read}</span>
           <ReadingCount apiUrl={getApiUrl()} id={post.id} />
+          <ArticleLanguages href={href} ai={ai} />
         </div>
-        <ArticleLanguages href={href} ai={ai} />
       </header>
       <div className="post-list-content">
         <ArticleAiNotes ai={ai} />
         <ArticleBody text={body.text} contentFormat={body.contentFormat} content={body.content} emptyText="这篇文章暂时没有可展示的正文。" />
+        <div className="article-end"><ArticleStats apiUrl={getApiUrl()} id={post.id} type="post" like={post.count.like} /></div>
         <Suspense fallback={null}>
           <PostNeighbors id={post.id} />
         </Suspense>
@@ -79,9 +80,9 @@ async function PostNeighbors({ id }: { id: string }) {
   const older = posts[index + 1];
   if (!newer && !older) return null;
   return (
-    <nav className="post-pagination" aria-label="相邻文章">
-      {newer ? <Link href={href(newer)}>较新：{newer.title}</Link> : <span />}
-      {older ? <Link href={href(older)}>较早：{older.title}</Link> : <span />}
+    <nav className="neighbor-nav" aria-label="相邻文章">
+      {newer ? <Link href={href(newer)}><span className="neighbor-label">← 较新</span><span className="neighbor-title">{newer.title}</span></Link> : <span />}
+      {older ? <Link className="is-older" href={href(older)}><span className="neighbor-label">较早 →</span><span className="neighbor-title">{older.title}</span></Link> : <span />}
     </nav>
   );
 }

@@ -46,25 +46,28 @@ export default async function NoteDetail({ params, searchParams }: { params: Pro
     <article className="post-detail note-detail" lang={ai.lang ?? undefined}>
       <ArticleNotifications id={note.id} />
       <header className="page-heading">
-        <Link href="/notes">返回手记列表</Link>
+        <nav className="detail-crumb" aria-label="位置">
+          <Link href="/notes">手记</Link>
+          {note.topic && <><span aria-hidden="true">/</span><span>{note.topic}</span></>}
+        </nav>
         <h1 className="post-detail-title">{body.title}</h1>
-        <div className="post-meta">
+        <div className="post-meta detail-meta">
           <time dateTime={note.created}>{formatDate(note.created)}</time>
-          {note.topic && <span>{note.topic}</span>}
-          {note.mood && <span>心情：{note.mood}</span>}
-          {note.weather && <span>天气：{note.weather}</span>}
-          <ArticleStats apiUrl={getApiUrl()} id={note.id} type="note" read={note.count.read} like={note.count.like} />
+          {note.mood && <span>心情 · {note.mood}</span>}
+          {note.weather && <span>天气 · {note.weather}</span>}
+          <span>阅读 {note.count.read}</span>
           <ReadingCount apiUrl={getApiUrl()} id={note.id} />
+          <ArticleLanguages href={href} ai={ai} />
         </div>
-        <ArticleLanguages href={href} ai={ai} />
       </header>
       <div className="post-list-content">
         <ArticleAiNotes ai={ai} />
         <ArticleBody text={body.text} contentFormat={body.contentFormat} content={body.content} emptyText="这篇手记暂时没有可展示的正文。" variant="note" />
+        <div className="article-end"><ArticleStats apiUrl={getApiUrl()} id={note.id} type="note" like={note.count.like} /></div>
         {(note.newer || note.older) && (
-          <nav className="post-pagination" aria-label="相邻手记">
-            {note.newer ? <Link href={`/notes/${note.newer.nid}`}>较新：{note.newer.title}</Link> : <span />}
-            {note.older ? <Link href={`/notes/${note.older.nid}`}>较早：{note.older.title}</Link> : <span />}
+          <nav className="neighbor-nav" aria-label="相邻手记">
+            {note.newer ? <Link href={`/notes/${note.newer.nid}`}><span className="neighbor-label">← 较新</span><span className="neighbor-title">{note.newer.title}</span></Link> : <span />}
+            {note.older ? <Link className="is-older" href={`/notes/${note.older.nid}`}><span className="neighbor-label">较早 →</span><span className="neighbor-title">{note.older.title}</span></Link> : <span />}
           </nav>
         )}
         <Suspense fallback={<p className="post-meta" role="status">正在读取评论…</p>}>

@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { ViewTransition } from "react";
 import { Geist, Geist_Mono, Noto_Serif_SC } from "next/font/google";
-import Notifications, { OnlineCount } from "@/components/notifications";
+import Notifications from "@/components/notifications";
 import { getApiUrl } from "../lib/config";
 import { getSiteSettings, siteName } from "../lib/blog-data";
 import Link from "next/link";
 import { Suspense } from "react";
 import Navigation from "@/components/navigation";
 import SiteFooter from "@/components/site-footer";
-import ThemeSwitcher from "@/components/theme-switcher";
+import ThemeMenu from "@/components/theme-menu";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -78,8 +78,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 </Link>
                 <Navigation />
                 <div className="site-header-tools">
-                  <OnlineCount />
-                  <ThemeSwitcher />
+                  <ThemeMenu />
                 </div>
               </div>
             </header>

@@ -6,9 +6,9 @@ import { useSyncExternalStore } from "react";
 import "./theme-switcher.css";
 
 // 默认熄灯（深色），这是站点的主场；开灯是浅色，跟随系统由 color-scheme 决定。
-type Theme = "light" | "dark" | "system";
+export type Theme = "light" | "dark" | "system";
 const storageKey = "theme";
-const options: { value: Theme; label: string }[] = [
+export const themeOptions: { value: Theme; label: string }[] = [
   { value: "light", label: "开灯" },
   { value: "dark", label: "熄灯" },
   { value: "system", label: "跟随系统" },
@@ -60,8 +60,13 @@ function choose(theme: Theme) {
   else document.startViewTransition({ update, types: ["theme"] });
 }
 
+// 当前主题与切换函数，分段按钮（手机菜单里）和顶部图标菜单（theme-menu.tsx）共用。
+export function useTheme() {
+  return [useSyncExternalStore(subscribe, read, () => "dark" as const), choose] as const;
+}
+
 export default function ThemeSwitcher() {
-  const theme = useSyncExternalStore(subscribe, read, () => "dark" as const);
+  const [theme] = useTheme();
   return (
     <ToggleGroup
       className="theme-switcher"
@@ -70,7 +75,7 @@ export default function ThemeSwitcher() {
       // 单选时再点已选中的项会得到空数组，忽略即可。
       onValueChange={([next]) => { if (next) choose(next as Theme); }}
     >
-      {options.map(({ value, label }) => (
+      {themeOptions.map(({ value, label }) => (
         <Toggle key={value} value={value} className="theme-switcher-item">{label}</Toggle>
       ))}
     </ToggleGroup>

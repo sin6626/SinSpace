@@ -36,14 +36,17 @@ export default function SubscribeForm({ apiUrl, types }: { apiUrl: string; types
   }
 
   return (
-    <form className="details-section subscribe-form" onSubmit={submit} aria-labelledby={`${id}-heading`}>
-      <h2 id={`${id}-heading`}>邮件订阅</h2>
-      <input className="field" aria-label="订阅邮箱" name="email" type="email" required maxLength={50} placeholder="你的邮箱" autoComplete="email" />
+    <form className="subscribe-form" onSubmit={submit} aria-labelledby={`${id}-heading`}>
+      <h2 id={`${id}-heading`}>订阅更新</h2>
+      <p className="subscribe-hint">有新的文章或手记时，写一封信告诉你。</p>
+      <div className="subscribe-row">
+        <input className="field" aria-label="订阅邮箱" name="email" type="email" required maxLength={50} placeholder="你的邮箱" autoComplete="email" />
+        <button className="btn btn-primary" type="submit" disabled={status.type === "sending"}>{status.type === "sending" ? "订阅中…" : "订阅"}</button>
+      </div>
       <div className="subscribe-types">
         {types.map((type) => (
           <label key={type}><input type="checkbox" name="types" value={type} defaultChecked /> {typeLabels[type]}</label>
         ))}
-        <button className="btn btn-primary" type="submit" disabled={status.type === "sending"}>{status.type === "sending" ? "订阅中…" : "订阅"}</button>
       </div>
       {(status.type === "done" || status.type === "error") && (
         <p className="details-message" role={status.type === "error" ? "alert" : "status"}>{status.message}</p>

@@ -16,8 +16,7 @@ type Loaded = Awaited<ReturnType<typeof loadArticleAi>>;
 export function ArticleLanguages({ href, ai }: { href: string; ai: Loaded }) {
   if (!ai.languages.length) return null;
   return (
-    <nav className="article-languages post-meta" aria-label="阅读语言">
-      <span>阅读语言</span>
+    <nav className="article-languages" aria-label="阅读语言">
       <Link href={href} aria-current={ai.lang ? undefined : "page"}>原文</Link>
       {ai.languages.map((lang) => (
         <Link key={lang} href={`${href}?lang=${lang}`} hrefLang={lang} aria-current={ai.lang === lang ? "page" : undefined}>{translationLanguages[lang]}</Link>

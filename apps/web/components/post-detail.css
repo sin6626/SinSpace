@@ -149,16 +149,6 @@
 }
 
 /* AI 摘要、翻译提示与阅读语言切换（article-ai.tsx） */
-.article-languages {
-  margin-top: var(--space-2);
-}
-
-/* 当前语言用强调色，不加粗，避免切换时整行重排 */
-.article-languages a[aria-current="page"] {
-  color: var(--primary);
-  text-decoration-color: var(--primary);
-}
-
 .ai-summary {
   margin-bottom: var(--space-8);
   padding: var(--space-4);
@@ -207,4 +197,171 @@
   --rc-link: var(--link);
   --rc-quote-border: var(--primary);
   --rc-quote-bg: var(--muted);
+  /* Haklex 自己的灰阶底色（代码块、嵌套文档、折叠块等）换成站点的淡底，避免夜空里出现一块纯黑 */
+  --rc-bg-secondary: var(--muted);
+  --rc-bg-tertiary: var(--accent);
+  --rc-code-bg: var(--muted);
+  --rc-fill: var(--accent-active);
+  --rc-fill-secondary: var(--accent);
+  --rc-fill-tertiary: var(--muted);
+  --rc-fill-quaternary: color-mix(in srgb, var(--muted) 60%, transparent);
+}
+
+/* 详情页标题区：面包屑 → 标题 → 一行元信息（日期、阅读、正在读、阅读语言） */
+.detail-crumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+}
+
+.post-detail .detail-crumb a {
+  text-decoration: none;
+  transition: color var(--duration-fast);
+}
+
+@media (hover: hover) {
+  .post-detail .detail-crumb a:hover {
+    color: var(--primary);
+  }
+}
+
+.post-detail-title {
+  margin-top: var(--space-3);
+  letter-spacing: 0.01em;
+}
+
+.detail-meta {
+  align-items: center;
+  margin-top: var(--space-4);
+}
+
+/* 阅读语言：小小的分段，当前语言是强调色淡底 */
+.article-languages {
+  display: inline-flex;
+  gap: 2px;
+  margin: 0;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+}
+
+.post-detail .article-languages a {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  line-height: 1.5rem;
+  text-decoration: none;
+}
+
+.post-detail .article-languages a[aria-current="page"] {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+/* 文末“喜欢这篇” */
+.article-end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-12);
+}
+
+.like-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 2.75rem;
+  padding: 0 var(--space-6);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  color: var(--foreground);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: border-color var(--duration-base), background-color var(--duration-base), transform var(--duration-fast);
+}
+
+.like-button svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+  transition: fill var(--duration-base);
+}
+
+.like-count {
+  color: var(--muted-foreground);
+}
+
+@media (hover: hover) {
+  .like-button:not(:disabled):hover {
+    border-color: var(--primary);
+  }
+}
+
+.like-button:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+.like-button[aria-pressed="true"] {
+  border-color: transparent;
+  background: var(--primary-soft);
+  cursor: default;
+}
+
+.like-button[aria-pressed="true"] svg {
+  fill: var(--primary);
+}
+
+.like-button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* 上一篇 / 下一篇：两张卡片 */
+.neighbor-nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-12);
+}
+
+.neighbor-nav a {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: border-color var(--duration-base), background-color var(--duration-base);
+}
+
+.neighbor-nav a.is-older {
+  text-align: right;
+}
+
+@media (hover: hover) {
+  .neighbor-nav a:hover {
+    border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+    background: var(--muted);
+  }
+}
+
+.neighbor-label {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+}
+
+.neighbor-title {
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
