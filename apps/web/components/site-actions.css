@@ -103,37 +103,62 @@
   100% { opacity: 0; transform: translate(var(--heart-x), calc(-1 * var(--heart-rise))) scale(0.9) rotate(var(--heart-rotate)); }
 }
 
-/* 文字气泡：在按钮上方，带一个小尖角 */
-.site-like-bubble {
+/* 喜欢本站的提示：Base UI Toast，叠放在按钮正上方。照官方示例叠放（后面的往上缩一点、只露边），
+   但不写 [data-expanded] 的展开样式，整块也不接收鼠标，所以悬停不会展开、也不会暂停计时。 */
+.like-toast-viewport {
   position: absolute;
   bottom: calc(100% + 0.75rem);
   left: 50%;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
-  background: var(--surface);
-  box-shadow: var(--shadow-popup);
-  color: var(--foreground);
-  font-size: var(--text-sm);
-  white-space: nowrap;
+  width: 11rem;
   translate: -50% 0;
   pointer-events: none;
-  animation: site-bubble 2.2s ease forwards;
 }
 
-.site-like-bubble::after {
-  content: "";
+.like-toast {
+  --peek: 0.5rem;
+  --scale: calc(max(0, 1 - (var(--toast-index) * 0.08)));
+  --shrink: calc(1 - var(--scale));
+  --height: var(--toast-frontmost-height, var(--toast-height));
   position: absolute;
-  top: 100%;
-  left: 50%;
-  border: 6px solid transparent;
-  border-top-color: var(--surface);
-  translate: -50% 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: calc(1000 - var(--toast-index));
+  height: var(--height);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-popup);
+  pointer-events: none;
+  transform: translateY(calc(-1 * var(--toast-index) * var(--peek) - var(--shrink) * var(--height))) scale(var(--scale));
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s, height 0.15s;
 }
 
-@keyframes site-bubble {
-  0% { opacity: 0; transform: translateY(0.5rem) scale(0.9); }
-  12%, 80% { opacity: 1; transform: none; }
-  100% { opacity: 0; transform: translateY(-0.25rem); }
+.like-toast[data-starting-style] {
+  opacity: 0;
+  transform: translateY(0.75rem) scale(0.9);
+}
+
+.like-toast[data-ending-style],
+.like-toast[data-limited] {
+  opacity: 0;
+}
+
+.like-toast-content {
+  padding: var(--space-2) var(--space-4);
+  text-align: center;
+  transition: opacity 0.25s;
+}
+
+/* 叠在后面的只露出卡片边缘，看不到字 */
+.like-toast-content[data-behind] {
+  opacity: 0;
+}
+
+.like-toast-title {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 /* 心形图标在点击时跳一下 */
@@ -228,12 +253,7 @@
     transition: none;
   }
 
-  .site-like-bubble {
-    animation-name: site-bubble-plain;
+  .like-toast {
+    transition: opacity 0.2s;
   }
-}
-
-@keyframes site-bubble-plain {
-  0%, 80% { opacity: 1; }
-  100% { opacity: 0; }
 }
