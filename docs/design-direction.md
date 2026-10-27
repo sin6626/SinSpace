@@ -91,3 +91,4 @@
 - 手机菜单：`components/mobile-menu.tsx`。
 - 样式指南：开发环境的 `/debug` 顶部。
 
+> 2026-10-27 更新：用户决定首页不再画阳台和楼房，第一屏改为 WebGL 星空 + 月亮，内容左边文字、右边大头像（components/home-hero.tsx、starfield.tsx）。上文“阳台场景”相关决定作废。

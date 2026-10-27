@@ -282,12 +282,12 @@ a:focus-visible,
   min-height: 100dvh;
 }
 
-/* 内页顶部的夜空带：约 16rem 高，往下融进背景；首页有完整的阳台场景，不用 */
+/* 内页顶部的夜空带：约 16rem 高，往下融进背景；首页第一屏有完整的星空，不用 */
 .site-shell {
   position: relative;
 }
 
-.site-shell:not(:has(.balcony))::before {
+.site-shell:not(:has(.home-hero))::before {
   content: "";
   position: absolute;
   inset: 0 0 auto;
