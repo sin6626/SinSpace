@@ -1,0 +1,125 @@
+/* 首屏底部“喜欢本站 / 订阅”两个圆角小按钮，和订阅浮层（site-actions.tsx） */
+.site-actions {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.site-action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 2.25rem;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform var(--duration-fast), filter var(--duration-fast), box-shadow var(--duration-base);
+}
+
+.site-action svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.site-action.is-like {
+  background: light-dark(#e1617b, #f08aa0);
+  color: light-dark(#fff, #2b0f18);
+}
+
+.site-action.is-like svg {
+  fill: currentColor;
+}
+
+.site-action-count {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
+}
+
+.site-action.is-subscribe {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.site-action.is-subscribe svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+
+@media (hover: hover) {
+  .site-action:hover {
+    filter: brightness(1.06);
+    box-shadow: 0 0.5rem 1.5rem -0.5rem color-mix(in srgb, var(--primary) 60%, transparent);
+  }
+}
+
+.site-action:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.site-action[aria-pressed="true"] svg {
+  animation: site-heart 0.6s ease-out;
+}
+
+@keyframes site-heart {
+  40% { transform: scale(1.35); }
+}
+
+.site-action:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.site-action-message {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 0;
+  right: 0;
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  text-align: center;
+}
+
+.site-action-message:empty {
+  display: none;
+}
+
+/* 订阅浮层：浮在按钮上方的圆角面板 */
+.site-action-positioner {
+  z-index: var(--z-popup);
+}
+
+.site-action-popup {
+  width: min(22rem, calc(100vw - 2rem));
+  padding: var(--space-6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-popup);
+  outline: 0;
+  transform-origin: var(--transform-origin);
+  transition: opacity var(--duration-base) var(--ease-out), scale var(--duration-base) var(--ease-out);
+}
+
+.site-action-popup[data-starting-style],
+.site-action-popup[data-ending-style] {
+  opacity: 0;
+  scale: 0.96;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-action-popup {
+    transition: none;
+  }
+
+  .site-action[aria-pressed="true"] svg {
+    animation: none;
+  }
+}

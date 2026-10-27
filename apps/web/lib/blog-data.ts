@@ -256,6 +256,58 @@ export async function getTimeline() {
   return [...posts, ...notes].sort((a, b) => Date.parse(b.created) - Date.parse(a.created));
 }
 
+// 首屏“喜欢本站”的计数（Core 的 GET /like_this）。点赞由浏览器直接 POST 给 Core（按访客 IP 每天一次），这里只读计数，缓存很短。
+export async function getSiteLikes() {
+  "use cache";
+  cacheLife({ stale: 30, revalidate: 60, expire: 600 });
+  cacheTag("blog:site-like");
+  const value = await getApiClient().proxy.like_this.get<number>();
+  return typeof value === "number" ? value : Number(value) || 0;
+}
+
+// 首页“最近发生的事”（同 Shiro）：Core 的 /activity/recent 返回评论、点赞、新文章、新手记、新碎碎念五类，
+// 评论只含已公开、非悄悄话的。点赞没有 Webhook 事件，缓存短一些。文章只给了 slug，借时间线换算出带分类的地址。
+export type RecentActivity = {
+  key: string;
+  kind: "comment" | "like" | "post" | "note" | "recent";
+  created: string;
+  title?: string;
+  href: string | null;
+  author?: string;
+  avatar?: string;
+  text?: string;
+};
+
+export async function getRecentActivity() {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 120, expire: 600 });
+  cacheTag("blog:posts", "blog:notes", "blog:comments", "blog:recently", "blog:categories");
+  const [data, timeline] = await Promise.all([getApiClient().activity.getRecentActivities(), getTimeline()]);
+  const posts = new Map(timeline.flatMap((item) => item.kind === "post" ? [[item.slug, `/posts/${encodeURIComponent(item.category.slug)}/${encodeURIComponent(item.slug)}`]] : []));
+  const record = data as unknown as Record<string, Array<Record<string, unknown>>>;
+  const text = (value: unknown) => typeof value === "string" ? value : undefined;
+  const href = (type: unknown, item: Record<string, unknown>) => {
+    const kind = String(type).toLowerCase();
+    if (kind.startsWith("note")) return item.nid ? `/notes/${item.nid}` : null;
+    if (kind.startsWith("post")) return posts.get(text(item.slug) ?? "") ?? null;
+    if (kind.startsWith("page")) return item.slug ? `/${encodeURIComponent(String(item.slug))}` : null;
+    if (kind.startsWith("recent")) return "/thinking";
+    return null;
+  };
+  const items: RecentActivity[] = [
+    ...(record.comment ?? []).map((item) => ({
+      key: `comment-${item.id}-${item.created}`, kind: "comment" as const, created: String(item.created),
+      title: text(item.title) ?? (String(item.type).toLowerCase().startsWith("recent") ? "一条碎碎念" : undefined),
+      href: href(item.type, item), author: text(item.author), avatar: safeUrl(text(item.avatar)), text: excerpt(text(item.text), 80),
+    })),
+    ...(record.like ?? []).map((item) => ({ key: `like-${item.id}`, kind: "like" as const, created: String(item.created), title: text(item.title) ?? "已删除的内容", href: href(item.type, item) })),
+    ...(record.post ?? []).map((item) => ({ key: `post-${item.id}`, kind: "post" as const, created: String(item.created), title: text(item.title), href: href("posts", item) })),
+    ...(record.note ?? []).map((item) => ({ key: `note-${item.id}`, kind: "note" as const, created: String(item.created), title: text(item.title), href: href("notes", item) })),
+    ...(record.recent ?? []).map((item) => ({ key: `recent-${item.id}`, kind: "recent" as const, created: String(item.created), href: "/thinking", text: excerpt(text(item.content), 80) })),
+  ];
+  return items.sort((a, b) => Date.parse(b.created) - Date.parse(a.created)).slice(0, 12);
+}
+
 // 友链：Core 对访客只返回已通过、已失联、已封禁三种状态（审核中、已拒绝不返回）。
 // 友链没有增删改的 Webhook 事件（只有 LINK_APPLY），和作品一样缓存短一些。
 export async function getLinks() {

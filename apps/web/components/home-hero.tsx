@@ -1,7 +1,9 @@
 import { unstable_rethrow } from "next/navigation";
 import { Suspense } from "react";
-import { getOwner, getSiteSettings, siteDescription } from "../lib/blog-data";
+import { getOwner, getSiteLikes, getSiteSettings, getSubscribeOptions, siteDescription } from "../lib/blog-data";
+import { getApiUrl } from "../lib/config";
 import ScrollHint from "./scroll-hint";
+import SiteActions from "./site-actions";
 import Starfield from "./starfield";
 import "./home-hero.css";
 
@@ -51,6 +53,12 @@ async function Portrait() {
   ) : <span className="home-hero-avatar is-empty" aria-hidden="true" />;
 }
 
+// 喜欢本站的计数和订阅开关都是缓存数据，读不到时按钮照常显示（计数隐藏、订阅按钮不出现）。
+async function Actions() {
+  const [likes, subscribe] = await Promise.all([getSiteLikes().catch(() => null), getSubscribeOptions().catch(() => null)]);
+  return <SiteActions apiUrl={getApiUrl()} likes={likes} subscribeTypes={subscribe?.enabled ? subscribe.types : null} />;
+}
+
 async function Motto() {
   return (await getSiteSettings().catch(() => null))?.description ?? siteDescription;
 }
@@ -79,10 +87,15 @@ export default function HomeHero() {
           </Suspense>
         </div>
       </div>
-      <ScrollHint className="home-hero-bottom" target="home-room">
-        <small><Suspense fallback={siteDescription}><Motto /></Suspense></small>
-        <span className="home-hero-arrow" aria-hidden="true">⌄</span>
-      </ScrollHint>
+      <div className="home-hero-bottom">
+        <Suspense fallback={null}>
+          <Actions />
+        </Suspense>
+        <ScrollHint className="home-hero-scroll" target="home-room">
+          <small><Suspense fallback={siteDescription}><Motto /></Suspense></small>
+          <span className="home-hero-arrow" aria-hidden="true">⌄</span>
+        </ScrollHint>
+      </div>
     </section>
   );
 }

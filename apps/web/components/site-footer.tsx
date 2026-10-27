@@ -1,17 +1,10 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { getSiteSettings, getSubscribeOptions, siteDescription, siteName } from "../lib/blog-data";
-import { getApiUrl } from "../lib/config";
+import { getSiteSettings, siteDescription, siteName } from "../lib/blog-data";
 import { OnlineCount } from "./notifications";
-import SubscribeForm from "./subscribe-form";
 import "./details-sidebar.css";
 
-// 订阅开关和站名都是缓存数据，各自放进 Suspense，不挡住页面的静态外壳。
-async function Subscribe() {
-  const subscribe = await getSubscribeOptions().catch(() => null);
-  return subscribe?.enabled ? <SubscribeForm apiUrl={getApiUrl()} types={subscribe.types} /> : null;
-}
-
+// 站名是缓存数据，放进 Suspense，不挡住页面的静态外壳。邮件订阅在首页首屏底部的“订阅”按钮里。
 async function About() {
   const settings = await getSiteSettings().catch(() => null);
   return <AboutText name={settings?.name ?? siteName} description={settings?.description ?? siteDescription} />;
@@ -26,7 +19,7 @@ function AboutText({ name, description }: { name: string; description: string })
   );
 }
 
-// 页脚：左边是站名和那句话，右边是邮件订阅（后台开启时），底下一行小链接和在线人数。
+// 页脚：站名和那句话，底下一行小链接和在线人数。
 export default function SiteFooter() {
   return (
     <footer className="site-footer">
@@ -34,9 +27,6 @@ export default function SiteFooter() {
         <div className="site-footer-top">
           <Suspense fallback={<AboutText name={siteName} description={siteDescription} />}>
             <About />
-          </Suspense>
-          <Suspense fallback={null}>
-            <Subscribe />
           </Suspense>
         </div>
         <div className="site-footer-meta">

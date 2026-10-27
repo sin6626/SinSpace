@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { unstable_rethrow } from "next/navigation";
-import type { ReactNode } from "react";
-import { getNotes, getPosts, getProjects, getRecently } from "../lib/blog-data";
+import { Suspense, type ReactNode } from "react";
+import { getNotes, getPosts, getRecently } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
 import { excerpt } from "../lib/excerpt";
 import { postHref } from "./post-list";
-import { ProjectCard } from "./project-list";
+import RecentActivityList from "./recent-activity";
+import TechStack from "./tech-stack";
 import "./corners.css";
 
 // 各块分别读取，一块失败不影响其他块。
@@ -16,6 +17,16 @@ async function load<T>(read: () => Promise<T>) {
     unstable_rethrow(error);
     return null;
   }
+}
+
+function Heading({ title, note, allHref }: { title: string; note: string; allHref?: string }) {
+  return (
+    <div className="home-section-heading">
+      <h2>{title}</h2>
+      <p>{note}</p>
+      {allHref && <Link href={allHref}>全部 →</Link>}
+    </div>
+  );
 }
 
 function Section<T>({ title, note, allHref, items, empty, className, children }: {
@@ -29,11 +40,7 @@ function Section<T>({ title, note, allHref, items, empty, className, children }:
 }) {
   return (
     <section className={className ? `home-section ${className}` : "home-section"} aria-label={title}>
-      <div className="home-section-heading">
-        <h2>{title}</h2>
-        <p>{note}</p>
-        <Link href={allHref}>全部 →</Link>
-      </div>
+      <Heading title={title} note={note} allHref={allHref} />
       {items === null ? (
         <p className="post-empty" role="alert">{title}读取失败，请稍后刷新。</p>
       ) : items.length ? children(items) : <p className="post-empty">{empty}</p>}
@@ -54,13 +61,12 @@ function Row({ href, created, title, extra, serif }: { href: string | null; crea
   );
 }
 
-// 首屏下面：左栏上下放文章和手记，右栏单独放碎碎念；作品在两栏下面。
+// 首屏下面：左栏上下放文章和手记；右栏按 3:7 上下分成碎碎念和“最近发生的事”；两栏下面是技术栈滚动条。
 export default async function HomeLatest() {
-  const [posts, notes, murmurs, projects] = await Promise.all([
+  const [posts, notes, murmurs] = await Promise.all([
     load(async () => (await getPosts(1)).data.slice(0, 6)),
     load(async () => (await getNotes(1)).data.slice(0, 5)),
     load(async () => (await getRecently()).data.slice(0, 6)),
-    load(async () => (await getProjects()).slice(0, 3)),
   ]);
   return (
     <div className="home-columns">
@@ -98,7 +104,7 @@ export default async function HomeLatest() {
         </Section>
       </div>
       <aside className="home-side">
-        <Section title="碎碎念" note="平日里的小事" allHref="/thinking" items={murmurs} empty="今晚还没有碎碎念。">
+        <Section title="碎碎念" note="平日里的小事" allHref="/thinking" items={murmurs} empty="今晚还没有碎碎念。" className="home-side-murmurs">
           {(items) => (
             <ul className="home-murmurs">
               {items.map((item) => (
@@ -110,10 +116,14 @@ export default async function HomeLatest() {
             </ul>
           )}
         </Section>
+        <section className="home-section home-side-activity" aria-label="最近发生的事">
+          <Heading title="最近发生的事" note="评论、点赞与更新" />
+          <Suspense fallback={<p className="post-empty" role="status">正在读取…</p>}>
+            <RecentActivityList />
+          </Suspense>
+        </section>
       </aside>
-      <Section title="作品" note="亲手做出来的东西" allHref="/projects" items={projects} empty="还没有作品。" className="home-works">
-        {(items) => <ul className="project-grid">{items.map((project) => <li key={project.id}><ProjectCard project={project} headingLevel={3} /></li>)}</ul>}
-      </Section>
+      <TechStack />
     </div>
   );
 }
