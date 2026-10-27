@@ -129,9 +129,9 @@ void main() {
 }
 `;
 
-// 星空转一圈的时间。真实的地球自转一圈约 24 小时，肉眼看不出在动，这里加快到 30 分钟一圈；
+// 星空转一圈的时间。真实的地球自转一圈约 24 小时，肉眼看不出在动，这里加快到 10 分钟一圈；
 // 角度按真实时钟算，刷新页面后星空接着上次的位置，不会跳回起点。
-const skyTurnSeconds = 30 * 60;
+const skyTurnSeconds = 10 * 60;
 function skyAngle(time: number) {
   return ((time / 1000) % skyTurnSeconds) / skyTurnSeconds * Math.PI * 2;
 }

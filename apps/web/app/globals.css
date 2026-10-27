@@ -326,6 +326,7 @@ a:focus-visible,
   position: sticky;
   top: 0;
   z-index: var(--z-header);
+  view-transition-name: site-header;
   background: color-mix(in srgb, var(--background) 60%, transparent);
   backdrop-filter: blur(12px) saturate(140%);
 }
@@ -803,8 +804,24 @@ a:focus-visible,
 }
 
 /* 开灯 / 熄灯（theme-switcher.tsx）：新的颜色在旧画面上淡入，像天色慢慢变化 */
-html:active-view-transition-type(theme)::view-transition-new(root) {
+html:active-view-transition-type(theme)::view-transition-new(root),
+html:active-view-transition-type(theme)::view-transition-new(site-header) {
   animation: theme-fade-in var(--duration-slow) ease-in-out both;
+}
+
+/* 导航栏单独成一层（view-transition-name: site-header），画在页面切换层上面：首页第一屏延伸到导航栏底下，
+   否则换页时不透明的星空会作为页面层淡入、盖住导航栏。换页时导航栏不做动画，直接显示新状态（亮星的移动是实时画面）；
+   开关灯时跟整页一起淡入。回归测试：pnpm e2e（scripts/e2e/header-during-transition.mjs）。 */
+::view-transition-group(site-header) {
+  animation: none;
+}
+
+html:not(:active-view-transition-type(theme))::view-transition-old(site-header) {
+  display: none;
+}
+
+html:not(:active-view-transition-type(theme))::view-transition-new(site-header) {
+  animation: none;
 }
 
 @keyframes theme-fade-in {
