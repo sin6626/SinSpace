@@ -296,7 +296,7 @@ a:focus-visible,
   position: relative;
 }
 
-.site-shell:not(:has(.home-hero))::before {
+.site-shell:not(:has(.home-hero:not([style*="display: none"])))::before {
   content: "";
   position: absolute;
   inset: 0 0 auto;

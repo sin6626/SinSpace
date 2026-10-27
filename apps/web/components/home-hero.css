@@ -221,14 +221,17 @@
 }
 
 /* 首页：正文不限宽，第一屏铺满；下面的内容回到单栏宽度 */
-.site-content:has(> .home-hero) {
+/* 判断“当前是首页”时要排除被藏起来的首页：站内跳转后 Next 会把上一页留在 DOM 里，用 React Activity 加上
+   display: none !important 藏起来（返回时可以瞬间恢复），不排除的话从首页跳到作品页也会套用下面的宽版布局。
+   回归测试：pnpm e2e（scripts/e2e/navigation-layout.mjs）。 */
+.site-content:has(> .home-hero:not([style*="display: none"])) {
   max-width: none;
 }
 
 /* 首屏下面照搬 Shiro 首页第二屏的比例：和首屏同一套“左右各占一半”（最宽 1800px），
    每一半里的内容最宽 42rem、在那一半里居中，所以左栏正好在首屏文字下面，右栏在头像下面，两栏之间留出大片空白。
    --home-gutter 是内容外沿到页面边缘的距离，导航、作品、页脚都对齐到这条边。 */
-.site-shell:has(.home-hero) {
+.site-shell:has(.home-hero:not([style*="display: none"])) {
   --home-gutter: max(2rem, calc(min(100vw, 1800px) / 4 - 21rem));
 }
 
@@ -239,8 +242,8 @@
   scroll-margin-top: calc(var(--header-height) - var(--space-8));
 }
 
-.site-shell:has(.home-hero) .site-header-inner,
-.site-shell:has(.home-hero) .site-footer-inner {
+.site-shell:has(.home-hero:not([style*="display: none"])) .site-header-inner,
+.site-shell:has(.home-hero:not([style*="display: none"])) .site-footer-inner {
   max-width: 1800px;
   padding-inline: var(--home-gutter);
 }
@@ -369,7 +372,7 @@
 }
 
 @media (max-width: 639px) {
-  .site-shell:has(.home-hero) {
+  .site-shell:has(.home-hero:not([style*="display: none"])) {
     --home-gutter: 1rem;
   }
 
@@ -390,7 +393,7 @@
 
 /* 导航在夜空上是透明的，往下滚出第一屏时渐渐变成半透明的夜色条（滚动驱动动画，不支持的浏览器保持半透明） */
 @supports (animation-timeline: scroll()) {
-  .site-shell:has(.home-hero) .site-header {
+  .site-shell:has(.home-hero:not([style*="display: none"])) .site-header {
     background: transparent;
     backdrop-filter: none;
     animation: home-hero-header linear both;
