@@ -193,10 +193,10 @@ export default function Starfield() {
       }
       gl.viewport(0, 0, width, height);
       gl.uniform2f(uniforms.resolution, width, height);
-      // 月亮放在右上方；竖屏时往中间收一点
+      // 月亮放在右上方；竖屏（手机）时缩小，放在导航栏和标题之间的右上角，不压住文字
       const portrait = height > width;
-      const radius = Math.min(width, height) * (portrait ? 0.07 : 0.055);
-      gl.uniform3f(uniforms.moon, width * (portrait ? 0.78 : 0.86), height * (portrait ? 0.86 : 0.8), radius);
+      const radius = portrait ? width * 0.045 : Math.min(width, height) * 0.055;
+      gl.uniform3f(uniforms.moon, width * (portrait ? 0.84 : 0.86), portrait ? height - radius * 4.2 : height * 0.8, radius);
     };
 
     const draw = (now: number) => {
