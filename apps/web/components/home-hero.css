@@ -33,19 +33,22 @@
   pointer-events: none;
 }
 
+/* 按 1920×991 调的比例（参照 Shiro）：内容铺开到约 78rem，文字靠左、头像靠右，中间留出大片夜空 */
 .home-hero-inner {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  grid-template-columns: minmax(0, 36rem) auto;
+  justify-content: space-between;
   align-items: center;
   gap: var(--space-16);
-  width: min(100% - 3rem, 68rem);
+  width: min(100% - 6rem, 78rem);
+  margin-top: -2vh;
 }
 
 .home-hero-eyebrow {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-6);
   padding: var(--space-1) var(--space-3);
   border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
   border-radius: var(--radius-full);
@@ -61,15 +64,16 @@
 }
 
 .home-hero h1 {
-  font-size: clamp(2.5rem, 5.2vw, 4.25rem);
-  font-weight: 700;
-  line-height: 1.12;
-  letter-spacing: -0.01em;
+  font-size: clamp(2rem, 2.3vw, 2.75rem);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
   text-wrap: balance;
 }
 
 /* 名字用一道从粉紫到月光白的渐变 */
 .home-hero h1 span {
+  font-weight: 700;
   background: linear-gradient(100deg, var(--primary), light-dark(#c2410c, #fff4e8));
   -webkit-background-clip: text;
   background-clip: text;
@@ -78,28 +82,31 @@
 
 .home-hero-lead {
   max-width: 34rem;
-  margin-top: var(--space-4);
-  color: color-mix(in srgb, var(--foreground) 78%, transparent);
-  font-size: var(--text-lg);
-  line-height: var(--leading-relaxed);
+  margin-top: var(--space-6);
+  color: color-mix(in srgb, var(--foreground) 72%, transparent);
+  font-size: 1.0625rem;
+  font-weight: 300;
+  line-height: 1.9;
+  letter-spacing: 0.02em;
 }
 
 .home-hero-lead + .home-hero-lead {
-  margin-top: var(--space-2);
+  margin-top: var(--space-1);
 }
 
 .home-hero-actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
-  margin-top: var(--space-8);
+  margin-top: var(--space-12);
 }
 
 .home-hero-actions .btn {
-  height: 2.75rem;
+  height: 2.5rem;
   padding: 0 var(--space-6);
   border-radius: var(--radius-full);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
+  letter-spacing: 0.04em;
 }
 
 .home-hero-secondary {
@@ -115,7 +122,7 @@
 }
 
 .home-hero-avatar {
-  width: clamp(14rem, 28vw, 22rem);
+  width: clamp(13rem, 15vw, 18rem);
   aspect-ratio: 1;
   border-radius: var(--radius-full);
   object-fit: cover;
@@ -170,10 +177,18 @@
   outline-offset: 4px;
 }
 
+@media (max-width: 1023px) {
+  .home-hero-inner {
+    width: min(100% - 3rem, 56rem);
+    gap: var(--space-8);
+  }
+}
+
 @media (max-width: 767px) {
   .home-hero-inner {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-8);
+    margin-top: 0;
     text-align: center;
   }
 

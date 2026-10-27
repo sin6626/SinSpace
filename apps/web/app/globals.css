@@ -96,7 +96,7 @@
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-latin);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -109,7 +109,12 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: var(--font-latin), "PingFang SC", var(--font-cjk-sans), "Microsoft YaHei", sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   accent-color: var(--primary); /*复选框等原生控件*/
 }
 

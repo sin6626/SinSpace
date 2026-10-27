@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ViewTransition } from "react";
-import { Geist, Geist_Mono, Noto_Serif_SC } from "next/font/google";
+import { Geist_Mono, Manrope, Noto_Sans_SC, Noto_Serif_SC } from "next/font/google";
 import Notifications from "@/components/notifications";
 import { getApiUrl } from "../lib/config";
 import { getSiteSettings, siteName } from "../lib/blog-data";
@@ -11,9 +11,19 @@ import SiteFooter from "@/components/site-footer";
 import ThemeMenu from "@/components/theme-menu";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// 英文和数字用 Manrope：笔画细、字形干净。中文在 Mac 上用系统的苹方；Windows 没有苹方，
+// 默认会退到较粗的微软雅黑，所以再给一份思源黑体（Noto Sans SC），按字切片、不预加载，只在缺字时才下载。
+const manrope = Manrope({
+  variable: "--font-latin",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const notoSans = Noto_Sans_SC({
+  variable: "--font-cjk-sans",
+  subsets: ["latin"],
+  preload: false,
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -57,7 +67,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="zh-CN"
       data-theme="dark"
-      className={`${geistSans.variable} ${geistMono.variable} ${notoSerif.variable} h-full antialiased`}
+      className={`${manrope.variable} ${notoSans.variable} ${geistMono.variable} ${notoSerif.variable} h-full antialiased`}
       // 下面的脚本会在水合前设置 data-theme，属性与服务端不同是预期的。
       suppressHydrationWarning
     >
