@@ -1,8 +1,9 @@
-import { ChevronDown, Github, Tv } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { unstable_rethrow } from "next/navigation";
 import { Suspense } from "react";
 import { getOwner, getSiteLikes, getSiteSettings, getSubscribeOptions, siteDescription, siteName } from "../lib/blog-data";
 import { getApiUrl } from "../lib/config";
+import IconifyIcon from "./iconify-icon";
 import ScrollHint from "./scroll-hint";
 import SiteActions from "./site-actions";
 import Starfield from "./starfield";
@@ -21,10 +22,10 @@ async function loadOwner() {
   }
 }
 
-// Lucide 没有 B 站的品牌图标，先用形状最接近的“电视”代替。
+// 社交账号用真实的品牌标志（Iconify 的 simple-icons）。
 const socialIcons: Record<string, React.ReactNode> = {
-  GitHub: <Github size={18} strokeWidth={1.75} aria-hidden="true" />,
-  Bilibili: <Tv size={18} strokeWidth={1.75} aria-hidden="true" />,
+  GitHub: <IconifyIcon icon="simple-icons:github" size={18} />,
+  Bilibili: <IconifyIcon icon="simple-icons:bilibili" size={18} />,
 };
 
 async function Socials() {
@@ -54,7 +55,15 @@ async function Portrait() {
 // 喜欢本站的计数和订阅开关都是缓存数据，读不到时按钮照常显示（计数隐藏、订阅按钮不出现）。
 async function Actions() {
   const [likes, subscribe, settings] = await Promise.all([getSiteLikes().catch(() => null), getSubscribeOptions().catch(() => null), getSiteSettings().catch(() => null)]);
-  return <SiteActions apiUrl={getApiUrl()} siteName={settings?.name ?? siteName} likes={likes} subscribeTypes={subscribe?.enabled ? subscribe.types : null} />;
+  return (
+    <SiteActions
+      apiUrl={getApiUrl()}
+      siteName={settings?.name ?? siteName}
+      likes={likes}
+      subscribeTypes={subscribe?.enabled ? subscribe.types : null}
+      mailIcon={<IconifyIcon icon="mingcute:mail-send-fill" size={20} />}
+    />
+  );
 }
 
 async function Motto() {
