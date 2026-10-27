@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { OnlineCount } from "./notifications";
-import ThemeSwitcher from "./theme-switcher";
+import ThemeToggle from "./theme-switcher";
 import "./mobile-menu.css";
 
 type MenuLink = { label: string; href: string };
@@ -51,7 +51,7 @@ export default function MobileMenu({ corners, more }: { corners: MenuLink[]; mor
             </ul>
           </nav>
           <div className="mobile-menu-bottom">
-            <ThemeSwitcher />
+            <ThemeToggle />
             <OnlineCount />
           </div>
         </Dialog.Popup>

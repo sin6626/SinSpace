@@ -1,40 +1,28 @@
 "use client";
 
-import { Toggle } from "@base-ui/react/toggle";
-import { ToggleGroup } from "@base-ui/react/toggle-group";
-import { useSyncExternalStore } from "react";
+import { Moon, Sun } from "lucide-react";
+import { useSyncExternalStore, type MouseEvent } from "react";
 import "./theme-switcher.css";
 
-// 默认熄灯（深色），这是站点的主场；开灯是浅色，跟随系统由 color-scheme 决定。
-export type Theme = "light" | "dark" | "system";
+// 开灯 / 熄灯：一个按钮来回切换，白 → 黑、黑 → 白。默认熄灯（深色），这是站点的主场；开灯存 theme=light。
+// 以前的“跟随系统”已去掉，存储里遗留的 system 按熄灯处理。
+type Theme = "light" | "dark";
 const storageKey = "theme";
-export const themeOptions: { value: Theme; label: string }[] = [
-  { value: "light", label: "开灯" },
-  { value: "dark", label: "熄灯" },
-  { value: "system", label: "跟随系统" },
-];
 const listeners = new Set<() => void>();
 
 function read(): Theme {
   try {
-    const value = localStorage.getItem(storageKey);
-    return value === "light" || value === "system" ? value : "dark";
+    return localStorage.getItem(storageKey) === "light" ? "light" : "dark";
   } catch {
     return "dark";
   }
-}
-
-// 跟随系统时去掉 data-theme，由 globals.css 的 color-scheme: light dark 决定。熄灯是默认值，不写入存储。
-function applyToDocument(theme: Theme) {
-  if (theme === "system") delete document.documentElement.dataset.theme;
-  else document.documentElement.dataset.theme = theme;
 }
 
 function subscribe(onChange: () => void) {
   // 其他标签页改了主题，这里同步。
   const onStorage = (event: StorageEvent) => {
     if (event.key !== storageKey) return;
-    applyToDocument(read());
+    document.documentElement.dataset.theme = read();
     onChange();
   };
   listeners.add(onChange);
@@ -45,39 +33,39 @@ function subscribe(onChange: () => void) {
   };
 }
 
-function choose(theme: Theme) {
+// 新的颜色从按钮所在位置以圆形水波扩散到整页（视图过渡，类型 theme，样式在 globals.css 末尾）；
+// 不支持视图过渡或开了“减少动态效果”时直接切换。
+function toggle(event: MouseEvent<HTMLButtonElement>) {
+  const next: Theme = read() === "dark" ? "light" : "dark";
   try {
-    if (theme === "dark") localStorage.removeItem(storageKey);
-    else localStorage.setItem(storageKey, theme);
+    if (next === "dark") localStorage.removeItem(storageKey);
+    else localStorage.setItem(storageKey, next);
   } catch {}
   const update = () => {
-    applyToDocument(theme);
+    document.documentElement.dataset.theme = next;
     listeners.forEach((listener) => listener());
   };
-  // 开灯 / 熄灯时整页的颜色约 0.6 秒渐变（视图过渡，类型 theme，样式在 globals.css 末尾）；
-  // 不支持视图过渡或开了“减少动态效果”时直接切换。
-  if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) update();
-  else document.startViewTransition({ update, types: ["theme"] });
+  if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return update();
+  const rect = event.currentTarget.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+  const root = document.documentElement.style;
+  root.setProperty("--theme-x", `${x}px`);
+  root.setProperty("--theme-y", `${y}px`);
+  root.setProperty("--theme-r", `${Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))}px`);
+  document.startViewTransition({ update, types: ["theme"] });
 }
 
-// 当前主题与切换函数，分段按钮（手机菜单里）和顶部图标菜单（theme-menu.tsx）共用。
 export function useTheme() {
-  return [useSyncExternalStore(subscribe, read, () => "dark" as const), choose] as const;
+  return useSyncExternalStore(subscribe, read, () => "dark" as const);
 }
 
-export default function ThemeSwitcher() {
-  const [theme] = useTheme();
+// 图标显示现在的状态，读屏说明点了会怎样。
+export default function ThemeToggle() {
+  const theme = useTheme();
   return (
-    <ToggleGroup
-      className="theme-switcher"
-      aria-label="主题"
-      value={[theme]}
-      // 单选时再点已选中的项会得到空数组，忽略即可。
-      onValueChange={([next]) => { if (next) choose(next as Theme); }}
-    >
-      {themeOptions.map(({ value, label }) => (
-        <Toggle key={value} value={value} className="theme-switcher-item">{label}</Toggle>
-      ))}
-    </ToggleGroup>
+    <button type="button" className="icon-button theme-toggle" onClick={toggle} aria-label={theme === "dark" ? "开灯" : "熄灯"}>
+      {theme === "dark" ? <Moon size={18} strokeWidth={1.75} aria-hidden="true" /> : <Sun size={18} strokeWidth={1.75} aria-hidden="true" />}
+    </button>
   );
 }

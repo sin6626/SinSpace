@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
-// 当前实际生效的明暗主题：<html data-theme> 默认是 dark（熄灯），选“跟随系统”时去掉该属性。
+// 当前实际生效的明暗主题：<html data-theme> 默认是 dark（熄灯），没有该属性时（旧版“跟随系统”遗留）按系统偏好。
 // 给需要显式 theme 参数的第三方组件用（如富文本渲染器）。
 const darkQuery = "(prefers-color-scheme: dark)";
 

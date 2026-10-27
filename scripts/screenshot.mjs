@@ -1,5 +1,5 @@
 // 独立无头 Chromium 截图（用 Playwright 缓存里的 headless shell，经 DevTools 协议驱动，不碰用户自己的浏览器）。
-// 用法：node scripts/screenshot.mjs shots.json，shots.json 是数组：{ url, out, size?: [宽, 高], theme?: "light"|"system", wait?: 毫秒, eval?: "滚动等脚本" }。
+// 用法：node scripts/screenshot.mjs shots.json，shots.json 是数组：{ url, out, size?: [宽, 高], theme?: "light"|"system", wait?: 毫秒, eval?: "滚动等脚本", mouse?: [[x, y], …], click?: true, after?: 毫秒 }。
 // 内置浏览器面板不在屏幕上时无法截图，用这个代替。
 import { spawn } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
@@ -26,6 +26,13 @@ for (const s of shots) {
   const loaded = new Promise((r) => listeners.push((m) => m.method === "Page.loadEventFired" && r()));
   await send("Page.navigate", { url: s.url });
   await loaded; await sleep(s.wait ?? 3500);
+  // mouse：依次把真实鼠标移到这些坐标（每步间隔 30 毫秒），用来测悬停和跟随鼠标的效果；click 为 true 时在最后一点按一下
+  for (const [x, y] of s.mouse ?? []) { await send("Input.dispatchMouseEvent", { type: "mouseMoved", x, y }); await sleep(30); }
+  if (s.click && s.mouse?.length) {
+    const [x, y] = s.mouse.at(-1);
+    for (const type of ["mousePressed", "mouseReleased"]) await send("Input.dispatchMouseEvent", { type, x, y, button: "left", clickCount: 1 });
+  }
+  if (s.mouse) await sleep(s.after ?? 600);
   if (s.eval) {
     // 脚本有返回值时打印出来，方便顺带做交互检查（例如滚动过程的采样）
     const evaluated = await send("Runtime.evaluate", { expression: s.eval, awaitPromise: true, returnByValue: true });

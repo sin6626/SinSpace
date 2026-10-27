@@ -13,7 +13,7 @@ function load(path) {
   vm.runInNewContext(code, { module, exports: module.exports })
   return module.exports
 }
-const { moonPhase, moonLitPath } = load('../apps/web/lib/moon.ts')
+const { moonPhase, moonLitPath, moonInfo } = load('../apps/web/lib/moon.ts')
 const { excerpt } = load('../apps/web/lib/excerpt.ts')
 
 const near = (phase, target) => Math.min(Math.abs(phase - target), 1 - Math.abs(phase - target))
@@ -32,9 +32,17 @@ assert.match(moonLitPath(0.75, 50, 50, 40), /^M 50 10 A 40 40 0 0 0 50 90/)
 // 娥眉月交界线向亮面（右）鼓，盈凸月向暗面（左）鼓
 assert.match(moonLitPath(0.1, 50, 50, 40), / 0 0 0 50 10 Z$/)
 assert.match(moonLitPath(0.4, 50, 50, 40), / 0 0 1 50 10 Z$/)
+// 悬停说明：满月那天亮面接近 100%、月龄约 15 天（平均朔望月推算，误差一天内）、接下来是新月；上弦时接下来是满月
+const full = moonInfo(Date.UTC(2024, 0, 25, 17, 54))
+assert.equal(full.name, '满月')
+assert.ok(full.illumination >= 99 && Math.abs(full.age - 14.8) < 1 && full.next === '新月')
+const quarter = moonInfo(Date.UTC(2024, 0, 18, 3, 53))
+assert.equal(quarter.name, '上弦月')
+assert.ok(quarter.next === '满月' && Math.abs(quarter.daysToNext - 7) <= 1)
+assert.equal(moonInfo(Date.UTC(2024, 0, 11, 11, 57)).name, '新月')
 // 摘录：去掉 Markdown 符号、实体、图片和链接地址，超长截断
 assert.equal(excerpt('|*&#32;两个月的暑假*\n\n## 刚进出租屋\n\n看[这篇](https://a.b/c)和![图](x.png)'), '两个月的暑假 刚进出租屋 看这篇和')
 assert.equal(excerpt('> 引用\n- 列表 `code`\n```js\nconst a = 1\n```\n结尾'), '引用 列表 code 结尾')
 assert.equal(excerpt('一二三四五', 3), '一二三…')
 assert.equal(excerpt(null), '')
-console.log('PASS moon phase dates, lit side, crescent/gibbous terminator, new and full moon; Markdown excerpt')
+console.log('PASS moon phase dates, lit side, crescent/gibbous terminator, new and full moon, hover info; Markdown excerpt')

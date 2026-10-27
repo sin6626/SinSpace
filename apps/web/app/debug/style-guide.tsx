@@ -1,7 +1,7 @@
 import { NoteEntry } from "@/components/note-list";
 import { PostCard } from "@/components/post-list";
 import { ProjectCard } from "@/components/project-list";
-import ThemeSwitcher from "@/components/theme-switcher";
+import ThemeToggle from "@/components/theme-switcher";
 import "@/components/corners.css";
 import "@/components/details-sidebar.css";
 import "./style-guide.css";
@@ -29,7 +29,7 @@ export default function StyleGuide() {
     <>
       <h2>设计系统：熄灯以后</h2>
       <p className="post-meta">变量都在 globals.css 开头。切换开灯 / 熄灯看两套颜色：</p>
-      <ThemeSwitcher />
+      <ThemeToggle />
 
       <h3 className="guide-heading">颜色</h3>
       <ul className="guide-swatches">

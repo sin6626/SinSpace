@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import Navigation from "@/components/navigation";
 import SiteFooter from "@/components/site-footer";
-import ThemeMenu from "@/components/theme-menu";
+import ThemeToggle from "@/components/theme-switcher";
 import "./globals.css";
 
 // 英文和数字用 Nunito：圆润的无衬线体，细的用 200（ExtraLight），强调用 600（SemiBold）。
@@ -41,8 +41,8 @@ const notoSerif = Noto_Serif_SC({
   display: "swap",
 });
 
-// 服务端默认输出 data-theme="dark"（熄灯）；保存过“开灯”或“跟随系统”时在绘制前改掉。
-const themeScript = `try{var t=localStorage.getItem("theme"),d=document.documentElement;if(t==="light")d.dataset.theme="light";else if(t==="system")delete d.dataset.theme}catch(e){}`;
+// 服务端默认输出 data-theme="dark"（熄灯）；保存过“开灯”时在绘制前改掉。
+const themeScript = `try{var t=localStorage.getItem("theme"),d=document.documentElement;if(t==="light")d.dataset.theme="light"}catch(e){}`;
 
 // 子页面的标题会套用模板，例如“文章 - Sin’s Space”。站名、描述取后台 SEO 设置；
 // metadataBase 取后台“网站地址”，让分享链接、RSS 自动发现等相对地址变成完整网址；读取失败时省略。
@@ -89,7 +89,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 </Link>
                 <Navigation />
                 <div className="site-header-tools">
-                  <ThemeMenu />
+                  <ThemeToggle />
                 </div>
               </div>
             </header>

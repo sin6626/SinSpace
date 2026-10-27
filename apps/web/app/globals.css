@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* 设计变量（设计系统“熄灯以后”，docs/design-direction.md）。
-   颜色用 light-dark(开灯值, 熄灯值)：默认熄灯（<html data-theme="dark">），开灯时 data-theme="light"，跟随系统时去掉 data-theme。
+   颜色用 light-dark(开灯值, 熄灯值)：默认熄灯（<html data-theme="dark">），开灯时 data-theme="light"（顶部一个按钮来回切换）。
    组件 CSS 只用这里的变量，不写死色值、字号、圆角。 */
 :root {
   color-scheme: light dark;
@@ -768,13 +768,14 @@ a:focus-visible,
   animation: page-switch-in 180ms ease-out both;
 }
 
-/* 开灯 / 熄灯（theme-switcher.tsx）：新的颜色在旧画面上淡入，像天色慢慢变化 */
+/* 开灯 / 熄灯（theme-switcher.tsx）：新的颜色从按钮位置以圆形水波扩散开，盖住旧画面 */
 html:active-view-transition-type(theme)::view-transition-new(root) {
-  animation: theme-fade-in var(--duration-slow) ease-in-out both;
+  animation: theme-ripple 600ms ease-in-out both;
 }
 
-@keyframes theme-fade-in {
-  from { opacity: 0; }
+@keyframes theme-ripple {
+  from { clip-path: circle(0 at var(--theme-x, 100%) var(--theme-y, 0)); }
+  to { clip-path: circle(var(--theme-r, 150vmax) at var(--theme-x, 100%) var(--theme-y, 0)); }
 }
 
 @keyframes page-switch-out {
