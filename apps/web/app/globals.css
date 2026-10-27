@@ -445,6 +445,15 @@ a:focus-visible,
   animation: page-switch-in 180ms ease-out both;
 }
 
+/* 开灯 / 熄灯（theme-switcher.tsx）：新的颜色在旧画面上淡入，像天色慢慢变化 */
+html:active-view-transition-type(theme)::view-transition-new(root) {
+  animation: theme-fade-in var(--duration-slow) ease-in-out both;
+}
+
+@keyframes theme-fade-in {
+  from { opacity: 0; }
+}
+
 @keyframes page-switch-out {
   to { opacity: 0; }
 }

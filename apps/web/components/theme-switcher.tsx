@@ -50,8 +50,14 @@ function choose(theme: Theme) {
     if (theme === "dark") localStorage.removeItem(storageKey);
     else localStorage.setItem(storageKey, theme);
   } catch {}
-  applyToDocument(theme);
-  listeners.forEach((listener) => listener());
+  const update = () => {
+    applyToDocument(theme);
+    listeners.forEach((listener) => listener());
+  };
+  // 开灯 / 熄灯时整页的颜色约 0.6 秒渐变（视图过渡，类型 theme，样式在 globals.css 末尾）；
+  // 不支持视图过渡或开了“减少动态效果”时直接切换。
+  if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) update();
+  else document.startViewTransition({ update, types: ["theme"] });
 }
 
 export default function ThemeSwitcher() {

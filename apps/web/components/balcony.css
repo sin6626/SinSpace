@@ -1,0 +1,268 @@
+/* 首页阳台场景（balcony.tsx）。颜色都在这里用 light-dark(开灯/黄昏, 熄灯/夜里) 定义，只在这个场景里用。 */
+.balcony {
+  --sky-top: light-dark(#b7a1dc, #05040b);
+  --sky-mid: light-dark(#e3b6d6, #110c22);
+  --sky-low: light-dark(#ffd8c6, #271a3b);
+  --sky-haze: light-dark(rgb(255 232 210 / 75%), rgb(224 166 232 / 12%));
+  --milky-way: light-dark(transparent, rgb(236 220 255 / 5%));
+  --star: light-dark(rgb(255 255 255 / 55%), #fdf6ff);
+  --building-far: light-dark(#b4a1d0, #1e1832);
+  --building-near: light-dark(#8a75a9, #120e1f);
+  --window: light-dark(#fff3cf, #f6d38c);
+  --railing: light-dark(#3d3050, #030206);
+  --moon: light-dark(#fffdf7, #fbf1dc);
+  --moon-glow: light-dark(rgb(255 255 255 / 70%), rgb(251 241 220 / 40%));
+  --moon-shadow: light-dark(rgb(255 255 255 / 32%), rgb(255 255 255 / 6%));
+  --scene-text: light-dark(#2a2040, #f3eefa);
+  --scene-muted: light-dark(rgb(42 32 64 / 72%), rgb(243 238 250 / 70%));
+
+  position: relative;
+  height: 100svh;
+  min-height: 32rem;
+  /* 场景从页面最顶端开始，导航浮在夜空上 */
+  margin-top: calc(-1 * var(--header-height));
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 75% 45% at 50% 100%, var(--sky-haze), transparent 70%),
+    linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-mid) 58%, var(--sky-low) 100%);
+  color: var(--scene-text);
+}
+
+/* 一条很淡的银河，只在夜里看得见 */
+.balcony::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(118deg, transparent 28%, var(--milky-way) 42%, var(--milky-way) 50%, transparent 64%);
+  pointer-events: none;
+}
+
+.balcony-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.balcony-star {
+  fill: var(--star);
+}
+
+.balcony-star.is-twinkle {
+  animation: balcony-twinkle var(--twinkle-duration) ease-in-out var(--twinkle-delay) infinite alternate;
+}
+
+@keyframes balcony-twinkle {
+  from { opacity: 1; }
+  to { opacity: 0.2; }
+}
+
+.balcony-far .balcony-building { fill: var(--building-far); }
+.balcony-near .balcony-building { fill: var(--building-near); }
+.balcony-window { fill: var(--window); }
+.balcony-far .balcony-window { opacity: 0.55; }
+.balcony-near .balcony-window:nth-child(3n) { opacity: 0.7; }
+.balcony-railing { fill: var(--railing); }
+
+/* 流星：平时看不见，每隔二三十秒划过一颗 */
+.balcony-meteor {
+  position: absolute;
+  top: 9%;
+  left: 74%;
+  width: 9rem;
+  height: 1.5px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, transparent, var(--star));
+  opacity: 0;
+  pointer-events: none;
+  animation: balcony-meteor 31s linear -17s infinite;
+}
+
+.balcony-meteor.is-late {
+  top: 20%;
+  left: 36%;
+  width: 7rem;
+  animation-duration: 43s;
+  animation-delay: -15s;
+}
+
+@keyframes balcony-meteor {
+  0%, 96% { opacity: 0; transform: rotate(152deg) translateX(0); }
+  96.6% { opacity: 1; }
+  99% { opacity: 0.8; }
+  100% { opacity: 0; transform: rotate(152deg) translateX(30rem); }
+}
+
+.balcony-moon {
+  position: absolute;
+  top: 14%;
+  right: 15%;
+  width: clamp(4rem, 9vw, 7rem);
+  height: auto;
+  filter: drop-shadow(0 0 1.75rem var(--moon-glow));
+}
+
+.balcony-moon-shadow {
+  fill: var(--moon-shadow);
+}
+
+.balcony-moon-lit {
+  fill: var(--moon);
+  opacity: 0;
+  transition: opacity 1.2s var(--ease-out);
+}
+
+.balcony-moon[data-ready] .balcony-moon-lit {
+  opacity: 1;
+}
+
+.balcony-text {
+  position: absolute;
+  inset-inline: 0;
+  top: 31%;
+  padding-inline: var(--space-6);
+  text-align: center;
+}
+
+.balcony-text h1 {
+  font-size: clamp(2.25rem, 6vw, 4rem);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 2rem light-dark(rgb(255 255 255 / 50%), rgb(224 166 232 / 28%));
+}
+
+.balcony-text p {
+  margin-top: var(--space-4);
+  color: var(--scene-muted);
+  font-size: clamp(var(--text-base), 2vw, var(--text-lg));
+  letter-spacing: 0.08em;
+}
+
+.balcony-down {
+  position: absolute;
+  bottom: var(--space-6);
+  left: 50%;
+  translate: -50% 0;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: rgb(255 255 255 / 8%);
+  color: rgb(243 238 250 / 82%);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+  transition: background-color var(--duration-base), color var(--duration-base);
+}
+
+.balcony-down span {
+  display: inline-block;
+  animation: balcony-bob 2.4s ease-in-out infinite;
+}
+
+@keyframes balcony-bob {
+  50% { transform: translateY(3px); }
+}
+
+@media (hover: hover) {
+  .balcony-down:hover {
+    background: rgb(255 255 255 / 16%);
+    color: #fff;
+  }
+}
+
+.balcony[data-paused] .is-twinkle,
+.balcony[data-paused] .balcony-meteor,
+.balcony[data-paused] .balcony-down span {
+  animation-play-state: paused;
+}
+
+@media (max-width: 639px) {
+  .balcony-moon {
+    top: 20%;
+    right: 9%;
+  }
+
+  .balcony-text {
+    top: 36%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .balcony-star.is-twinkle,
+  .balcony-down span {
+    animation: none;
+  }
+
+  .balcony-meteor {
+    display: none;
+  }
+
+  .balcony-moon-lit {
+    transition: none;
+  }
+}
+
+/* 首页：正文不限宽，场景铺满整屏；场景下面的内容回到单栏宽度 */
+.site-content:has(> .balcony) {
+  max-width: none;
+}
+
+.home-room {
+  max-width: var(--article-max-width);
+  margin-inline: auto;
+  padding-top: var(--space-12);
+  scroll-margin-top: var(--header-height);
+}
+
+/* 导航在夜空上是透明的，往下滚出场景时渐渐变成半透明的夜色条（滚动驱动动画，不支持的浏览器保持半透明） */
+@supports (animation-timeline: scroll()) {
+  .site-shell:has(.balcony) .site-header {
+    background: transparent;
+    backdrop-filter: none;
+    animation: balcony-header linear both;
+    animation-timeline: scroll(root);
+    animation-range: 55svh 90svh;
+  }
+}
+
+@keyframes balcony-header {
+  to {
+    background: color-mix(in srgb, var(--background) 78%, transparent);
+    backdrop-filter: blur(12px) saturate(140%);
+  }
+}
+
+/* 场景下面的自我介绍（home-intro.tsx） */
+.home-intro {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: 0 var(--space-6) var(--space-12);
+}
+
+.home-intro-avatar {
+  flex-shrink: 0;
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  box-shadow: var(--shadow-soft);
+}
+
+.home-intro-name {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.home-intro p {
+  margin-top: var(--space-1);
+  color: var(--muted-foreground);
+  line-height: var(--leading-normal);
+}
+
+.home-intro a {
+  display: inline-block;
+  margin-top: var(--space-2);
+  color: var(--primary);
+  font-size: var(--text-sm);
+}

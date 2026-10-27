@@ -1,6 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { getApiClient } from "./api";
+import { safeUrl } from "./safe-url";
 
 // 站名和描述以后台 SEO 设置为准（getSiteSettings），这两个值只是读取失败时的兜底。
 export const siteName = "Sin’s Space";
@@ -75,6 +76,22 @@ export async function getSubscribeOptions() {
   const status = await getApiClient().subscribe.check();
   const types = (status.allowTypes ?? []).filter((type): type is "post_c" | "note_c" => type === "post_c" || type === "note_c");
   return { enabled: Boolean(status.enable) && types.length > 0, types };
+}
+
+// 首页的自我介绍：后台“个人资料”的名字、头像、一句话介绍，以及“关于我”页面的地址（标题含“关于我”的页面，否则排第一的页面）。
+export async function getOwner() {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheTag("blog:navigation", "blog:pages");
+  const { user, pageMeta } = await getApiClient().aggregate.getAggregateData();
+  const pages = Array.isArray(pageMeta) ? [...pageMeta].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) : [];
+  const about = pages.find((page) => page.title.includes("关于我")) ?? pages[0];
+  return {
+    name: user.name?.trim() || user.username,
+    avatar: safeUrl(user.avatar ?? undefined),
+    introduce: user.introduce?.trim() || undefined,
+    aboutHref: about?.slug ? `/${encodeURIComponent(about.slug)}` : undefined,
+  };
 }
 
 export async function getSiteUrl() {
