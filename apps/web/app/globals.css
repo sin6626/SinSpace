@@ -664,6 +664,9 @@ a:focus-visible,
 }
 
 .home-section-heading a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   color: var(--muted-foreground);
   font-size: var(--text-sm);
 }

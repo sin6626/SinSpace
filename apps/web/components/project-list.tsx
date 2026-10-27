@@ -1,3 +1,4 @@
+import { ArrowUpRight } from "lucide-react";
 import { unstable_rethrow } from "next/navigation";
 import { getProjects } from "../lib/blog-data";
 import { safeUrl } from "../lib/safe-url";
@@ -25,7 +26,7 @@ export function ProjectCard({ project, headingLevel = 2 }: { project: Project; h
       {links.length > 0 && (
         <div className="project-card-links">
           {links.map((link) => (
-            <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer">{link.label} ↗</a>
+            <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer">{link.label}<ArrowUpRight size={14} aria-hidden="true" /></a>
           ))}
         </div>
       )}

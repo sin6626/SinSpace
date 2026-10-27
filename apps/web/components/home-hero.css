@@ -162,8 +162,6 @@
 
 .home-hero-arrow {
   margin-top: var(--space-6);
-  font-size: var(--text-xl);
-  line-height: 1;
   animation: home-hero-bounce 1s infinite;
 }
 

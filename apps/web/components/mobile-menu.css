@@ -13,28 +13,6 @@
   cursor: pointer;
 }
 
-/* 两条横线的菜单图标 */
-.mobile-menu-trigger span,
-.mobile-menu-trigger span::before {
-  display: block;
-  width: 1.125rem;
-  height: 1.5px;
-  border-radius: var(--radius-full);
-  background: currentColor;
-}
-
-.mobile-menu-trigger span {
-  position: relative;
-  translate: 0 -3px;
-}
-
-.mobile-menu-trigger span::before {
-  content: "";
-  position: absolute;
-  top: 6px;
-  width: 0.75rem;
-}
-
 .mobile-menu-trigger:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;

@@ -1,3 +1,4 @@
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { unstable_rethrow } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
@@ -24,7 +25,7 @@ function Heading({ title, note, allHref }: { title: string; note: string; allHre
     <div className="home-section-heading">
       <h2>{title}</h2>
       <p>{note}</p>
-      {allHref && <Link href={allHref}>全部 →</Link>}
+      {allHref && <Link className="home-section-more" href={allHref}>全部<ArrowRight size={14} aria-hidden="true" /></Link>}
     </div>
   );
 }

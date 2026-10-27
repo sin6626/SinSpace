@@ -1,6 +1,7 @@
 "use client";
 
 import { Dialog } from "@base-ui/react/dialog";
+import { Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -25,7 +26,7 @@ export default function MobileMenu({ corners, more }: { corners: MenuLink[]; mor
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger className="mobile-menu-trigger" aria-label="打开菜单">
-        <span aria-hidden="true" />
+        <Menu size={22} strokeWidth={1.75} aria-hidden="true" />
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Popup className="mobile-menu" aria-label="菜单">

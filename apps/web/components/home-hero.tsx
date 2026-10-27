@@ -1,3 +1,4 @@
+import { ChevronDown, Github, Tv } from "lucide-react";
 import { unstable_rethrow } from "next/navigation";
 import { Suspense } from "react";
 import { getOwner, getSiteLikes, getSiteSettings, getSubscribeOptions, siteDescription, siteName } from "../lib/blog-data";
@@ -20,13 +21,10 @@ async function loadOwner() {
   }
 }
 
+// Lucide 没有 B 站的品牌图标，先用形状最接近的“电视”代替。
 const socialIcons: Record<string, React.ReactNode> = {
-  GitHub: (
-    <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 .5C5.73.5.5 5.74.5 12.02c0 5.1 3.29 9.42 7.86 10.95.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.39-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.53 11.53 0 0 0 23.5 12.02C23.5 5.74 18.27.5 12 .5Z" /></svg>
-  ),
-  Bilibili: (
-    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="6.5" width="18" height="13.5" rx="3.5" /><path d="m8 3 2.5 3.5M16 3l-2.5 3.5M9 12v2M15 12v2" /></svg>
-  ),
+  GitHub: <Github size={18} strokeWidth={1.75} aria-hidden="true" />,
+  Bilibili: <Tv size={18} strokeWidth={1.75} aria-hidden="true" />,
 };
 
 async function Socials() {
@@ -93,7 +91,7 @@ export default function HomeHero() {
         </Suspense>
         <ScrollHint className="home-hero-scroll" target="home-room">
           <small><Suspense fallback={siteDescription}><Motto /></Suspense></small>
-          <span className="home-hero-arrow" aria-hidden="true">⌄</span>
+          <ChevronDown className="home-hero-arrow" size={24} strokeWidth={1.5} aria-hidden="true" />
         </ScrollHint>
       </div>
     </section>

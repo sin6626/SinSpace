@@ -158,13 +158,12 @@
 }
 
 .ai-summary-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   margin-bottom: var(--space-1);
   color: var(--primary);
   font-size: var(--text-xs);
-}
-
-.ai-summary-label::before {
-  content: "✦ ";
 }
 
 .ai-note {
@@ -355,8 +354,15 @@
 }
 
 .neighbor-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   color: var(--muted-foreground);
   font-size: var(--text-xs);
+}
+
+.neighbor-nav a.is-older .neighbor-label {
+  justify-self: end;
 }
 
 .neighbor-title {

@@ -1,3 +1,4 @@
+import { Sparkles } from "lucide-react";
 import Link from "next/link";
 import { getArticleAi, getArticleTranslation, isTranslationLanguage, translationLanguages, type TranslationLanguage } from "../lib/blog-data";
 
@@ -35,7 +36,7 @@ export function ArticleAiNotes({ ai }: { ai: Loaded }) {
       )}
       {ai.summary && (
         <aside className="ai-summary" aria-label="AI 摘要" lang={ai.lang ?? undefined}>
-          <p className="ai-summary-label">AI 摘要</p>
+          <p className="ai-summary-label"><Sparkles size={14} aria-hidden="true" />AI 摘要</p>
           <p>{ai.summary}</p>
         </aside>
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { NavigationMenu } from "@base-ui/react/navigation-menu";
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useRef, useState } from "react";
@@ -94,7 +95,7 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
                 if (lastPointerType.current === "touch" && openItem !== label) event.preventDefault();
               }}
             >
-              {label}<NavigationMenu.Icon className="navigation-Icon" aria-hidden="true">⌄</NavigationMenu.Icon>
+              {label}<NavigationMenu.Icon className="navigation-Icon" aria-hidden="true"><ChevronDown size={14} /></NavigationMenu.Icon>
             </NavigationMenu.Trigger>
             <NavigationMenu.Content className="navigation-Content">
               <ul className="navigation-FlexLinkList">
@@ -111,7 +112,7 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
         {/* “更多”没有自己的页面，触发器是普通按钮，点击或悬停只展开子菜单 */}
         <NavigationMenu.Item value="更多">
           <NavigationMenu.Trigger className="navigation-Trigger">
-            更多<NavigationMenu.Icon className="navigation-Icon" aria-hidden="true">⌄</NavigationMenu.Icon>
+            更多<NavigationMenu.Icon className="navigation-Icon" aria-hidden="true"><ChevronDown size={14} /></NavigationMenu.Icon>
           </NavigationMenu.Trigger>
           <NavigationMenu.Content className="navigation-Content">
             <ul className="navigation-FlexLinkList">

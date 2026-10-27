@@ -1,3 +1,4 @@
+import { ChevronDown, Hash } from "lucide-react";
 import Link from "next/link";
 import { unstable_rethrow } from "next/navigation";
 import { getTags } from "../lib/blog-data";
@@ -13,7 +14,7 @@ export default async function PostTagDrawer({ activeTag }: { activeTag?: string 
   }
   return (
     <details className="tag-drawer" open={Boolean(activeTag)}>
-      <summary># 按标签{tags?.length ? <span className="tag-count">{tags.length}</span> : null}</summary>
+      <summary><Hash size={14} aria-hidden="true" />按标签{tags?.length ? <span className="tag-count">{tags.length}</span> : null}<ChevronDown className="tag-drawer-arrow" size={14} aria-hidden="true" /></summary>
       {tags === null ? <p className="details-message" role="alert">标签读取失败。</p> : tags.length ? (
         <ul className="tag-list">
           {tags.map((tag) => {

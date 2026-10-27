@@ -212,6 +212,9 @@
 }
 
 .project-card-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
   color: var(--primary);
 }
 

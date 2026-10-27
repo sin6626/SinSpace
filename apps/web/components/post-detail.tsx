@@ -1,4 +1,5 @@
 import { ArticleNotifications, ReadingCount } from "./notifications";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { getPost, getTimeline } from "../lib/blog-data";
@@ -81,8 +82,8 @@ async function PostNeighbors({ id }: { id: string }) {
   if (!newer && !older) return null;
   return (
     <nav className="neighbor-nav" aria-label="相邻文章">
-      {newer ? <Link href={href(newer)}><span className="neighbor-label">← 较新</span><span className="neighbor-title">{newer.title}</span></Link> : <span />}
-      {older ? <Link className="is-older" href={href(older)}><span className="neighbor-label">较早 →</span><span className="neighbor-title">{older.title}</span></Link> : <span />}
+      {newer ? <Link href={href(newer)}><span className="neighbor-label"><ArrowLeft size={14} aria-hidden="true" />较新</span><span className="neighbor-title">{newer.title}</span></Link> : <span />}
+      {older ? <Link className="is-older" href={href(older)}><span className="neighbor-label">较早<ArrowRight size={14} aria-hidden="true" /></span><span className="neighbor-title">{older.title}</span></Link> : <span />}
     </nav>
   );
 }

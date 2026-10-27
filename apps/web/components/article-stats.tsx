@@ -1,5 +1,6 @@
 "use client";
 
+import { Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { refreshArticle } from "./cache-actions";
@@ -65,7 +66,7 @@ export default function ArticleStats({ apiUrl, id, type, like }: Props) {
   return (
     <>
       <button className="like-button" type="button" onClick={thumbsUp} aria-pressed={liked} disabled={liked}>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" /></svg>
+        <Heart size={18} aria-hidden="true" />
         <span>{liked ? "谢谢你的喜欢" : "喜欢这篇"}</span>
         <span className="like-count">{likes}</span>
       </button>

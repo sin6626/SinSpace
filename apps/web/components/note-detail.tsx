@@ -1,3 +1,4 @@
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { getNote } from "../lib/blog-data";
@@ -66,8 +67,8 @@ export default async function NoteDetail({ params, searchParams }: { params: Pro
         <div className="article-end"><ArticleStats apiUrl={getApiUrl()} id={note.id} type="note" like={note.count.like} /></div>
         {(note.newer || note.older) && (
           <nav className="neighbor-nav" aria-label="相邻手记">
-            {note.newer ? <Link href={`/notes/${note.newer.nid}`}><span className="neighbor-label">← 较新</span><span className="neighbor-title">{note.newer.title}</span></Link> : <span />}
-            {note.older ? <Link className="is-older" href={`/notes/${note.older.nid}`}><span className="neighbor-label">较早 →</span><span className="neighbor-title">{note.older.title}</span></Link> : <span />}
+            {note.newer ? <Link href={`/notes/${note.newer.nid}`}><span className="neighbor-label"><ArrowLeft size={14} aria-hidden="true" />较新</span><span className="neighbor-title">{note.newer.title}</span></Link> : <span />}
+            {note.older ? <Link className="is-older" href={`/notes/${note.older.nid}`}><span className="neighbor-label">较早<ArrowRight size={14} aria-hidden="true" /></span><span className="neighbor-title">{note.older.title}</span></Link> : <span />}
           </nav>
         )}
         <Suspense fallback={<p className="post-meta" role="status">正在读取评论…</p>}>

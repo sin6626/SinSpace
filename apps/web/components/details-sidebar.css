@@ -92,13 +92,11 @@
   display: none;
 }
 
-.tag-drawer summary::after {
-  content: "⌄";
-  font-size: 0.75em;
+.tag-drawer-arrow {
   transition: transform var(--duration-fast);
 }
 
-.tag-drawer[open] summary::after {
+.tag-drawer[open] .tag-drawer-arrow {
   transform: rotate(180deg);
 }
 

@@ -1,3 +1,4 @@
+import { ChevronDown, Hash } from "lucide-react";
 import Link from "next/link";
 import { unstable_rethrow } from "next/navigation";
 import { getTopics } from "../lib/blog-data";
@@ -13,7 +14,7 @@ export default async function NoteTopicDrawer({ activeTopic }: { activeTopic?: s
   }
   return (
     <details className="tag-drawer" open={Boolean(activeTopic)}>
-      <summary># 按话题{topics?.length ? <span className="tag-count">{topics.length}</span> : null}</summary>
+      <summary><Hash size={14} aria-hidden="true" />按话题{topics?.length ? <span className="tag-count">{topics.length}</span> : null}<ChevronDown className="tag-drawer-arrow" size={14} aria-hidden="true" /></summary>
       {topics === null ? <p className="details-message" role="alert">话题读取失败。</p> : topics.length ? (
         <ul className="tag-list">
           {topics.map((topic) => {

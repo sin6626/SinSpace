@@ -1,6 +1,7 @@
 "use client";
 
 import { Popover } from "@base-ui/react/popover";
+import { Bell, Heart, Mail, X } from "lucide-react";
 import { useRef, useState } from "react";
 import SubscribeForm from "./subscribe-form";
 import "./site-actions.css";
@@ -38,25 +39,25 @@ export default function SiteActions({ apiUrl, siteName, likes, subscribeTypes }:
     <div className="site-actions">
       <button className="site-action is-like" type="button" onClick={like} aria-pressed={liked}>
         喜欢本站
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" /></svg>
+        <Heart size={16} aria-hidden="true" />
         {count !== null && <span className="site-action-count">{count}</span>}
       </button>
       {subscribeTypes && (
         <Popover.Root>
           <Popover.Trigger className="site-action is-subscribe">
             订阅
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0" /></svg>
+            <Bell size={16} aria-hidden="true" />
           </Popover.Trigger>
           <Popover.Portal>
             <Popover.Positioner className="site-action-positioner" side="top" sideOffset={12}>
               <Popover.Popup className="site-action-popup" initialFocus={(type) => (type === "touch" ? true : emailRef.current)}>
                 <div className="subscribe-header">
                   <span className="subscribe-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5" /><path d="m4.5 7 7.5 6 7.5-6" /></svg>
+                    <Mail size={18} strokeWidth={1.75} />
                   </span>
                   <Popover.Title className="subscribe-title">邮件订阅</Popover.Title>
                   <Popover.Close className="subscribe-close" aria-label="关闭">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                    <X size={18} strokeWidth={1.75} aria-hidden="true" />
                   </Popover.Close>
                 </div>
                 <SubscribeForm apiUrl={apiUrl} types={subscribeTypes} siteName={siteName} emailRef={emailRef} />

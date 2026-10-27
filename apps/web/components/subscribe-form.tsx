@@ -1,5 +1,6 @@
 "use client";
 
+import { Check } from "lucide-react";
 import { useState, type FormEvent, type Ref } from "react";
 
 const typeLabels = { post_c: "文章", note_c: "手记" } as const;
@@ -44,7 +45,7 @@ export default function SubscribeForm({ apiUrl, types, siteName = "这里", emai
         {types.map((type) => (
           <label key={type} className="subscribe-type">
             <input type="checkbox" name="types" value={type} defaultChecked />
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+            <Check size={14} strokeWidth={2.5} aria-hidden="true" />
             {typeLabels[type]}
           </label>
         ))}
