@@ -1,14 +1,11 @@
 "use client";
 
 import { NavigationMenu } from "@base-ui/react/navigation-menu";
-import {
-  Bug, ChevronDown, FileText, Hash, HeartHandshake, History, House, MessageCircle, NotebookPen, PenLine, Quote, Shapes,
-  type LucideIcon,
-} from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { LayoutGroup, MotionConfig, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useRef, useState, type PointerEvent, type ReactNode } from "react";
+import { useRef, useState } from "react";
 import MobileMenu from "./mobile-menu";
 import "./navigation-menu.css";
 
@@ -31,38 +28,21 @@ const moreLinks: NavigationLink[] = [
   { label: "一言", href: "/says" },
 ];
 
-// 每一项的图标：一级项只在“当前页”时显示在文字前；子菜单每项都显示。后台页面统一用文档图标。
-const icons: Record<string, LucideIcon> = {
-  "/": House,
-  "/projects": Shapes,
-  "/posts": PenLine,
-  "/notes": NotebookPen,
-  "/thinking": MessageCircle,
-  "/timeline": History,
-  "/friends": HeartHandshake,
-  "/says": Quote,
-  "/debug": Bug,
-};
-const iconOf = (href: string, fallback: LucideIcon = FileText) => {
-  const Icon = icons[href] ?? fallback;
-  return <Icon size={15} strokeWidth={1.75} aria-hidden="true" />;
-};
-
 const isCurrent = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
-// 弹簧：当前项的底色和图标在换页时滑过去，悬停底色跟着鼠标从一项滑到另一项
-const spring = { type: "spring", stiffness: 520, damping: 38, mass: 0.9 } as const;
 
-// 一级项里的内容：当前页有强调色底和图标（同一个 layoutId，换页时从上一项滑过来），文字随之让位。
-function Face({ active, icon, label }: { active: boolean; icon: ReactNode; label: string }) {
+// 一级项的内容：文字 + 脚下一颗暗星；当前页那一项再叠一颗亮星（同一个 layoutId，换页时亮星沿着连线移到新的一项）。
+function Star({ active }: { active: boolean }) {
   return (
     <>
-      {active && <motion.span layoutId="navigation-active" className="navigation-Active" transition={spring} />}
+      <span className="navigation-Dot" aria-hidden="true" />
       {active && (
-        <motion.span layoutId="navigation-active-icon" className="navigation-ItemIcon" transition={spring}>
-          {icon}
-        </motion.span>
+        <motion.span
+          layoutId="navigation-star"
+          className="navigation-Star"
+          aria-hidden="true"
+          transition={{ type: "spring", stiffness: 260, damping: 26, mass: 1 }}
+        />
       )}
-      <motion.span layout="position" transition={spring}>{label}</motion.span>
     </>
   );
 }
@@ -94,30 +74,16 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
       {state.status === "ready" && !links.length && empty && <li className="navigation-message">{empty}</li>}
     </>
   );
-  const subLinks = (links: NavigationLink[], fallback?: LucideIcon) => links.map(({ label, href }) => (
+  const subLinks = (links: NavigationLink[]) => links.map(({ label, href }) => (
     <li key={href}>
       <NavigationMenu.Link className="navigation-LinkCard" active={pathname === href} closeOnClick render={<Link href={href} />}>
-        <span className="navigation-LinkIcon">{iconOf(href, fallback)}</span>
+        <span className="navigation-LinkDot" aria-hidden="true" />
         <span className="navigation-LinkTitle">{label}</span>
       </NavigationMenu.Link>
     </li>
   ));
 
-  // 悬停底色：整条导航只有一块，量出鼠标所在项的位置和宽度，用弹簧滑过去；离开导航时淡出。
-  const [hover, setHover] = useState<{ left: number; width: number } | null>(null);
-  const hoverProps = {
-    onPointerEnter: (event: PointerEvent<HTMLElement>) => {
-      if (event.pointerType === "mouse") setHover({ left: event.currentTarget.offsetLeft, width: event.currentTarget.offsetWidth });
-    },
-  };
-  // 跟手的月光：鼠标在胶囊上移动时，一团淡光跟着指针（只改 CSS 变量，不触发渲染）。
-  const spotlight = (event: PointerEvent<HTMLElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    event.currentTarget.style.setProperty("--spot-x", `${event.clientX - rect.left}px`);
-    event.currentTarget.style.setProperty("--spot-y", `${event.clientY - rect.top}px`);
-  };
-  // “更多”没有自己的页面；当前页在“更多”里时，直接显示成那一页的名字和图标。
-  const moreCurrent = [...pages, ...moreLinks].find(({ href }) => pathname === href);
+  const moreCurrent = [...pages, ...moreLinks].some(({ href }) => pathname === href);
   const articlesCurrent = isCurrent(pathname, "/posts") || pathname.startsWith("/categories/");
 
   const devLinks = process.env.NODE_ENV !== "production" ? [{ label: "调试", href: "/debug" }] : [];
@@ -134,21 +100,14 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
     >
       <MotionConfig reducedMotion="user">
       <LayoutGroup id="navigation">
-      <NavigationMenu.List className="navigation-List" onPointerMove={spotlight} onPointerLeave={() => setHover(null)}>
-        <motion.li
-          className="navigation-Hover"
-          aria-hidden="true"
-          initial={false}
-          animate={hover ? { opacity: 1, x: hover.left, width: hover.width } : { opacity: 0 }}
-          transition={{ ...spring, opacity: { duration: 0.15 } }}
-        />
-        <NavigationMenu.Item {...hoverProps}>
+      <NavigationMenu.List className="navigation-List">
+        <NavigationMenu.Item>
           <NavigationMenu.Link className="navigation-Trigger" active={pathname === "/"} render={<Link href="/" />}>
-            <Face active={pathname === "/"} icon={iconOf("/")} label="首页" />
+            首页<Star active={pathname === "/"} />
           </NavigationMenu.Link>
         </NavigationMenu.Item>
         {corners.map(({ label, href }) => href === "/posts" ? (
-          <NavigationMenu.Item key={href} value={label} {...hoverProps}>
+          <NavigationMenu.Item key={href} value={label}>
             {/* nativeButton={false}：触发器渲染成链接，回车/点击交给链接跳转，Base UI 负责展开子菜单 */}
             <NavigationMenu.Trigger
               className="navigation-Trigger"
@@ -162,28 +121,28 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
                 if (lastPointerType.current === "touch" && openItem !== label) event.preventDefault();
               }}
             >
-              <Face active={articlesCurrent} icon={iconOf(href)} label={label} />
+              {label}<Star active={articlesCurrent} />
               <NavigationMenu.Icon className="navigation-Icon" aria-hidden="true"><ChevronDown size={14} /></NavigationMenu.Icon>
             </NavigationMenu.Trigger>
             <NavigationMenu.Content className="navigation-Content">
               <p className="navigation-ContentTitle">分类</p>
               <ul className="navigation-FlexLinkList">
-                {subLinks(articles, Hash)}
+                {subLinks(articles)}
                 {status("暂无分类", articles)}
               </ul>
             </NavigationMenu.Content>
           </NavigationMenu.Item>
         ) : (
-          <NavigationMenu.Item key={href} {...hoverProps}>
+          <NavigationMenu.Item key={href}>
             <NavigationMenu.Link className="navigation-Trigger" active={isCurrent(pathname, href)} render={<Link href={href} />}>
-              <Face active={isCurrent(pathname, href)} icon={iconOf(href)} label={label} />
+              {label}<Star active={isCurrent(pathname, href)} />
             </NavigationMenu.Link>
           </NavigationMenu.Item>
         ))}
         {/* “更多”没有自己的页面，触发器是普通按钮，点击或悬停只展开子菜单 */}
-        <NavigationMenu.Item value="更多" {...hoverProps}>
+        <NavigationMenu.Item value="更多">
           <NavigationMenu.Trigger className="navigation-Trigger" data-current={moreCurrent ? "" : undefined}>
-            <Face active={!!moreCurrent} icon={moreCurrent && iconOf(moreCurrent.href)} label={moreCurrent?.label ?? "更多"} />
+            更多<Star active={moreCurrent} />
             <NavigationMenu.Icon className="navigation-Icon" aria-hidden="true"><ChevronDown size={14} /></NavigationMenu.Icon>
           </NavigationMenu.Trigger>
           <NavigationMenu.Content className="navigation-Content">
@@ -196,13 +155,13 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
           </NavigationMenu.Content>
         </NavigationMenu.Item>
         {process.env.NODE_ENV !== "production" && (
-          <NavigationMenu.Item {...hoverProps}>
+          <NavigationMenu.Item>
             <NavigationMenu.Link
               className="navigation-Trigger"
               active={pathname === "/debug"}
               render={<Link href="/debug" />}
             >
-              <Face active={pathname === "/debug"} icon={iconOf("/debug")} label="调试" />
+              调试<Star active={pathname === "/debug"} />
             </NavigationMenu.Link>
           </NavigationMenu.Item>
         )}

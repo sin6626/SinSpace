@@ -18,8 +18,11 @@
   font: inherit;
   font-size: var(--text-sm);
   font-weight: 500;
+  /* 平时只是一层很淡的底色和淡色文字，不抢首屏的风头；悬停、聚焦或浮层打开时才亮出完整的颜色 */
+  background: color-mix(in srgb, var(--action-color) 10%, transparent);
+  color: color-mix(in srgb, var(--action-color) 75%, var(--muted-foreground));
   cursor: pointer;
-  transition: transform var(--duration-fast), filter var(--duration-fast), box-shadow var(--duration-base);
+  transition: transform var(--duration-fast), background-color var(--duration-base), color var(--duration-base), box-shadow var(--duration-base);
 }
 
 .site-action svg {
@@ -28,8 +31,8 @@
 }
 
 .site-action.is-like {
-  background: light-dark(#e1617b, #f08aa0);
-  color: light-dark(#fff, #2b0f18);
+  --action-color: light-dark(#e1617b, #f08aa0);
+  --action-foreground: light-dark(#fff, #2b0f18);
 }
 
 .site-action.is-like svg {
@@ -42,8 +45,8 @@
 }
 
 .site-action.is-subscribe {
-  background: var(--primary);
-  color: var(--primary-foreground);
+  --action-color: var(--primary);
+  --action-foreground: var(--primary-foreground);
 }
 
 .site-action.is-subscribe svg {
@@ -55,9 +58,16 @@
 
 @media (hover: hover) {
   .site-action:hover {
-    filter: brightness(1.06);
-    box-shadow: 0 0.5rem 1.5rem -0.5rem color-mix(in srgb, var(--primary) 60%, transparent);
+    background: var(--action-color);
+    color: var(--action-foreground);
+    box-shadow: 0 0.5rem 1.5rem -0.5rem color-mix(in srgb, var(--action-color) 60%, transparent);
   }
+}
+
+.site-action:focus-visible,
+.site-action[data-popup-open] {
+  background: var(--action-color);
+  color: var(--action-foreground);
 }
 
 .site-action:active {
