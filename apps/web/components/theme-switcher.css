@@ -44,3 +44,21 @@
     animation: none;
   }
 }
+
+/* 顶部导航右侧：和导航胶囊同一种玻璃的圆形按钮 */
+.site-header-tools .icon-button {
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  box-shadow: var(--shadow-soft), inset 0 1px 0 var(--glass-highlight);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+}
+
+@media (hover: hover) {
+  .site-header-tools .icon-button:hover {
+    background: var(--glass);
+    color: var(--primary);
+  }
+}

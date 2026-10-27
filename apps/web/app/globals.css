@@ -23,6 +23,11 @@
   --danger: light-dark(#b42318, #f4a3a8);
   --success: light-dark(#15803d, #86efac);
   --ring: var(--primary);
+  --glass: light-dark(rgb(255 255 255 / 55%), rgb(30 24 44 / 52%));          /*顶部导航胶囊等半透明玻璃*/
+  --glass-popup: light-dark(rgb(255 255 255 / 82%), rgb(26 21 38 / 84%));    /*玻璃弹层，比胶囊更实一些*/
+  --glass-border: light-dark(rgb(35 29 51 / 10%), rgb(236 232 244 / 12%));
+  --glass-highlight: light-dark(rgb(255 255 255 / 70%), rgb(255 255 255 / 6%)); /*玻璃上沿的一道亮边*/
+  --glass-spotlight: color-mix(in srgb, var(--primary) 16%, transparent);       /*跟着鼠标的月光*/
   --band-sky: light-dark(#f1d9ea, #1d1533);           /*内页顶部夜空带（开灯时是淡晚霞）*/
   --band-star: light-dark(rgb(255 255 255 / 90%), rgb(253 246 255 / 85%));
 
@@ -65,7 +70,7 @@
   /* 尺寸与层级 */
   --layout-max-width: 72rem;  /*顶部导航*/
   --article-max-width: 48rem; /*单栏正文*/
-  --header-height: 3.5rem;
+  --header-height: 4.25rem; /*导航胶囊 44px + 上下留白*/
   --font-serif: var(--font-note-serif), "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", STSong, serif; /*只用于手记，字体在 layout.tsx 加载*/
   --z-header: 2;
   --z-popup: 3;
@@ -316,27 +321,47 @@ a:focus-visible,
   mask-image: linear-gradient(to bottom, #000 40%, transparent);
 }
 
+/* 页头本身透明，导航胶囊悬浮在页面上；页面往下滚一点后才铺上一层很淡的夜色毛玻璃，避免正文文字从站名底下穿过时看不清
+   （滚动驱动动画，不支持的浏览器一直是这层淡底）。首页在 home-hero.css 里改为滚出第一屏时才出现。 */
 .site-header {
   position: sticky;
   top: 0;
   z-index: var(--z-header);
-  background: color-mix(in srgb, var(--background) 78%, transparent);
+  background: color-mix(in srgb, var(--background) 60%, transparent);
   backdrop-filter: blur(12px) saturate(140%);
 }
 
-/* 导航和正文对齐：同一条 48rem 的中线，站名左边与正文左边对齐，图标按钮与正文右边对齐 */
+@supports (animation-timeline: scroll()) {
+  .site-header {
+    background: transparent;
+    backdrop-filter: none;
+    animation: site-header-solid linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 6rem;
+  }
+}
+
+@keyframes site-header-solid {
+  to {
+    background: color-mix(in srgb, var(--background) 60%, transparent);
+    backdrop-filter: blur(12px) saturate(140%);
+  }
+}
+
+/* 三段：站名靠左、导航胶囊居中、开关灯靠右；内页与正文同宽，站名和按钮分别对齐正文的左右边（首页在 home-hero.css 改宽） */
 .site-header-inner {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: var(--space-2) var(--space-4);
+  gap: var(--space-4);
   max-width: var(--article-max-width);
   min-height: var(--header-height);
   margin-inline: auto;
-  padding: var(--space-2) var(--space-6);
+  padding: 0 var(--space-6);
 }
 
 .site-brand {
-  margin-right: auto;
+  justify-self: start;
   font-size: var(--text-base);
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -344,6 +369,7 @@ a:focus-visible,
 }
 
 .site-header-tools {
+  justify-self: end;
   display: flex;
   align-items: center;
   gap: var(--space-1);

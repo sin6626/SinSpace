@@ -1,53 +1,97 @@
-/* Base UI Navigation Menu hero example: https://github.com/mui/base-ui/blob/master/docs/src/app/(docs)/react/components/navigation-menu/demos/hero/css-modules/index.module.css */
+/* 顶部导航（navigation-menu.tsx）：居中悬浮的玻璃胶囊。
+   鼠标移动时一团月光跟着指针；悬停底色和当前页的强调色底都用 Motion 弹簧在各项之间滑动；当前页文字前多一个图标。
+   弹层机制（定位器、尺寸过渡、内容左右滑入）沿用 Base UI Navigation Menu 官方 hero 示例。 */
+.navigation-Area {
+  justify-self: center;
+  min-width: 0;
+}
+
 .navigation-Root {
   box-sizing: border-box;
+  min-width: 0;
   color: var(--foreground);
-  min-width: max-content;
 }
 
 .navigation-List {
-  display: flex;
   position: relative;
-  gap: 1px;
-  list-style: none;
-  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
   margin: 0;
+  padding: 4px;
+  list-style: none;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  background: var(--glass);
+  box-shadow: var(--shadow-soft), inset 0 1px 0 var(--glass-highlight);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+
+  /* 跟手的月光，只在鼠标停在胶囊上时亮起 */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: radial-gradient(120px circle at var(--spot-x, 50%) var(--spot-y, 50%), var(--glass-spotlight), transparent 70%);
+    opacity: 0;
+    transition: opacity var(--duration-slow) var(--ease-out);
+    pointer-events: none;
+  }
+
+  @media (hover: hover) {
+    &:hover::before {
+      opacity: 1;
+    }
+  }
+}
+
+/* 悬停底色：整条导航只有一块，由 Motion 设置位置和宽度 */
+.navigation-Hover {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--foreground) 9%, transparent);
+  pointer-events: none;
 }
 
 .navigation-Trigger {
+  position: relative;
+  isolation: isolate;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
-  height: 2rem;
-  padding: 0 var(--space-3);
+  gap: 6px;
+  height: 2.125rem;
+  padding: 0 0.875rem;
   margin: 0;
   outline: 0;
   border: 0;
   border-radius: var(--radius-full);
-  background-color: transparent;
+  background: transparent;
   font-family: inherit;
   font-size: var(--text-sm);
   font-weight: 400;
-  line-height: 1.25rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
   color: var(--muted-foreground);
   white-space: nowrap;
-  transition: background-color var(--duration-fast), color var(--duration-fast);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--duration-base);
   -webkit-user-select: none;
   user-select: none;
-  text-decoration: none;
 
   @media (hover: hover) {
     &:hover {
-      background-color: var(--accent);
       color: var(--foreground);
     }
   }
 
-  &[data-pressed],
   &[data-popup-open] {
-    background-color: var(--accent);
     color: var(--foreground);
   }
 
@@ -55,13 +99,35 @@
     outline: 2px solid var(--ring);
     outline-offset: 1px;
   }
+
+  /* 当前页：强调色文字，底色是下面 Motion 画的 .navigation-Active；不改字重，避免整行重排 */
+  &[data-active],
+  &[data-current] {
+    color: var(--primary);
+  }
+}
+
+.navigation-Active {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: var(--radius-full);
+  background: var(--primary-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 22%, transparent), 0 0 18px -4px color-mix(in srgb, var(--primary) 45%, transparent);
+}
+
+.navigation-ItemIcon {
+  display: flex;
+  align-items: center;
 }
 
 .navigation-Icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s ease;
+  margin-right: -4px;
+  opacity: 0.7;
+  transition: transform 0.25s var(--ease-out);
 
   &[data-popup-open] {
     transform: rotate(180deg);
@@ -122,9 +188,11 @@
   overflow: visible;
   box-sizing: border-box;
   outline: 0;
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
-  background-color: var(--surface);
+  background-color: var(--glass-popup);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
   color: var(--foreground);
   box-shadow: var(--shadow-popup);
   transform-origin: var(--transform-origin);
@@ -137,7 +205,7 @@
   &[data-starting-style],
   &[data-ending-style] {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.96) translateY(-4px);
   }
 
   &[data-ending-style] {
@@ -191,11 +259,19 @@
   height: 100%;
 }
 
+.navigation-ContentTitle {
+  margin: 0;
+  padding: var(--space-1) var(--space-3) var(--space-2);
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+}
+
 .navigation-FlexLinkList {
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  display: grid;
+  gap: 2px;
+  min-width: 11rem;
   max-width: 400px;
   padding: 0;
   margin: 0;
@@ -205,20 +281,23 @@
 .navigation-LinkCard {
   box-sizing: border-box;
   position: relative;
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   width: 100%;
-  height: 100%;
-  padding: var(--space-2) var(--space-3);
-  text-decoration: none;
-  color: inherit;
-  text-align: left;
+  padding: 6px var(--space-3) 6px 6px;
   border: 0;
   border-radius: var(--radius-sm);
   background-color: transparent;
+  color: var(--muted-foreground);
+  text-align: left;
+  text-decoration: none;
+  transition: background-color var(--duration-fast), color var(--duration-fast);
 
   @media (hover: hover) {
     &:hover {
       background-color: var(--accent);
+      color: var(--foreground);
     }
   }
 
@@ -226,28 +305,39 @@
     outline: 2px solid var(--ring);
     outline-offset: -2px;
   }
+
+  &[data-active] {
+    color: var(--primary);
+  }
+}
+
+/* 子菜单每项前的小图标方块；悬停时轻轻上浮 */
+.navigation-LinkIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1.875rem;
+  height: 1.875rem;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  transition: translate var(--duration-base) var(--ease-out), background-color var(--duration-base), color var(--duration-base);
+}
+
+.navigation-LinkCard:hover .navigation-LinkIcon {
+  translate: 0 -1px;
+}
+
+.navigation-LinkCard[data-active] .navigation-LinkIcon {
+  background: var(--primary-soft);
+  color: var(--primary);
 }
 
 .navigation-LinkTitle {
   font-size: var(--text-sm);
-  font-weight: 400;
   line-height: 1.25rem;
   white-space: nowrap;
-}
-
-/* 顶部横排导航的适配 */
-.navigation-Root {
-  min-width: 0;
-}
-
-.navigation-List {
-  flex-wrap: wrap;
-  gap: var(--space-1);
-}
-
-.navigation-Icon {
-  font-size: 0.75em;
-  line-height: 1;
 }
 
 .navigation-Positioner {
@@ -259,15 +349,9 @@
   .navigation-Positioner,
   .navigation-Popup,
   .navigation-Popup[data-ending-style],
-  .navigation-Content {
+  .navigation-Content,
+  .navigation-List::before,
+  .navigation-LinkIcon {
     transition: none;
   }
-}
-
-/* 当前所在的一级项与子菜单项：强调色文字 + 淡底色，不改字重（避免整行重排） */
-.navigation-Trigger[data-active],
-.navigation-Trigger[data-current],
-.navigation-LinkCard[data-active] {
-  background-color: var(--primary-soft);
-  color: var(--primary);
 }
