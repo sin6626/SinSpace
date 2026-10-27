@@ -1,17 +1,47 @@
-// 首页底部的技术栈：两行横向无限滚动（一行向左、一行向右），鼠标停上去暂停；
-// “减少动态效果”时不滚动，改成可以手动横向拖动。内容先写死，以后再调整。
-const rows = [
-  ["Vue", "React", "TypeScript", "JavaScript", "Next.js", "Nuxt", "uni-app", "Tailwind CSS", "SCSS", "Vite"],
-  ["Node.js", "NestJS", "Express", "MongoDB", "Redis", "GSAP", "Zod", "Git", "Linux", "C++"],
+import IconifyIcon from "./iconify-icon";
+
+// 首页底部的技术栈：两行只显示图标的横向无限滚动（一行向左、一行向右），鼠标停上去暂停并显示名字；
+// “减少动态效果”时不滚动，改成可以手动横向拖动。图标用 Iconify 的 skill-icons（统一的深色圆角方块），
+// 这套没有 uni-app、GSAP、Zod，暂时不列。内容先写死，以后再调整。
+type Tech = { name: string; icon: `skill-icons:${string}` };
+
+const rows: Tech[][] = [
+  [
+    { name: "Vue", icon: "skill-icons:vuejs-dark" },
+    { name: "React", icon: "skill-icons:react-dark" },
+    { name: "TypeScript", icon: "skill-icons:typescript" },
+    { name: "JavaScript", icon: "skill-icons:javascript" },
+    { name: "Next.js", icon: "skill-icons:nextjs-dark" },
+    { name: "Nuxt", icon: "skill-icons:nuxtjs-dark" },
+    { name: "Tailwind CSS", icon: "skill-icons:tailwindcss-dark" },
+    { name: "Sass", icon: "skill-icons:sass" },
+    { name: "Vite", icon: "skill-icons:vite-dark" },
+    { name: "pnpm", icon: "skill-icons:pnpm-dark" },
+  ],
+  [
+    { name: "Node.js", icon: "skill-icons:nodejs-dark" },
+    { name: "NestJS", icon: "skill-icons:nestjs-dark" },
+    { name: "Express", icon: "skill-icons:expressjs-dark" },
+    { name: "MongoDB", icon: "skill-icons:mongodb" },
+    { name: "Redis", icon: "skill-icons:redis-dark" },
+    { name: "Git", icon: "skill-icons:git" },
+    { name: "GitHub", icon: "skill-icons:github-dark" },
+    { name: "Linux", icon: "skill-icons:linux-dark" },
+    { name: "C++", icon: "skill-icons:cpp" },
+    { name: "VS Code", icon: "skill-icons:vscode-dark" },
+  ],
 ];
 
-function Track({ items, reverse }: { items: string[]; reverse?: boolean }) {
+function Track({ items, reverse }: { items: Tech[]; reverse?: boolean }) {
   return (
     <div className="stack-marquee">
       <ul className="stack-track" data-reverse={reverse ? "" : undefined}>
-        {[...items, ...items].map((item, index) => (
-          // 第二份只为无缝衔接，读屏跳过
-          <li key={`${item}-${index}`} aria-hidden={index >= items.length || undefined}>{item}</li>
+        {/* 图标比文字窄，重复 4 份才够两个屏幕宽；滚动一半（2 份）正好无缝衔接。只有第一份给读屏读 */}
+        {[...items, ...items, ...items, ...items].map((item, index) => (
+          <li key={`${item.name}-${index}`} title={item.name} aria-label={index < items.length ? item.name : undefined} aria-hidden={index >= items.length || undefined}>
+            <IconifyIcon icon={item.icon} size={52} />
+            <span className="stack-name">{item.name}</span>
+          </li>
         ))}
       </ul>
     </div>
@@ -25,8 +55,7 @@ export default function TechStack() {
         <h2 id="home-stack-heading">技术栈</h2>
         <p>平时在用、正在学的东西</p>
       </div>
-      <Track items={rows[0]} />
-      <Track items={rows[1]} reverse />
+      {rows.map((items, index) => <Track key={index} items={items} reverse={index % 2 === 1} />)}
     </section>
   );
 }

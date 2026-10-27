@@ -559,14 +559,14 @@
 }
 
 .stack-marquee + .stack-marquee {
-  margin-top: var(--space-4);
+  margin-top: var(--space-2);
 }
 
 .stack-track {
   display: flex;
-  gap: var(--space-4);
+  gap: var(--space-8);
   width: max-content;
-  padding-block: var(--space-1);
+  padding-block: var(--space-2) var(--space-6);
   animation: stack-scroll 48s linear infinite;
 }
 
@@ -579,28 +579,46 @@
   animation-play-state: paused;
 }
 
+/* 每个技术一块图标：鼠标停上去微微放大、变亮，下方浮出名字 */
 .stack-track li {
+  position: relative;
   flex-shrink: 0;
-  padding: var(--space-2) var(--space-6);
-  border-radius: var(--radius-full);
-  background: var(--muted);
-  color: color-mix(in srgb, var(--foreground) 80%, transparent);
-  font-size: 1.0625rem;
-  font-weight: 300;
-  letter-spacing: 0.02em;
+  display: grid;
+  place-items: center;
+  opacity: 0.82;
+  filter: saturate(0.85);
+  transition: opacity var(--duration-base), filter var(--duration-base), transform var(--duration-base) var(--ease-out);
+}
+
+.stack-track li svg {
+  display: block;
+  border-radius: 0.75rem;
+}
+
+.stack-name {
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
   white-space: nowrap;
-  transition: background-color var(--duration-base), color var(--duration-base);
+  opacity: 0;
+  transition: opacity var(--duration-base);
 }
 
 @media (hover: hover) {
   .stack-track li:hover {
-    background: var(--primary-soft);
-    color: var(--primary);
+    opacity: 1;
+    filter: none;
+    transform: translateY(-3px) scale(1.06);
+  }
+
+  .stack-track li:hover .stack-name {
+    opacity: 1;
   }
 }
 
 @keyframes stack-scroll {
-  to { transform: translateX(calc(-50% - var(--space-2))); }
+  to { transform: translateX(calc(-50% - var(--space-4))); }
 }
 
 @media (prefers-reduced-motion: reduce) {
