@@ -5,9 +5,8 @@ import { moonPhase } from "../lib/moon";
 import MoonTip from "./moon-tip";
 import { useResolvedTheme } from "./use-resolved-theme";
 
-// 首页第一屏的夜空：一张铺满的 WebGL 画布，片元着色器里画出天空渐变、像流体一样缓缓翻涌的星云（多层噪声互相扭曲）、
-// 三层闪烁的星星、偶尔划过的流星，以及按访客当天真实月相照亮的月亮。鼠标划过时，附近的星云会被搅动成漩涡，停下后慢慢平复。
-// 开灯时整片天空在 0.6 秒内过渡到黄昏。悬停月亮显示今晚的月相（moon-tip.tsx）。
+// 首页第一屏的夜空：一张铺满的 WebGL 画布，片元着色器里画出天空渐变、淡淡的星云、三层闪烁的星星、
+// 偶尔划过的流星，以及按访客当天真实月相照亮的月亮。开灯时整片天空在 0.6 秒内过渡到黄昏。悬停月亮显示今晚的月相（moon-tip.tsx）。
 // 场景离开视野或标签页隐藏时停止绘制；“减少动态效果”时只画一帧静止的夜空；浏览器不支持 WebGL 时退回 CSS 渐变。
 
 const vertexSource = `
@@ -22,8 +21,6 @@ uniform float uTime;
 uniform float uLight;   // 0 夜里，1 黄昏
 uniform float uPhase;   // 月相：0 新月，0.5 满月
 uniform vec3 uMoon;     // 月亮圆心（像素）和半径（像素）
-uniform vec3 uMouse;    // 鼠标位置（像素）和搅动强度（0–1）
-uniform vec2 uFlow;     // 鼠标划过的速度（以画面高度为单位）
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 vec2 hash2(vec2 p) { return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453); }
@@ -34,16 +31,9 @@ float noise(vec2 p) {
   return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
 }
 
-// 每层之间旋转一下，叠出来的云不会沿横竖方向出现条纹
-const mat2 turn = mat2(0.8, 0.6, -0.6, 0.8);
-float fbm(vec2 p, int octaves) {
+float fbm(vec2 p) {
   float v = 0.0, a = 0.5;
-  for (int i = 0; i < 5; i++) {
-    if (i >= octaves) break;
-    v += a * noise(p);
-    p = turn * p * 2.03;
-    a *= 0.5;
-  }
+  for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; }
   return v;
 }
 
@@ -76,28 +66,12 @@ void main() {
   vec3 sky = mix(mix(nightLow, nightTop, pow(uv.y, 0.8)), mix(duskLow, duskTop, pow(uv.y, 0.9)), uLight);
   sky += mix(vec3(0.12, 0.05, 0.16), vec3(0.18, 0.08, 0.04), uLight) * pow(1.0 - uv.y, 3.0);
 
-  // 鼠标搅动：离鼠标越近，坐标绕鼠标转得越多，并顺着划过的方向被推开一点
-  vec2 mp = uMouse.xy / uResolution.y;
-  vec2 dm = p - mp;
-  float swirl = exp(-dot(dm, dm) * 14.0) * uMouse.z;
-  float ang = swirl * 2.2;
-  vec2 w = mp + mat2(cos(ang), sin(ang), -sin(ang), cos(ang)) * dm - uFlow * swirl * 0.6;
-
-  // 星云：三层噪声互相扭曲（domain warping），每层用不同的速度流动，看起来像缓慢翻涌的液体；
-  // 主要集中在一条斜着的银河上，银河外也留一层很淡的薄雾
-  vec2 q0 = w * 1.4;
-  float slow = t * 0.035;
-  vec2 q = vec2(fbm(q0 + vec2(0.0, slow), 4), fbm(q0 + vec2(5.2, 1.3) - vec2(slow * 0.7, 0.0), 4));
-  vec2 warp = vec2(fbm(q0 + 3.2 * q + vec2(1.7, 9.2) + slow * 0.6, 4), fbm(q0 + 3.2 * q + vec2(8.3, 2.8) - slow * 0.5, 4));
-  float cloud = fbm(q0 + 3.6 * warp, 5);
-  float band = exp(-pow((uv.y - 0.45 - (uv.x - 0.5) * 0.55 + (q.x - 0.5) * 0.35) * 2.4, 2.0));
-  vec3 deep = vec3(0.10, 0.08, 0.32), violet = vec3(0.42, 0.24, 0.66), rose = vec3(0.86, 0.48, 0.78), ice = vec3(0.55, 0.68, 0.98);
-  vec3 tone = mix(deep, violet, smoothstep(0.2, 0.7, cloud));
-  tone = mix(tone, rose, smoothstep(0.45, 0.9, warp.x) * 0.75);
-  tone = mix(tone, ice, smoothstep(0.55, 0.95, q.y) * 0.35);
-  float density = pow(smoothstep(0.25, 0.95, cloud), 1.6);
-  vec3 nebula = tone * density * (0.12 + band * 0.55) + tone * swirl * density * 0.25;
-  sky += nebula * (1.0 - uLight * 0.75);
+  // 星云：一条斜着的银河，噪声让它有云絮感，缓慢流动
+  vec2 q = p * 1.6 + vec2(t * 0.004, 0.0);
+  float band = exp(-pow((uv.y - 0.45 - (uv.x - 0.5) * 0.55) * 3.2, 2.0));
+  float cloud = fbm(q * 2.0 + fbm(q * 1.3));
+  vec3 nebula = mix(vec3(0.36, 0.22, 0.58), vec3(0.8, 0.46, 0.76), cloud) * band * pow(cloud, 2.4) * 0.4;
+  sky += nebula * (1.0 - uLight * 0.8);
 
   // 三层星星：远处的小而密，近处的大而疏；银河里星星更多
   float starAmount = 1.0 - uLight * 0.85;
@@ -135,7 +109,7 @@ void main() {
     float c = cos(6.2831 * uPhase);
     float side = uPhase < 0.5 ? m.x - c * s : -c * s - m.x;
     float bright = smoothstep(-0.04, 0.04, side);
-    float maria = 0.82 + 0.18 * fbm(m * 2.6 + 4.0, 5);
+    float maria = 0.82 + 0.18 * fbm(m * 2.6 + 4.0);
     vec3 moonLit = vec3(1.0, 0.96, 0.88) * maria;
     vec3 moonDark = mix(sky, vec3(0.14, 0.12, 0.2), 0.6);
     sky = mix(sky, mix(moonDark, moonLit, bright), edge);
@@ -162,7 +136,7 @@ function compile(gl: WebGLRenderingContext, type: number, source: string) {
 
 export default function Starfield() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const moonRef = useRef<HTMLButtonElement>(null);
+  const moonRef = useRef<HTMLDivElement>(null);
   const theme = useResolvedTheme();
   // 目标天色交给绘制循环读取（开灯 1，熄灯 0），循环里再慢慢过渡过去。
   const lightTarget = useRef(theme === "light" ? 1 : 0);
@@ -200,8 +174,6 @@ export default function Starfield() {
       light: gl.getUniformLocation(program, "uLight"),
       phase: gl.getUniformLocation(program, "uPhase"),
       moon: gl.getUniformLocation(program, "uMoon"),
-      mouse: gl.getUniformLocation(program, "uMouse"),
-      flow: gl.getUniformLocation(program, "uFlow"),
     };
     gl.uniform1f(uniforms.phase, moonPhase(Date.now()));
 
@@ -211,23 +183,10 @@ export default function Starfield() {
     let frame = 0;
     let last = performance.now();
     const start = last;
-    let ratio = 1;
-    // 鼠标：目标位置跟着指针走，画面里的位置平滑追上去；每次移动把搅动强度拉满，停下后约 1.5 秒平复
-    const pointer = { x: -1e4, y: -1e4, tx: -1e4, ty: -1e4, vx: 0, vy: 0, strength: 0, moved: false };
-    const onPointer = (event: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      pointer.tx = (event.clientX - rect.left) * ratio;
-      pointer.ty = (rect.bottom - event.clientY) * ratio;
-      if (pointer.x < -1e3) {
-        pointer.x = pointer.tx;
-        pointer.y = pointer.ty;
-      }
-      pointer.moved = true;
-    };
 
     // 画布尺寸跟着元素走，像素比最多 1.5，全屏着色器在高分屏上也不会太费电。
     const resize = () => {
-      ratio = Math.min(window.devicePixelRatio || 1, 1.25);
+      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
       const width = Math.round(canvas.clientWidth * ratio);
       const height = Math.round(canvas.clientHeight * ratio);
       if (canvas.width !== width || canvas.height !== height) {
@@ -242,12 +201,12 @@ export default function Starfield() {
       const moonX = width * (portrait ? 0.84 : 0.86);
       const moonY = portrait ? height - radius * 4.2 : height * 0.8;
       gl.uniform3f(uniforms.moon, moonX, moonY, radius);
-      // 悬停热区跟着月亮走（CSS 像素，左上角为原点）
+      // 月亮的悬停区域跟着画布里的月亮走（CSS 像素，左上角为原点）
       const tip = moonRef.current;
       if (tip) {
         tip.style.left = `${moonX / ratio}px`;
         tip.style.top = `${(height - moonY) / ratio}px`;
-        tip.style.setProperty("--moon-size", `${(radius * 2.4) / ratio}px`);
+        tip.style.setProperty("--moon-size", `${(radius * 2) / ratio}px`);
       }
     };
 
@@ -257,18 +216,6 @@ export default function Starfield() {
       // 开灯 / 熄灯：0.6 秒内过渡到目标天色
       light += Math.sign(lightTarget.current - light) * Math.min(Math.abs(lightTarget.current - light), step / 0.6);
       gl.uniform1f(uniforms.light, light);
-      const ease = 1 - Math.exp(-step * 6);
-      const px = pointer.x, py = pointer.y;
-      pointer.x += (pointer.tx - pointer.x) * ease;
-      pointer.y += (pointer.ty - pointer.y) * ease;
-      // 速度换算成“画面高度 / 秒”的小量，再平滑一下，避免一帧一跳
-      const height = canvas.height || 1;
-      pointer.vx += ((pointer.x - px) / height / Math.max(step, 0.001) * 0.05 - pointer.vx) * ease;
-      pointer.vy += ((pointer.y - py) / height / Math.max(step, 0.001) * 0.05 - pointer.vy) * ease;
-      pointer.strength = pointer.moved ? Math.min(1, pointer.strength + step * 4) : Math.max(0, pointer.strength - step / 1.5);
-      pointer.moved = false;
-      gl.uniform3f(uniforms.mouse, pointer.x, pointer.y, pointer.strength);
-      gl.uniform2f(uniforms.flow, pointer.vx, pointer.vy);
       gl.uniform1f(uniforms.time, reduceMotion ? 8 : (now - start) / 1000);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
@@ -295,7 +242,6 @@ export default function Starfield() {
     });
     resizeObserver.observe(canvas);
     document.addEventListener("visibilitychange", wake);
-    if (!reduceMotion) window.addEventListener("pointermove", onPointer, { passive: true });
     // 减少动态效果时没有循环，主题变化要主动重画一帧
     const themeObserver = new MutationObserver(() => requestAnimationFrame(wake));
     themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
@@ -308,7 +254,6 @@ export default function Starfield() {
       resizeObserver.disconnect();
       themeObserver.disconnect();
       document.removeEventListener("visibilitychange", wake);
-      window.removeEventListener("pointermove", onPointer);
       gl.deleteProgram(program);
       gl.deleteShader(vertex);
       gl.deleteShader(fragment);

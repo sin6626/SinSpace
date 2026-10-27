@@ -1,5 +1,5 @@
-/* 首屏月亮上的透明悬停热区与月相说明（moon-tip.tsx） */
-.moon-tip-trigger {
+/* 首屏月亮的悬停区域与弹出的月相数据（moon-tip.tsx） */
+.moon-tip {
   position: absolute;
   /* 位置由画布设置；画出来之前放在屏幕外 */
   left: -100vw;
@@ -7,52 +7,56 @@
   z-index: 1;
   width: var(--moon-size, 0);
   height: var(--moon-size, 0);
-  padding: 0;
-  border: 0;
   border-radius: var(--radius-full);
-  background: transparent;
   translate: -50% -50%;
-  cursor: default;
+  outline: 0;
 }
 
-.moon-tip-trigger:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 4px;
+.moon-tip-ring {
+  position: absolute;
+  inset: -0.625rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 24px var(--primary-soft);
+  pointer-events: none;
 }
 
-.moon-tip-positioner {
-  z-index: var(--z-popup);
-}
-
-.moon-tip {
-  display: grid;
+.moon-tip-list {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 1.75rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   gap: var(--space-1);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  box-shadow: var(--shadow-popup);
-  color: var(--muted-foreground);
-  font-size: var(--text-sm);
-  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  translate: 0 -50%;
+  pointer-events: none;
   white-space: nowrap;
-  transform-origin: var(--transform-origin);
-  transition: opacity var(--duration-fast), scale var(--duration-fast);
 }
 
-.moon-tip[data-starting-style],
-.moon-tip[data-ending-style] {
-  opacity: 0;
-  scale: 0.96;
+.moon-tip-list li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  transform-origin: right center;
+  text-shadow: 0 0 12px var(--background);
 }
 
-.moon-tip-title {
+.moon-tip-label {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+}
+
+.moon-tip-value {
   color: var(--foreground);
-  font-weight: 500;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .moon-tip {
-    transition: none;
-  }
+.moon-tip-list .is-name .moon-tip-value {
+  font-size: var(--text-xl);
+  font-weight: 500;
 }

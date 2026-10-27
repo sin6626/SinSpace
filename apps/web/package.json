@@ -21,6 +21,7 @@
     "@mx-space/api-client": "workspace:*",
     "lexical": "0.41.0",
     "lucide-react": "0.574.0",
+    "motion": "^14.6.0",
     "next": "16.4.2",
     "react": "19.3.0",
     "react-dom": "19.3.0",

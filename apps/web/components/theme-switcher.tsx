@@ -1,7 +1,7 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
-import { useSyncExternalStore, type MouseEvent } from "react";
+import { useSyncExternalStore } from "react";
 import "./theme-switcher.css";
 
 // 开灯 / 熄灯：一个按钮来回切换，白 → 黑、黑 → 白。默认熄灯（深色），这是站点的主场；开灯存 theme=light。
@@ -33,9 +33,9 @@ function subscribe(onChange: () => void) {
   };
 }
 
-// 新的颜色从按钮所在位置以圆形水波扩散到整页（视图过渡，类型 theme，样式在 globals.css 末尾）；
+// 整页颜色约 0.6 秒渐变（视图过渡，类型 theme，样式在 globals.css 末尾）；
 // 不支持视图过渡或开了“减少动态效果”时直接切换。
-function toggle(event: MouseEvent<HTMLButtonElement>) {
+function toggle() {
   const next: Theme = read() === "dark" ? "light" : "dark";
   try {
     if (next === "dark") localStorage.removeItem(storageKey);
@@ -45,15 +45,8 @@ function toggle(event: MouseEvent<HTMLButtonElement>) {
     document.documentElement.dataset.theme = next;
     listeners.forEach((listener) => listener());
   };
-  if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return update();
-  const rect = event.currentTarget.getBoundingClientRect();
-  const x = rect.left + rect.width / 2;
-  const y = rect.top + rect.height / 2;
-  const root = document.documentElement.style;
-  root.setProperty("--theme-x", `${x}px`);
-  root.setProperty("--theme-y", `${y}px`);
-  root.setProperty("--theme-r", `${Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))}px`);
-  document.startViewTransition({ update, types: ["theme"] });
+  if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) update();
+  else document.startViewTransition({ update, types: ["theme"] });
 }
 
 export function useTheme() {
