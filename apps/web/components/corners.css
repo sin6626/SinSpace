@@ -1,0 +1,255 @@
+/* space 的四个角落各自的列表形态：文章卡片、手记日记、作品墙、碎碎念小卡片。统一靠同一套圆角、留白和颜色变量。 */
+
+/* 整张卡片可点：标题链接的 ::after 铺满卡片；卡片里其他链接（分类等）抬到上层，仍可单独点 */
+.card-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.post-card .post-meta a,
+.note-entry .post-meta a {
+  position: relative;
+  z-index: 1;
+}
+
+/* 文章：标题 + 摘要 + 日期分类 */
+.post-card {
+  position: relative;
+  margin-inline: calc(-1 * var(--space-4));
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-base);
+}
+
+@media (hover: hover) {
+  .post-card:has(.card-link:hover) {
+    background: var(--muted);
+  }
+
+  .post-card:has(.card-link:hover) h2,
+  .post-card:has(.card-link:hover) h3 {
+    color: var(--primary);
+  }
+}
+
+.post-card h2,
+.post-card h3 {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  transition: color var(--duration-base);
+}
+
+.post-card-summary {
+  display: -webkit-box;
+  margin-top: var(--space-2);
+  overflow: hidden;
+  color: var(--muted-foreground);
+  line-height: var(--leading-normal);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.post-card:has(.card-link:focus-visible) {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.card-link:focus-visible {
+  outline: none;
+}
+
+/* 手记：日记的样子，左边大号日期，右边衬线标题与正文开头 */
+.note-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.note-entry {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  gap: var(--space-4);
+  margin-inline: calc(-1 * var(--space-4));
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-base);
+}
+
+@media (hover: hover) {
+  .note-entry:has(.card-link:hover) {
+    background: var(--muted);
+  }
+
+  .note-entry:has(.card-link:hover) .note-entry-title {
+    color: var(--primary);
+  }
+}
+
+.note-entry:has(.card-link:focus-visible) {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.note-entry-date {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  padding-top: var(--space-1);
+  color: var(--muted-foreground);
+}
+
+.note-entry-day {
+  color: var(--primary);
+  font-family: var(--font-serif);
+  font-size: var(--text-2xl);
+  line-height: 1;
+}
+
+.note-entry-month {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+}
+
+.note-entry-title {
+  font-family: var(--font-serif);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  transition: color var(--duration-base);
+}
+
+.note-entry .post-meta {
+  margin-top: var(--space-1);
+}
+
+.note-entry-excerpt {
+  display: -webkit-box;
+  margin-top: var(--space-2);
+  overflow: hidden;
+  color: var(--muted-foreground);
+  font-family: var(--font-serif);
+  line-height: var(--leading-relaxed);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* 作品：卡片网格 */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  gap: var(--space-4);
+}
+
+.project-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  height: 100%;
+  padding: var(--space-6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  transition: transform var(--duration-base) var(--ease-out), box-shadow var(--duration-base);
+}
+
+@media (hover: hover) {
+  .project-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-popup);
+  }
+}
+
+.project-card-icon {
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: var(--space-2);
+  border-radius: var(--radius-md);
+  object-fit: cover;
+}
+
+.project-card-icon.is-letter {
+  display: grid;
+  place-items: center;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.project-card h2,
+.project-card h3 {
+  font-size: var(--text-base);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.project-card-description {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.project-card-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin-top: auto;
+  padding-top: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.project-card-links a {
+  color: var(--primary);
+}
+
+/* 碎碎念：一张张完整显示的小卡片 */
+.murmur-list {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.murmur-card {
+  padding: var(--space-4) var(--space-6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  overflow-wrap: anywhere;
+}
+
+.murmur-card .article-body {
+  font-size: var(--text-base);
+}
+
+.murmur-meta {
+  align-items: center;
+  margin-top: var(--space-3);
+}
+
+/* 首页碎碎念预览：只显示一行摘录和日期 */
+.murmur-preview {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.murmur-preview li {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--muted);
+}
+
+.murmur-preview p {
+  line-height: var(--leading-normal);
+}
+
+.murmur-preview time {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+}

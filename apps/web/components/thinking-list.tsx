@@ -7,6 +7,7 @@ import { getApiUrl } from "../lib/config";
 import ArticleBody from "./article-body";
 import Comments from "./comments";
 import RecentlyAttitude from "./recently-attitude";
+import "./corners.css";
 
 type Item = Awaited<ReturnType<typeof getRecently>>["data"][number];
 
@@ -19,7 +20,7 @@ function refHref(ref: NonNullable<Item["ref"]>, categories: { id: string; slug: 
   return null;
 }
 
-// 思考（Core 的“动态”）：正文按 Markdown 显示，附带引用的文章/手记/页面，可赞/踩和评论（评论默认收起）。
+// 碎碎念（Core 的“速记 / 动态”）：一张张小卡片，正文按 Markdown 完整显示，附带引用的文章/手记/页面，可赞/踩和评论（评论默认收起）。
 export default async function ThinkingList({ searchParams }: { searchParams: Promise<{ before?: string | string[] }> }) {
   const { before } = await searchParams;
   if (before !== undefined && (typeof before !== "string" || !/^[a-f\d]{24}$/i.test(before))) notFound();
@@ -38,16 +39,17 @@ export default async function ThinkingList({ searchParams }: { searchParams: Pro
     <>
       <header className="page-heading">
         <h1>碎碎念</h1>
+        <p className="post-meta">平日里的小事和小快乐。</p>
       </header>
       <div className="post-list-content">
         {result.data.length ? (
-          <ul className="post-list">
+          <ul className="murmur-list">
             {result.data.map((item) => {
               const href = item.ref && refHref(item.ref, categories);
               return (
-                <li key={item.id}>
+                <li key={item.id} className="murmur-card">
                   <ArticleBody text={item.content} emptyText="" />
-                  <p className="post-meta">
+                  <p className="post-meta murmur-meta">
                     <time dateTime={item.created}>{formatDate(item.created)}</time>
                     {item.ref && (href ? <Link href={href}>引用：{item.ref.title}</Link> : <span>引用：{item.ref.title}</span>)}
                     <RecentlyAttitude apiUrl={getApiUrl()} id={item.id} up={item.up} down={item.down} />

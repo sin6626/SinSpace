@@ -1,99 +1,177 @@
-/* 右栏补充信息（文章/手记页）：搜索框与标签、话题。沿用直角实线风格，颜色走 globals.css 变量。 */
+/* 列表页顶部的筛选栏（post-sidebar / note-sidebar / sidebar-search）与页脚邮件订阅（subscribe-form）。 */
+.list-toolbar {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
 .details-section + .details-section {
-  margin-top: 1.5rem;
+  margin-top: var(--space-6);
 }
 
 .details-section h2 {
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--space-3);
   color: var(--muted-foreground);
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   font-weight: 600;
 }
 
 .details-message {
   color: var(--muted-foreground);
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
 }
 
+/* 输入框：小圆角、淡边框，聚焦时强调色描边 */
 .sidebar-search-input {
   box-sizing: border-box;
   width: 100%;
-  height: 2.25rem;
-  padding: 0 0.75rem;
-  border: 1px solid var(--border);
-  background: var(--background);
+  height: 2.5rem;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
   color: var(--foreground);
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.sidebar-search-input::placeholder {
+  color: var(--muted-foreground);
 }
 
 .sidebar-search-input:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+/* 收起的标签 / 话题 */
+.tag-drawer summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  list-style: none;
+}
+
+.tag-drawer summary::-webkit-details-marker {
+  display: none;
+}
+
+.tag-drawer summary::after {
+  content: "⌄";
+  font-size: 0.75em;
+  transition: transform var(--duration-fast);
+}
+
+.tag-drawer[open] summary::after {
+  transform: rotate(180deg);
+}
+
+@media (hover: hover) {
+  .tag-drawer summary:hover {
+    color: var(--foreground);
+  }
+}
+
+.tag-drawer summary:focus-visible {
   outline: 2px solid var(--ring);
-  outline-offset: -1px;
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.tag-drawer .tag-list {
+  margin-top: var(--space-3);
 }
 
 .tag-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
+/* 标签：胶囊形 */
 .tag-chip {
   display: inline-flex;
   align-items: baseline;
-  gap: 0.375rem;
-  padding: 0.25rem 0.5rem;
-  border: 1px solid var(--border);
-  font-size: 0.8125rem;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  transition: background-color var(--duration-fast), color var(--duration-fast);
 }
 
 @media (hover: hover) {
   .tag-chip:hover {
-    background: var(--accent);
+    background: var(--accent-active);
   }
 }
 
-/* 选中态只改边框和底色，不改字重：加粗会让文字变宽，整片标签重新换行 */
+/* 选中态只改底色和颜色，不改字重：加粗会让文字变宽，整片标签重新换行 */
 .tag-chip[aria-current="page"] {
-  border-color: var(--primary);
-  background: var(--accent);
+  background: var(--primary-soft);
+  color: var(--primary);
 }
 
 .tag-count {
   color: var(--muted-foreground);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
 }
 
-/* 右栏邮件订阅（subscribe-form.tsx） */
+/* 页脚邮件订阅（subscribe-form.tsx） */
 .subscribe-form {
   display: grid;
-  gap: 0.5rem;
+  gap: var(--space-3);
+  max-width: 28rem;
+}
+
+.subscribe-form h2 {
+  margin-bottom: 0;
+  color: var(--foreground);
+  font-size: var(--text-base);
 }
 
 .subscribe-types {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 0.75rem;
-  font-size: 0.875rem;
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.subscribe-types input {
+  accent-color: var(--primary);
 }
 
 .subscribe-types button {
   margin-left: auto;
-  padding: 0.25rem 0.75rem;
-  border: 1px solid var(--primary);
-  background: var(--background);
-  color: var(--foreground);
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: var(--primary-foreground);
   font: inherit;
   cursor: pointer;
+  transition: opacity var(--duration-fast);
 }
 
 .subscribe-types button:focus-visible {
   outline: 2px solid var(--ring);
-  outline-offset: -1px;
+  outline-offset: 2px;
+}
+
+.subscribe-types button:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 @media (hover: hover) {
   .subscribe-types button:not(:disabled):hover {
-    background: var(--accent);
+    opacity: 0.88;
   }
 }

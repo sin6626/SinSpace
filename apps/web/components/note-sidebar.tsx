@@ -4,6 +4,7 @@ import { getTopics } from "../lib/blog-data";
 import SidebarSearch from "./sidebar-search";
 import "./details-sidebar.css";
 
+// 手记列表顶部的筛选：搜索框 + 收起的话题（选中某个话题时自动展开）。
 export default async function NoteSidebar({ keyword = "", activeTopic }: { keyword?: string; activeTopic?: string }) {
   let topics: Awaited<ReturnType<typeof getTopics>> | null = null;
   try {
@@ -12,10 +13,10 @@ export default async function NoteSidebar({ keyword = "", activeTopic }: { keywo
     unstable_rethrow(error);
   }
   return (
-    <>
+    <div className="list-toolbar">
       <SidebarSearch action="/notes" label="搜索手记" defaultValue={keyword} />
-      <section className="details-section" aria-labelledby="note-topics-heading">
-        <h2 id="note-topics-heading">话题</h2>
+      <details className="tag-drawer" open={Boolean(activeTopic)}>
+        <summary>按话题筛选{topics?.length ? <span className="tag-count">{topics.length}</span> : null}</summary>
         {topics === null ? <p className="details-message" role="alert">话题读取失败。</p> : topics.length ? (
           <ul className="tag-list">
             {topics.map((topic) => {
@@ -36,7 +37,7 @@ export default async function NoteSidebar({ keyword = "", activeTopic }: { keywo
             })}
           </ul>
         ) : <p className="details-message">暂无话题。</p>}
-      </section>
-    </>
+      </details>
+    </div>
   );
 }

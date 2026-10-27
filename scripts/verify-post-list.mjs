@@ -20,7 +20,7 @@ const api = {
 const module = { exports: {} }
 vm.runInNewContext(code, {
   module, exports: module.exports,
-  require: (id) => id === '../lib/date' ? { formatDate: (v) => String(v) } : id === '../lib/search-params' ? { readText: (v, max = 50) => typeof v === 'string' ? v.trim().slice(0, max) : '' } : id === './post-filter' ? { PostSearch: function PostSearch() {}, PostsByTag: function PostsByTag() {} } : id === '../lib/blog-data' ? { getCategories: async () => (await api.category.getAllCategories()).data, getPosts: (page, id) => api.post.getList(page, 10, { categoryIds: id ? [id] : undefined }) } : require(id),
+  require: (id) => id.endsWith('.css') ? {} : id === './post-sidebar' ? { default: function PostSidebar() {} } : id === './sidebar-search' ? { default: function SidebarSearch() {} } : id === '../lib/date' ? { formatDate: (v) => String(v) } : id === '../lib/search-params' ? { readText: (v, max = 50) => typeof v === 'string' ? v.trim().slice(0, max) : '' } : id === './post-filter' ? { PostSearch: function PostSearch() {}, PostsByTag: function PostsByTag() {} } : id === '../lib/blog-data' ? { getCategories: async () => (await api.category.getAllCategories()).data, getPosts: (page, id) => api.post.getList(page, 10, { categoryIds: id ? [id] : undefined }) } : require(id),
 })
 const render = (page, slug) => module.exports.default({ searchParams: Promise.resolve(page === undefined ? {} : { page }), params: slug === undefined ? undefined : Promise.resolve({ slug }) })
 const is404 = (error) => error.digest === 'NEXT_HTTP_ERROR_FALLBACK;404'

@@ -4,6 +4,7 @@ import { getTags } from "../lib/blog-data";
 import SidebarSearch from "./sidebar-search";
 import "./details-sidebar.css";
 
+// 文章列表顶部的筛选：搜索框 + 收起的标签（选中某个标签时自动展开）。筛选状态只存在地址栏里。
 export default async function PostSidebar({ keyword = "", activeTag }: { keyword?: string; activeTag?: string }) {
   let tags: Awaited<ReturnType<typeof getTags>> | null = null;
   try {
@@ -12,10 +13,10 @@ export default async function PostSidebar({ keyword = "", activeTag }: { keyword
     unstable_rethrow(error);
   }
   return (
-    <>
+    <div className="list-toolbar">
       <SidebarSearch action="/posts" label="搜索文章" defaultValue={keyword} />
-      <section className="details-section" aria-labelledby="post-tags-heading">
-        <h2 id="post-tags-heading">标签</h2>
+      <details className="tag-drawer" open={Boolean(activeTag)}>
+        <summary>按标签筛选{tags?.length ? <span className="tag-count">{tags.length}</span> : null}</summary>
         {tags === null ? <p className="details-message" role="alert">标签读取失败。</p> : tags.length ? (
           <ul className="tag-list">
             {tags.map((tag) => {
@@ -36,7 +37,7 @@ export default async function PostSidebar({ keyword = "", activeTag }: { keyword
             })}
           </ul>
         ) : <p className="details-message">暂无标签。</p>}
-      </section>
-    </>
+      </details>
+    </div>
   );
 }

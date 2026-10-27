@@ -23,6 +23,8 @@
   --danger: light-dark(#b42318, #f4a3a8);
   --success: light-dark(#15803d, #86efac);
   --ring: var(--primary);
+  --band-sky: light-dark(#f1d9ea, #1d1533);           /*内页顶部夜空带（开灯时是淡晚霞）*/
+  --band-star: light-dark(rgb(255 255 255 / 90%), rgb(253 246 255 / 85%));
 
   /* 柔光：代替硬投影，熄灯时是淡淡的粉紫光晕 */
   --shadow-soft: 0 1px 2px light-dark(rgb(35 29 51 / 6%), rgb(0 0 0 / 30%)), 0 8px 24px -12px light-dark(rgb(155 79 150 / 22%), rgb(224 166 232 / 18%));
@@ -138,6 +140,35 @@ a:focus-visible,
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
+}
+
+/* 内页顶部的夜空带：约 16rem 高，往下融进背景；首页有完整的阳台场景，不用 */
+.site-shell {
+  position: relative;
+}
+
+.site-shell:not(:has(.balcony))::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 16rem;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1.5px 1.5px at 8% 22%, var(--band-star) 50%, transparent 100%),
+    radial-gradient(1px 1px at 17% 58%, var(--band-star) 50%, transparent 100%),
+    radial-gradient(1px 1px at 26% 14%, var(--band-star) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 38% 40%, var(--band-star) 50%, transparent 100%),
+    radial-gradient(1px 1px at 47% 18%, var(--band-star) 50%, transparent 100%),
+    radial-gradient(1px 1px at 59% 52%, var(--band-star) 50%, transparent 100%),
+    radial-gradient(2px 2px at 66% 24%, var(--band-star) 50%, transparent 100%),
+    radial-gradient(1px 1px at 74% 64%, var(--band-star) 50%, transparent 100%),
+    radial-gradient(1px 1px at 83% 30%, var(--band-star) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 92% 12%, var(--band-star) 50%, transparent 100%),
+    radial-gradient(ellipse 60% 80% at 70% 0%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 70%),
+    linear-gradient(to bottom, var(--band-sky), transparent);
+  -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent);
+  mask-image: linear-gradient(to bottom, #000 40%, transparent);
 }
 
 .site-header {
@@ -292,85 +323,138 @@ a:focus-visible,
 .post-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: var(--space-2) var(--space-3);
 }
 
+/* 分类：胶囊形，当前分类是强调色淡底（不改字重，避免整行重排） */
 .post-categories {
-  margin-bottom: 1rem;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
 }
 
-/* 当前分类只用下划线标识，不加粗：加粗会变宽，切换分类时整行重新换行 */
+.post-categories a {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  transition: background-color var(--duration-fast), color var(--duration-fast);
+}
+
+@media (hover: hover) {
+  .post-categories a:hover {
+    background: var(--accent);
+    color: var(--foreground);
+  }
+}
+
 .post-categories [aria-current="page"] {
-  text-decoration: underline;
-  text-decoration-color: var(--primary);
-  text-underline-offset: 0.3em;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.post-list {
+  display: grid;
+  gap: var(--space-2);
 }
 
 .post-list > li {
-  padding-block: 1.5rem;
-  border-bottom: 1px solid var(--border);
   overflow-wrap: anywhere;
 }
 
 .post-list h2,
 .post-list h3 {
-  font-size: 1.125rem;
+  font-size: var(--text-lg);
   font-weight: 600;
+  line-height: var(--leading-tight);
 }
 
 .post-meta {
-  margin-top: 0.5rem;
+  margin-top: var(--space-2);
   color: var(--muted-foreground);
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
+}
+
+.post-meta a {
+  transition: color var(--duration-fast);
+}
+
+@media (hover: hover) {
+  .post-meta a:hover {
+    color: var(--primary);
+  }
 }
 
 .post-summary,
 .post-empty {
-  margin-top: 1rem;
-  line-height: 1.75;
+  margin-top: var(--space-4);
+  line-height: var(--leading-relaxed);
+}
+
+.post-empty {
+  color: var(--muted-foreground);
 }
 
 .post-pagination {
-  margin-top: 1.5rem;
+  align-items: center;
   justify-content: space-between;
+  margin-top: var(--space-8);
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
 }
 
-/* 首页：最新文章与最新手记两块 */
+.post-pagination a {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  color: var(--foreground);
+  transition: background-color var(--duration-fast);
+}
+
+@media (hover: hover) {
+  .post-pagination a:hover {
+    background: var(--accent-active);
+  }
+}
+
+/* 小徽标：置顶等 */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: var(--text-xs);
+  line-height: 1.5rem;
+}
+
+/* 首页四个角落的分区标题 */
 .home-section + .home-section {
-  margin-top: 2.5rem;
+  margin-top: var(--space-12);
 }
 
 .home-section-heading {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
 }
 
 .home-section-heading h2 {
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
   font-weight: 600;
 }
 
 .home-section-heading a {
   color: var(--muted-foreground);
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
 }
 
-.project-item {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-}
-
-.project-avatar {
-  flex-shrink: 0;
-  width: 3rem;
-  height: 3rem;
-  object-fit: cover;
-  border: 1px solid var(--border);
+@media (hover: hover) {
+  .home-section-heading a:hover {
+    color: var(--primary);
+  }
 }
 
 /* 时间线（components/timeline-list.tsx）：日期列固定宽度，标题可换行 */

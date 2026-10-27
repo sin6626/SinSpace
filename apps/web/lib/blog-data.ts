@@ -2,6 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { getApiClient } from "./api";
 import { safeUrl } from "./safe-url";
+import { excerpt } from "./excerpt";
 
 // 站名和描述以后台 SEO 设置为准（getSiteSettings），这两个值只是读取失败时的兜底。
 export const siteName = "Sin’s Space";
@@ -167,6 +168,7 @@ export async function getNotes(page: number) {
       mood: note.mood,
       weather: note.weather,
       topic: note.topic?.name ?? null,
+      excerpt: excerpt(note.text),
     })),
     pagination: { ...pagination },
   };

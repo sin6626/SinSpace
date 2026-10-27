@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { unstable_rethrow } from "next/navigation";
-import { getNotes, getPosts } from "../lib/blog-data";
+import type { ReactNode } from "react";
+import { getNotes, getPosts, getProjects, getRecently } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
+import { excerpt } from "../lib/excerpt";
+import { NoteEntry } from "./note-list";
+import { PostCard, postHref } from "./post-list";
+import { ProjectCard } from "./project-list";
+import "./corners.css";
 
-type Item = { key: string; href: string; title: string; created: string; pinned?: boolean };
-
-// 两块分别读取，一块失败不影响另一块。
-async function load(read: () => Promise<Item[]>) {
+// 四块分别读取，一块失败不影响其他块。
+async function load<T>(read: () => Promise<T>) {
   try {
     return await read();
   } catch (error) {
@@ -15,45 +19,57 @@ async function load(read: () => Promise<Item[]>) {
   }
 }
 
-function Section({ title, allHref, allLabel, items }: { title: string; allHref: string; allLabel: string; items: Item[] | null }) {
+function Section<T>({ title, allHref, items, empty, children }: {
+  title: string;
+  allHref: string;
+  items: T[] | null;
+  empty: string;
+  children: (items: T[]) => ReactNode;
+}) {
   return (
-    <section className="home-section">
+    <section className="home-section" aria-label={title}>
       <div className="home-section-heading">
         <h2>{title}</h2>
-        <Link href={allHref}>{allLabel}</Link>
+        <Link href={allHref}>全部 →</Link>
       </div>
       {items === null ? (
         <p className="post-empty" role="alert">{title}读取失败，请稍后刷新。</p>
-      ) : items.length ? (
-        <ul className="post-list">
-          {items.map((item) => (
-            <li key={item.key}>
-              <h3><Link href={item.href}>{item.title}</Link></h3>
-              <div className="post-meta">
-                {item.pinned && <span>置顶</span>}
-                <time dateTime={item.created}>{formatDate(item.created)}</time>
-              </div>
-            </li>
-          ))}
-        </ul>
-      ) : <p className="post-empty">暂无内容。</p>}
+      ) : items.length ? children(items) : <p className="post-empty">{empty}</p>}
     </section>
   );
 }
 
+// 阳台下面的“屋里”：space 的四个角落各放几条最新的，顺序是碎碎念、手记、文章、作品。
 export default async function HomeLatest() {
-  const [posts, notes] = await Promise.all([
-    load(async () => (await getPosts(1)).data.slice(0, 5).flatMap((post) =>
-      post.category && post.slug
-        ? [{ key: post.id, href: `/posts/${encodeURIComponent(post.category.slug)}/${encodeURIComponent(post.slug)}`, title: post.title, created: post.created, pinned: post.pinned }]
-        : [])),
-    load(async () => (await getNotes(1)).data.slice(0, 5).map((note) =>
-      ({ key: note.id, href: `/notes/${note.nid}`, title: note.title, created: note.created }))),
+  const [murmurs, notes, posts, projects] = await Promise.all([
+    load(async () => (await getRecently()).data.slice(0, 3)),
+    load(async () => (await getNotes(1)).data.slice(0, 3)),
+    load(async () => (await getPosts(1)).data.slice(0, 3)),
+    load(async () => (await getProjects()).slice(0, 4)),
   ]);
   return (
     <div className="post-list-content">
-      <Section title="最新文章" allHref="/posts" allLabel="全部文章" items={posts} />
-      <Section title="最新手记" allHref="/notes" allLabel="全部手记" items={notes} />
+      <Section title="碎碎念" allHref="/thinking" items={murmurs} empty="今晚还没有碎碎念。">
+        {(items) => (
+          <ul className="murmur-preview">
+            {items.map((item) => (
+              <li key={item.id}>
+                <p>{excerpt(item.content, 120)}</p>
+                <time dateTime={item.created}>{formatDate(item.created)}</time>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
+      <Section title="手记" allHref="/notes" items={notes} empty="还没有公开的手记。">
+        {(items) => <ul className="note-list">{items.map((note) => <li key={note.id}><NoteEntry note={note} headingLevel={3} /></li>)}</ul>}
+      </Section>
+      <Section title="文章" allHref="/posts" items={posts} empty="还没有已发布的文章。">
+        {(items) => <ul className="post-list">{items.map((post) => <li key={post.id}><PostCard post={{ ...post, href: postHref(post) }} headingLevel={3} /></li>)}</ul>}
+      </Section>
+      <Section title="作品" allHref="/projects" items={projects} empty="还没有作品。">
+        {(items) => <ul className="project-grid">{items.map((project) => <li key={project.id}><ProjectCard project={project} headingLevel={3} /></li>)}</ul>}
+      </Section>
     </div>
   );
 }

@@ -3,14 +3,18 @@ import { createRequire } from 'node:module'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 
-// 检查首页月相：已知的新月、满月、上下弦落在正确位置，亮面方向与新月/满月的特殊处理正确。
+// 检查展示用的小工具：首页月相（已知新月、满月、上下弦的位置，亮面方向，新月/满月特殊处理）与 Markdown 摘录。
 const require = createRequire(new URL('../apps/web/package.json', import.meta.url))
 const ts = require('typescript')
-const source = readFileSync(new URL('../apps/web/lib/moon.ts', import.meta.url), 'utf8')
-const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText
-const module = { exports: {} }
-vm.runInNewContext(code, { module, exports: module.exports })
-const { moonPhase, moonLitPath } = module.exports
+function load(path) {
+  const source = readFileSync(new URL(path, import.meta.url), 'utf8')
+  const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText
+  const module = { exports: {} }
+  vm.runInNewContext(code, { module, exports: module.exports })
+  return module.exports
+}
+const { moonPhase, moonLitPath } = load('../apps/web/lib/moon.ts')
+const { excerpt } = load('../apps/web/lib/excerpt.ts')
 
 const near = (phase, target) => Math.min(Math.abs(phase - target), 1 - Math.abs(phase - target))
 // 2024-01-11 11:57 UTC 新月，2024-01-25 17:54 UTC 满月，2024-01-18 03:53 UTC 上弦，2024-02-02 23:18 UTC 下弦
@@ -28,4 +32,9 @@ assert.match(moonLitPath(0.75, 50, 50, 40), /^M 50 10 A 40 40 0 0 0 50 90/)
 // 娥眉月交界线向亮面（右）鼓，盈凸月向暗面（左）鼓
 assert.match(moonLitPath(0.1, 50, 50, 40), / 0 0 0 50 10 Z$/)
 assert.match(moonLitPath(0.4, 50, 50, 40), / 0 0 1 50 10 Z$/)
-console.log('PASS moon phase dates, lit side, crescent/gibbous terminator, new and full moon')
+// 摘录：去掉 Markdown 符号、实体、图片和链接地址，超长截断
+assert.equal(excerpt('|*&#32;两个月的暑假*\n\n## 刚进出租屋\n\n看[这篇](https://a.b/c)和![图](x.png)'), '两个月的暑假 刚进出租屋 看这篇和')
+assert.equal(excerpt('> 引用\n- 列表 `code`\n```js\nconst a = 1\n```\n结尾'), '引用 列表 code 结尾')
+assert.equal(excerpt('一二三四五', 3), '一二三…')
+assert.equal(excerpt(null), '')
+console.log('PASS moon phase dates, lit side, crescent/gibbous terminator, new and full moon; Markdown excerpt')

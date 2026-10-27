@@ -1,24 +1,65 @@
 import type { CategoryModel } from "@mx-space/api-client";
 import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
+import { Suspense } from "react";
 import { getCategories, getPosts } from "../lib/blog-data";
 import { readText } from "../lib/search-params";
 import { PostSearch, PostsByTag } from "./post-filter";
+import PostSidebar from "./post-sidebar";
+import SidebarSearch from "./sidebar-search";
 import { formatDate } from "../lib/date";
+import "./details-sidebar.css";
+import "./corners.css";
 
 type PostListProps = {
   searchParams: Promise<{ page?: string | string[]; q?: string | string[]; tag?: string | string[] }>;
   params?: Promise<{ slug: string }>;
 };
 
+export type PostCardData = {
+  id: string;
+  href: string | null;
+  title: string;
+  summary?: string | null;
+  created: string;
+  pinned?: boolean;
+  category: { name: string; slug: string } | null;
+};
+
+// 文章的角落：标题 + 摘要 + 日期和分类，整张卡片可点（分类链接仍可单独点）。首页预览复用。
+export function PostCard({ post, headingLevel = 2 }: { post: PostCardData; headingLevel?: 2 | 3 }) {
+  const Heading = headingLevel === 2 ? "h2" : "h3";
+  return (
+    <article className="post-card">
+      <Heading>{post.href ? <Link className="card-link" href={post.href}>{post.title}</Link> : post.title}</Heading>
+      {post.summary && <p className="post-card-summary">{post.summary}</p>}
+      <div className="post-meta">
+        {post.pinned && <span className="badge">置顶</span>}
+        <time dateTime={post.created}>{formatDate(post.created)}</time>
+        {post.category ? (
+          <Link href={`/categories/${encodeURIComponent(post.category.slug)}`}>{post.category.name}</Link>
+        ) : <span>未分类</span>}
+      </div>
+    </article>
+  );
+}
+
+export const postHref = (post: { slug?: string; category: { slug: string } | null }) =>
+  post.category && post.slug ? `/posts/${encodeURIComponent(post.category.slug)}/${encodeURIComponent(post.slug)}` : null;
+
 export default async function PostList({ searchParams, params }: PostListProps) {
   const [{ page: rawPage = "1", q, tag }, route] = await Promise.all([searchParams, params]);
-  // 右栏的搜索和标签只作用于 /posts；标签名原样保留（后台有带空格的标签）。
-  if (!route) {
-    const keyword = readText(q);
-    if (keyword) return <PostSearch keyword={keyword} />;
-    if (typeof tag === "string" && tag.trim()) return <PostsByTag name={tag.slice(0, 100)} />;
-  }
+  const keyword = route ? "" : readText(q);
+  const activeTag = !route && typeof tag === "string" && tag.trim() ? tag.slice(0, 100) : undefined;
+  // 列表顶部的搜索和标签：标签要读接口，单独 Suspense，不挡住列表。
+  const toolbar = (
+    <Suspense fallback={<div className="list-toolbar"><SidebarSearch action="/posts" label="搜索文章" defaultValue={keyword} /></div>}>
+      <PostSidebar keyword={keyword} activeTag={activeTag} />
+    </Suspense>
+  );
+  // 搜索和标签只作用于 /posts；标签名原样保留（后台有带空格的标签）。
+  if (keyword) return <PostSearch keyword={keyword} toolbar={toolbar} />;
+  if (activeTag) return <PostsByTag name={activeTag} toolbar={toolbar} />;
   if (typeof rawPage !== "string" || !/^[1-9]\d*$/.test(rawPage)) notFound();
   const page = Number(rawPage);
   if (!Number.isSafeInteger(page)) notFound();
@@ -53,6 +94,7 @@ export default async function PostList({ searchParams, params }: PostListProps) 
         <p className="post-meta">共 {pagination.total} 篇文章</p>
       </header>
       <div className="post-list-content">
+        {toolbar}
         <nav className="post-categories" aria-label="文章分类">
           <Link href="/posts" aria-current={!category ? "page" : undefined}>全部文章</Link>
           {categories.map((item) => (
@@ -65,21 +107,7 @@ export default async function PostList({ searchParams, params }: PostListProps) 
           <ul className="post-list">
             {posts.map((post) => (
               <li key={post.id}>
-                <article>
-                  <h2>{post.category && post.slug ? (
-                    <Link href={`/posts/${encodeURIComponent(post.category.slug)}/${encodeURIComponent(post.slug)}`}>{post.title}</Link>
-                  ) : post.title}</h2>
-                  <div className="post-meta">
-                    {post.pinned && <span>置顶</span>}
-                    <time dateTime={post.created}>
-                      {formatDate(post.created)}
-                    </time>
-                    {post.category ? (
-                      <Link href={`/categories/${encodeURIComponent(post.category.slug)}`}>{post.category.name}</Link>
-                    ) : <span>未分类</span>}
-                  </div>
-                  {post.summary && <p className="post-summary">{post.summary}</p>}
-                </article>
+                <PostCard post={{ ...post, href: postHref(post) }} />
               </li>
             ))}
           </ul>
