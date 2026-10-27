@@ -58,8 +58,9 @@
   width: 50%;
 }
 
+/* 和下面的两栏同宽（最宽 42rem），首屏文字的左边与“文章”栏对齐 */
 .home-hero-content {
-  max-width: 42rem;
+  width: min(100% - 4rem, 42rem);
 }
 
 /* 标题两行：36px，主体 300 细字重，名字和身份 500；行高 4 倍，两行之间留得很开（Shiro 的 leading-[4]） */
@@ -218,41 +219,61 @@
   max-width: none;
 }
 
-/* 首屏下面的内容比正文宽：首页的导航也跟着放宽，左右边缘对齐 */
-.home-room {
-  max-width: var(--home-width);
-  margin-inline: auto;
-  padding: var(--space-12) var(--space-6) 0;
-  scroll-margin-top: var(--header-height);
+/* 首屏下面照搬 Shiro 首页第二屏的比例：和首屏同一套“左右各占一半”（最宽 1800px），
+   每一半里的内容最宽 42rem、在那一半里居中，所以左栏正好在首屏文字下面，右栏在头像下面，两栏之间留出大片空白。
+   --home-gutter 是内容外沿到页面边缘的距离，导航、作品、页脚都对齐到这条边。 */
+.site-shell:has(.home-hero) {
+  --home-gutter: max(2rem, calc(min(100vw, 1800px) / 4 - 21rem));
 }
 
-.site-shell:has(.home-hero) {
-  --home-width: 72rem;
+.home-room {
+  max-width: 1800px;
+  margin-inline: auto;
+  padding-top: var(--space-16);
+  scroll-margin-top: calc(var(--header-height) - var(--space-8));
 }
 
 .site-shell:has(.home-hero) .site-header-inner,
 .site-shell:has(.home-hero) .site-footer-inner {
-  max-width: var(--home-width);
+  max-width: 1800px;
+  padding-inline: var(--home-gutter);
 }
 
-/* 双栏：左栏文章和手记上下排，右栏碎碎念单独一栏；作品在两栏下面 */
 .home-columns {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 20rem;
-  gap: var(--space-12) var(--space-16);
+  grid-template-columns: 1fr 1fr;
+  row-gap: 7rem;
   align-items: start;
+}
+
+.home-main,
+.home-side {
+  justify-self: center;
+  width: min(100% - 4rem, 42rem);
 }
 
 .home-works {
   grid-column: 1 / -1;
+  margin-inline: var(--home-gutter);
 }
 
 .home-columns .home-section + .home-section {
-  margin-top: var(--space-12);
+  margin-top: 6rem;
 }
 
 .home-columns .home-works {
   margin-top: 0;
+}
+
+/* 首页的分区标题大一号，和下面的行留开距离 */
+.home-columns .home-section-heading {
+  margin-bottom: var(--space-6);
+}
+
+.home-columns .home-section-heading h2 {
+  font-size: var(--text-xl);
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 /* 表格般对齐的行：日期列固定宽度、等宽数字，标题占满中间，右侧信息靠右；不画边框，悬停时整行淡底 */
@@ -263,11 +284,11 @@
 .home-row {
   position: relative;
   display: grid;
-  grid-template-columns: 6.5rem minmax(0, 1fr) auto;
+  grid-template-columns: 7rem minmax(0, 1fr) auto;
   align-items: baseline;
-  gap: var(--space-4);
-  margin-inline: calc(-1 * var(--space-3));
-  padding: var(--space-3);
+  gap: var(--space-6);
+  margin-inline: calc(-1 * var(--space-4));
+  padding: 0.875rem var(--space-4);
   border-radius: var(--radius-sm);
   transition: background-color var(--duration-fast);
 }
@@ -281,7 +302,8 @@
 
 .home-row-title {
   overflow: hidden;
-  font-weight: 500;
+  font-size: 1.0625rem;
+  font-weight: 400;
   text-overflow: ellipsis;
   white-space: nowrap;
   transition: color var(--duration-fast);
@@ -318,27 +340,35 @@
 /* 右栏碎碎念：日期在上、正文在下，一条条往下排，和左栏同样的行距节奏 */
 .home-murmurs {
   display: grid;
-  gap: var(--space-6);
+  gap: var(--space-8);
+  padding-top: var(--space-2);
 }
 
 .home-murmurs li {
   display: grid;
-  gap: var(--space-1);
+  gap: var(--space-2);
 }
 
 .home-murmurs p {
-  line-height: var(--leading-normal);
+  font-size: 1.0625rem;
+  line-height: var(--leading-relaxed);
 }
 
 @media (max-width: 1023px) {
   .home-columns {
     grid-template-columns: minmax(0, 1fr);
+    row-gap: 5rem;
   }
 }
 
 @media (max-width: 639px) {
-  .home-room {
-    padding-inline: var(--space-4);
+  .site-shell:has(.home-hero) {
+    --home-gutter: 1rem;
+  }
+
+  .home-main,
+  .home-side {
+    width: calc(100% - 2rem);
   }
 
   .home-row {
