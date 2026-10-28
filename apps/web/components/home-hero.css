@@ -63,7 +63,14 @@
   width: min(100% - 4rem, 42rem);
 }
 
-/* 标题两行：36px，主体 300 细字重，名字和身份 500；行高 4 倍，两行之间留得很开（Shiro 的 leading-[4]） */
+/* 首屏的标题和说明用霞鹜文楷：带一点手写感的楷体，像深夜写给自己的日记（字体在 home-hero.tsx 引入）；
+   缺字或字体还没下载完时退回全站的中文字体 */
+.home-hero-title,
+.home-hero-description {
+  font-family: "LXGW WenKai", "PingFang SC", var(--font-cjk-sans), "Microsoft YaHei", sans-serif;
+}
+
+/* 标题两行：36px，主体用细体（300），名字和身份用常规（400）；行高 4 倍，两行之间留得很开 */
 .home-hero-title {
   font-size: 2.25rem;
   font-weight: 300;
@@ -81,7 +88,7 @@
 .home-hero-title strong {
   position: relative;
   margin-inline: 0.5rem;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--moonlight);
   text-shadow: 0 0 1.5rem color-mix(in srgb, var(--moonlight) 40%, transparent);
 }

@@ -7,6 +7,9 @@ import IconifyIcon from "./iconify-icon";
 import ScrollHint from "./scroll-hint";
 import SiteActions from "./site-actions";
 import Starfield from "./starfield";
+// 首屏标题与说明用霞鹜文楷（简体版，npm 包已按字符切成小块，浏览器只下载页面上用到的字）；只引细体和常规两档
+import "lxgw-wenkai-webfont/lxgwwenkai-light.css";
+import "lxgw-wenkai-webfont/lxgwwenkai-regular.css";
 import "./home-hero.css";
 
 // 首页第一屏：WebGL 夜空做背景，结构照搬 Shiro 的 Hero（apps/shiro/src/app/(app)/(home)/page.tsx）：
@@ -82,7 +85,11 @@ export default function HomeHero() {
               <br />
               <span>一个在深夜写代码的</span><strong>大三学生</strong>
             </h1>
-            <p className="home-hero-description">白天上课，晚上折腾前端、写博客、做点小东西。</p>
+            <p className="home-hero-description">
+              白天上课，晚上折腾前端、写博客、做点小东西。
+              <br />
+              探索全栈与设计的普通开发者。
+            </p>
             <Suspense fallback={null}>
               <Socials />
             </Suspense>
