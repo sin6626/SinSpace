@@ -186,6 +186,8 @@
 /* Haklex 富文本自带一套颜色（强调色是蓝色），而且主题类直接定义在渲染器根元素上，
    必须在同一元素上覆盖，链接、引用条、强调色才会跟随站点配色方案。 */
 .article-rich .rich-content {
+  /* Haklex 自带正文最宽 700px，比站点正文窄一截；让它铺满外层（外层宽度由 --article-max-width 控制） */
+  --rc-max-width: none;
   --rc-text: var(--foreground);
   --rc-text-tertiary: var(--muted-foreground);
   --rc-bg: var(--background);

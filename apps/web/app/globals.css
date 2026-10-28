@@ -69,7 +69,7 @@
 
   /* 尺寸与层级 */
   --layout-max-width: 72rem;  /*顶部导航*/
-  --article-max-width: 48rem; /*单栏正文*/
+  --article-max-width: 56rem; /*单栏正文与列表（2026-10-28 由 48rem 加宽，正文约 53 字一行）；改它要同步下面 .site-details 和 article-toc.css 的 90rem 断点*/
   --header-height: 4.25rem; /*导航胶囊 44px + 上下留白*/
   --font-serif: var(--font-note-serif), "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", STSong, serif; /*只用于手记，字体在 layout.tsx 加载*/
   --z-header: 2;
@@ -441,7 +441,8 @@ a:focus-visible,
   font-weight: 600;
 }
 
-@media (min-width: 83rem) {
+/* 正文 56rem 加两侧各 2rem 间距和 15rem 目录 = 90rem，屏幕更宽时目录才悬浮在右侧 */
+@media (min-width: 90rem) {
   .site-details {
     position: fixed;
     top: calc(var(--header-height) + var(--space-8));

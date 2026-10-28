@@ -130,54 +130,35 @@ function HomePanel({ state, pathname }: { state: Extract<NavigationState, { stat
   );
 }
 
-// 文章面板：左边分类和篇数，鼠标停在哪个分类，右边就列出它最近的 5 篇
-function PostsPanel({ panels, pathname }: { panels: Panels; pathname: string }) {
-  const [active, setActive] = useState(() => Math.max(0, panels.categories.findIndex((category) => category.recent.length)));
-  const category = panels.categories[active];
-  return (
-    <div className="nav-panel is-posts">
-      <div className="nav-panel-body">
-        <section className="nav-panel-side">
-          <p className="nav-panel-label">分类</p>
-          <ul className="nav-categories">
-            {panels.categories.map((item, index) => (
-              <li key={item.href} data-highlighted={index === active ? "" : undefined} onPointerEnter={() => setActive(index)} onFocus={() => setActive(index)}>
-                <PanelLink href={item.href} className="nav-category" current={pathname === item.href}>
-                  <span className="nav-category-name">{item.name}</span>
-                  <span className="nav-category-count">{item.count}</span>
-                </PanelLink>
-              </li>
-            ))}
-          </ul>
-        </section>
-        <section className="nav-panel-main">
-          <p className="nav-panel-label">{category ? `${category.name} · 最近` : "最近"}</p>
-          <EntryList entries={category?.recent ?? []} pathname={pathname} />
-        </section>
-      </div>
-      <PanelFooter href="/posts" label="查看全部文章" aside={`${panels.postCount} 篇文章`} />
-    </div>
-  );
-}
+// 分组面板（文章按分类、手记按话题）：左边各组和篇数，鼠标停在哪一组，右边就列出它最近的 5 篇；底部“查看全部”。
+type Group = { name: string; href: string; count: number; icon?: string; recent: NavigationEntry[] };
 
-// 手记面板：左边话题（带后台设置的图标），右边近期手记
-function NotesPanel({ panels, pathname }: { panels: Panels; pathname: string }) {
+function GroupPanel({ className, label, groups, fallback, pathname, footer }: {
+  className: string;
+  label: string;
+  groups: Group[];
+  fallback: NavigationEntry[];
+  pathname: string;
+  footer: ReactNode;
+}) {
+  const [active, setActive] = useState(() => Math.max(0, groups.findIndex((group) => group.recent.length)));
+  const group = groups[active];
   return (
-    <div className="nav-panel is-notes">
+    <div className={`nav-panel ${className}`}>
       <div className="nav-panel-body">
-        {panels.topics.length > 0 && (
+        {groups.length > 0 && (
           <section className="nav-panel-side">
-            <p className="nav-panel-label">话题</p>
+            <p className="nav-panel-label">{label}</p>
             <ul className="nav-categories">
-              {panels.topics.map((topic) => (
-                <li key={topic.href}>
-                  <PanelLink href={topic.href} className="nav-category">
+              {groups.map((item, index) => (
+                <li key={item.href} data-highlighted={index === active ? "" : undefined} onPointerEnter={() => setActive(index)} onFocus={() => setActive(index)}>
+                  <PanelLink href={item.href} className="nav-category" current={pathname === item.href}>
                     <span className="nav-category-name">
                       {/* eslint-disable-next-line @next/next/no-img-element -- 话题图标来自后台任意地址 */}
-                      {topic.icon ? <img className="nav-topic-icon" src={topic.icon} alt="" width={18} height={18} /> : <span className="nav-topic-icon" aria-hidden="true" />}
-                      {topic.name}
+                      {item.icon !== undefined && (item.icon ? <img className="nav-topic-icon" src={item.icon} alt="" width={18} height={18} /> : <span className="nav-topic-icon" aria-hidden="true" />)}
+                      {item.name}
                     </span>
-                    <span className="nav-category-count">{topic.count}</span>
+                    <span className="nav-category-count">{item.count}</span>
                   </PanelLink>
                 </li>
               ))}
@@ -185,16 +166,16 @@ function NotesPanel({ panels, pathname }: { panels: Panels; pathname: string }) 
           </section>
         )}
         <section className="nav-panel-main">
-          <p className="nav-panel-label">近期手记</p>
-          <EntryList entries={panels.recentNotes} pathname={pathname} />
+          <p className="nav-panel-label">{group ? `${group.name} · 最近` : "最近"}</p>
+          <EntryList entries={group?.recent ?? fallback} pathname={pathname} />
         </section>
       </div>
-      <PanelFooter href="/notes" label="查看全部手记" />
+      {footer}
     </div>
   );
 }
 
-// 时间线面板：左边按类型去文章或手记列表，右边近期发布的文章与手记混排
+// 时间线面板：左边按类型进时间线的子页（只看文章 / 只看手记），右边近期发布的文章与手记混排
 function TimelinePanel({ panels, pathname }: { panels: Panels; pathname: string }) {
   return (
     <div className="nav-panel is-timeline">
@@ -202,8 +183,8 @@ function TimelinePanel({ panels, pathname }: { panels: Panels; pathname: string 
         <section className="nav-panel-side">
           <p className="nav-panel-label">分类</p>
           <ul className="nav-categories">
-            <li><PanelLink href="/posts" className="nav-category"><span className="nav-category-name">文章</span></PanelLink></li>
-            <li><PanelLink href="/notes" className="nav-category"><span className="nav-category-name">手记</span></PanelLink></li>
+            <li><PanelLink href="/timeline/posts" className="nav-category" current={pathname === "/timeline/posts"}><span className="nav-category-name">文章</span></PanelLink></li>
+            <li><PanelLink href="/timeline/notes" className="nav-category" current={pathname === "/timeline/notes"}><span className="nav-category-name">手记</span></PanelLink></li>
           </ul>
         </section>
         <section className="nav-panel-main">
@@ -281,8 +262,14 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
       <LayoutGroup id="navigation">
       <NavigationMenu.List className="navigation-List">
         {linkItem("首页", "/", pathname === "/", ready && <HomePanel state={ready} pathname={pathname} />)}
-        {linkItem("文章", "/posts", isCurrent(pathname, "/posts") || pathname.startsWith("/categories/"), panels && <PostsPanel panels={panels} pathname={pathname} />)}
-        {linkItem("手记", "/notes", isCurrent(pathname, "/notes"), panels && <NotesPanel panels={panels} pathname={pathname} />)}
+        {linkItem("文章", "/posts", isCurrent(pathname, "/posts") || pathname.startsWith("/categories/"), panels && (
+          <GroupPanel className="is-posts" label="分类" groups={panels.categories} fallback={[]} pathname={pathname}
+            footer={<PanelFooter href="/posts" label="查看全部文章" aside={`${panels.postCount} 篇文章`} />} />
+        ))}
+        {linkItem("手记", "/notes", isCurrent(pathname, "/notes"), panels && (
+          <GroupPanel className="is-notes" label="话题" groups={panels.topics.map((topic) => ({ ...topic, icon: topic.icon ?? "" }))} fallback={panels.recentNotes} pathname={pathname}
+            footer={<PanelFooter href="/notes" label="查看全部手记" aside={`${panels.noteCount} 篇手记`} />} />
+        ))}
         {linkItem("时间线", "/timeline", isCurrent(pathname, "/timeline"), panels && <TimelinePanel panels={panels} pathname={pathname} />)}
         {linkItem("碎碎念", "/thinking", isCurrent(pathname, "/thinking"), null)}
         {/* “更多”没有自己的页面，触发器是普通按钮，点击或悬停只展开面板 */}

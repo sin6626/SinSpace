@@ -543,7 +543,7 @@ export async function getNotesByTopic(topicId: string) {
 
 // 顶部导航悬停面板（navigation-menu.tsx）的数据，全部复用已有缓存：
 // 首页面板的“此间”三个数字取 Core 的 /aggregate/site_info（文章数、手记数、全站字数、第一篇发布日期；SDK 会把字段转成驼峰），
-// 文章面板按分类列出篇数和各分类最近 5 篇，手记面板列出话题和近期手记，时间线面板列出近期文章与手记。
+// 文章面板按分类列出篇数和各分类最近 5 篇，手记面板按话题列出篇数和各话题最近 5 篇，时间线面板列出近期文章与手记。
 // 建站天数在缓存函数里按当时时间算，最多晚一个缓存周期（1 小时）变化，跨零点那一会儿可能差一天。
 export type NavigationEntry = { id: string; title: string; created: string; href: string; kind: "post" | "note" };
 
@@ -567,6 +567,7 @@ export async function getNavigationPanels() {
       : `/notes/${item.nid}`,
   });
   const posts = timeline.filter((item) => item.kind === "post");
+  const topicNotes = await Promise.all(topics.map((topic) => getNotesByTopic(topic.id).catch(() => ({ data: [] }))));
   const first = Date.parse(site.firstPublishDate ?? "");
   return {
     stats: {
@@ -575,6 +576,7 @@ export async function getNavigationPanels() {
       days: Number.isFinite(first) ? Math.max(1, Math.ceil((Date.now() - first) / 86_400_000)) : null,
     },
     postCount: site.postCount ?? posts.length,
+    noteCount: site.noteCount ?? timeline.length - posts.length,
     categories: categories.filter((category) => category.type === 0).map((category) => ({
       name: category.name,
       href: `/categories/${encodeURIComponent(category.slug)}`,
@@ -582,7 +584,13 @@ export async function getNavigationPanels() {
       recent: posts.filter((item) => item.kind === "post" && item.category.slug === category.slug).slice(0, 5).map(entry),
     })),
     // 手记页按话题的 slug 筛选（和页内“按话题”抽屉一致），不能用名字
-    topics: topics.map((topic) => ({ name: topic.name, icon: topic.icon, count: topic.count, href: `/notes?topic=${encodeURIComponent(topic.slug)}` })),
+    topics: topics.map((topic, index) => ({
+      name: topic.name,
+      icon: topic.icon,
+      count: topic.count,
+      href: `/notes?topic=${encodeURIComponent(topic.slug)}`,
+      recent: topicNotes[index].data.slice(0, 5).map((note): NavigationEntry => ({ id: note.id, title: note.title, created: note.created, kind: "note", href: `/notes/${note.nid}` })),
+    })),
     recentNotes: timeline.filter((item) => item.kind === "note").slice(0, 5).map(entry),
     recent: timeline.slice(0, 5).map(entry),
   };

@@ -23,6 +23,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: path("notes") },
     { url: path("projects") },
     { url: path("timeline") },
+    { url: path("timeline", "posts") },
+    { url: path("timeline", "notes") },
     { url: path("friends") },
     { url: path("says") },
     { url: path("thinking") },

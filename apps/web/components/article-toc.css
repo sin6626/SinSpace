@@ -45,8 +45,8 @@
   outline-offset: -2px;
 }
 
-/* 正文右侧留白放不下目录时（宽度不足 83rem，见 globals.css 的 .site-details），补充信息会排在正文下方，目录放在文末没有意义，直接隐藏 */
-@media (width < 83rem) {
+/* 正文右侧留白放不下目录时（宽度不足 90rem，见 globals.css 的 .site-details），补充信息会排在正文下方，目录放在文末没有意义，直接隐藏 */
+@media (width < 90rem) {
   .site-details:has(.article-toc) {
     display: none;
   }
