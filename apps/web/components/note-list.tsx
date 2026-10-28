@@ -2,10 +2,10 @@ import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { Suspense } from "react";
 import { getNotes } from "../lib/blog-data";
-import { formatDate } from "../lib/date";
 import { readText } from "../lib/search-params";
 import { NoteSearch, NotesByTopic } from "./note-filter";
 import NoteTopicDrawer from "./note-sidebar";
+import Entry, { EntryTag } from "./entry";
 import SidebarSearch from "./sidebar-search";
 import "./details-sidebar.css";
 import "./corners.css";
@@ -13,27 +13,22 @@ import "./corners.css";
 type NoteEntryData = Awaited<ReturnType<typeof getNotes>>["data"][number];
 
 // 心里话的角落：日记的样子。左边是大号的日，右边是衬线标题、话题/心情/天气和正文开头。首页预览复用。
+// 话题标签在标题右边，心情、天气在下一行。
 export function NoteEntry({ note, headingLevel = 2 }: { note: NoteEntryData; headingLevel?: 2 | 3 }) {
-  const Heading = headingLevel === 2 ? "h2" : "h3";
-  const [year, month, day] = formatDate(note.created).split("/");
   return (
-    <article className="note-entry">
-      <time className="note-entry-date" dateTime={note.created}>
-        <span className="note-entry-day">{day}</span>
-        <span className="note-entry-month">{year}.{month}</span>
-      </time>
-      <div className="note-entry-body">
-        <Heading className="note-entry-title"><Link className="card-link" href={`/notes/${note.nid}`}>{note.title}</Link></Heading>
-        {(note.topic || note.mood || note.weather) && (
-          <div className="post-meta">
-            {note.topic && <span>{note.topic}</span>}
-            {note.mood && <span>心情 · {note.mood}</span>}
-            {note.weather && <span>天气 · {note.weather}</span>}
-          </div>
-        )}
-        {note.excerpt && <p className="note-entry-excerpt">{note.excerpt}</p>}
-      </div>
-    </article>
+    <Entry
+      href={`/notes/${note.nid}`}
+      title={note.title}
+      created={note.created}
+      headingLevel={headingLevel}
+      serif
+      excerpt={note.excerpt}
+      tags={note.topic ? <EntryTag>{note.topic}</EntryTag> : undefined}
+      meta={note.mood || note.weather ? <>
+        {note.mood && <span>心情 · {note.mood}</span>}
+        {note.weather && <span>天气 · {note.weather}</span>}
+      </> : undefined}
+    />
   );
 }
 

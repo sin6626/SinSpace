@@ -2,6 +2,7 @@
 // 检查：① 一级导航的顺序；② 悬停首页、文章、手记、时间线、更多都会弹出对应面板；
 // ③ 首页面板“此间”的篇数和字数不是 0（Core 的 site_info 字段经 SDK 转成驼峰，读错字段名时会全是 0）；
 // ④ 文章面板里鼠标移到另一个分类，右边的“X · 最近”跟着换；⑤ 弹层背景真的有模糊（backdrop-filter 曾被构建工具吞掉）；
+// ⑦ 时间线面板里鼠标移到“手记”，右边换成“手记 · 最近”且只列手记（曾经右边固定是混排的近期动态，悬停不变）；
 // ⑥ 五个面板里的每个链接打开后都不是站内 404（手记面板的话题链接曾用话题名拼地址，而手记页按 slug 筛选，结果全是 404）。
 // 需要先运行 pnpm dev（默认 http://127.0.0.1:2323，可用 WEB_URL 覆盖）。用法：pnpm e2e
 import assert from "node:assert/strict";
@@ -54,6 +55,21 @@ try {
   await sleep(400);
   const after = await browser.evaluate(`document.querySelector(".is-posts .nav-panel-main .nav-panel-label").textContent`);
   assert.equal(after, `${name} · 最近`, `移到“${name}”后右边没有跟着换（之前是 ${before}）`);
+
+  await hover("时间线");
+  const [tx, ty] = await browser.evaluate(`(() => {
+    const item = [...document.querySelectorAll(".is-timeline .nav-categories li")].find((li) => li.textContent.includes("手记"));
+    const r = item.getBoundingClientRect();
+    return [r.x + 30, r.y + r.height / 2];
+  })()`);
+  await browser.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: tx, y: ty });
+  await sleep(400);
+  const timeline = await browser.evaluate(`({
+    label: document.querySelector(".is-timeline .nav-panel-main .nav-panel-label").textContent,
+    hrefs: [...document.querySelectorAll(".is-timeline .nav-entries a")].map((a) => a.getAttribute("href")),
+  })`);
+  assert.equal(timeline.label, "手记 · 最近", `时间线面板悬停“手记”后右边没有切换（还是 ${timeline.label}）`);
+  assert.ok(timeline.hrefs.length && timeline.hrefs.every((href) => href.startsWith("/notes/")), `时间线面板“手记”下混进了别的内容：${timeline.hrefs.join(", ")}`);
 
   // 逐个整页打开面板里的站内链接，正文不能是站内 404（app/not-found.tsx 的 .empty-state，状态码仍可能是 200，所以看正文）
   const broken = [];

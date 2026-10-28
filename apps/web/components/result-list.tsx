@@ -1,6 +1,5 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
-import { formatDate } from "../lib/date";
+import Entry, { EntryTag } from "./entry";
 
 export type ResultItem = { key: string; href: string; title: string; created: string; meta?: string };
 
@@ -30,13 +29,7 @@ export default function ResultList({ title, summary, items, emptyText, search, f
           <ul className="post-list">
             {items.map((item) => (
               <li key={item.key}>
-                <article className="post-card">
-                  <h2><Link href={item.href}>{item.title}</Link></h2>
-                  <div className="post-meta">
-                    <time dateTime={item.created}>{formatDate(item.created)}</time>
-                    {item.meta && <span>{item.meta}</span>}
-                  </div>
-                </article>
+                <Entry href={item.href} title={item.title} created={item.created} tags={item.meta ? <EntryTag>{item.meta}</EntryTag> : undefined} />
               </li>
             ))}
           </ul>

@@ -47,8 +47,10 @@ export async function getNavigationData() {
 // 评论开关取后台“评论设置”（是否关闭评论、是否允许游客评论）；站名和一句话描述取后台 SEO 设置，前端不写死。
 export async function getSiteSettings() {
   "use cache";
-  // 改站名、描述、评论设置都没有 Webhook 事件，缓存短一些，后台改完 5 分钟内生效。
-  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  // 改站名、描述、评论设置都没有 Webhook 事件，后台改完 5 分钟内生效。
+  // stale 至少 300 秒：Next 只把 stale ≥ 5 分钟的缓存放进预渲染外壳，太短的话根布局的 generateMetadata 会被当成动态数据，
+  // 整页静态的路由（/debug）会报 “encountered URL data in generateMetadata()”。回归测试 scripts/e2e/dev-issues.mjs。
+  cacheLife({ stale: 300, revalidate: 300, expire: 3600 });
   cacheTag("blog:navigation");
   const { url, commentOptions, seo } = await getApiClient().aggregate.getAggregateData();
   const site = new URL(url.webUrl);
@@ -592,6 +594,7 @@ export async function getNavigationPanels() {
       recent: topicNotes[index].data.slice(0, 5).map((note): NavigationEntry => ({ id: note.id, title: note.title, created: note.created, kind: "note", href: `/notes/${note.nid}` })),
     })),
     recentNotes: timeline.filter((item) => item.kind === "note").slice(0, 5).map(entry),
+    recentPosts: posts.slice(0, 5).map(entry),
     recent: timeline.slice(0, 5).map(entry),
   };
 }

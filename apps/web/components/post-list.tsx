@@ -6,8 +6,8 @@ import { getCategories, getPosts } from "../lib/blog-data";
 import { readText } from "../lib/search-params";
 import { PostSearch, PostsByTag } from "./post-filter";
 import PostTagDrawer from "./post-sidebar";
+import Entry, { EntryTag } from "./entry";
 import SidebarSearch from "./sidebar-search";
-import { formatDate } from "../lib/date";
 import "./details-sidebar.css";
 import "./corners.css";
 
@@ -28,19 +28,20 @@ export type PostCardData = {
 
 // 文章的角落：标题 + 摘要 + 日期和分类，整张卡片可点（分类链接仍可单独点）。首页预览复用。
 export function PostCard({ post, headingLevel = 2 }: { post: PostCardData; headingLevel?: 2 | 3 }) {
-  const Heading = headingLevel === 2 ? "h2" : "h3";
   return (
-    <article className="post-card">
-      <div className="post-meta post-card-meta">
-        <time dateTime={post.created}>{formatDate(post.created)}</time>
-        {post.category ? (
-          <Link href={`/categories/${encodeURIComponent(post.category.slug)}`}>{post.category.name}</Link>
-        ) : <span>未分类</span>}
+    <Entry
+      href={post.href}
+      title={post.title}
+      created={post.created}
+      headingLevel={headingLevel}
+      excerpt={post.summary}
+      tags={<>
+        {post.category
+          ? <EntryTag href={`/categories/${encodeURIComponent(post.category.slug)}`}>{post.category.name}</EntryTag>
+          : <EntryTag>未分类</EntryTag>}
         {post.pinned && <span className="badge">置顶</span>}
-      </div>
-      <Heading>{post.href ? <Link className="card-link" href={post.href}>{post.title}</Link> : post.title}</Heading>
-      {post.summary && <p className="post-card-summary">{post.summary}</p>}
-    </article>
+      </>}
+    />
   );
 }
 

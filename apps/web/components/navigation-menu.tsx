@@ -131,7 +131,8 @@ function HomePanel({ state, pathname }: { state: Extract<NavigationState, { stat
 }
 
 // 分组面板（文章按分类、手记按话题）：左边各组和篇数，鼠标停在哪一组，右边就列出它最近的 5 篇；底部“查看全部”。
-type Group = { name: string; href: string; count: number; icon?: string; recent: NavigationEntry[] };
+// showKind：右边列表每条后面标出“文章 / 手记”（时间线的“全部”是混排的）
+type Group = { name: string; href: string; count: number; icon?: string; recent: NavigationEntry[]; showKind?: boolean };
 
 function GroupPanel({ className, label, groups, fallback, pathname, footer }: {
   className: string;
@@ -167,32 +168,10 @@ function GroupPanel({ className, label, groups, fallback, pathname, footer }: {
         )}
         <section className="nav-panel-main">
           <p className="nav-panel-label">{group ? `${group.name} · 最近` : "最近"}</p>
-          <EntryList entries={group?.recent ?? fallback} pathname={pathname} />
+          <EntryList entries={group?.recent ?? fallback} pathname={pathname} showKind={group?.showKind} />
         </section>
       </div>
       {footer}
-    </div>
-  );
-}
-
-// 时间线面板：左边按类型进时间线的子页（只看文章 / 只看手记），右边近期发布的文章与手记混排
-function TimelinePanel({ panels, pathname }: { panels: Panels; pathname: string }) {
-  return (
-    <div className="nav-panel is-timeline">
-      <div className="nav-panel-body">
-        <section className="nav-panel-side">
-          <p className="nav-panel-label">分类</p>
-          <ul className="nav-categories">
-            <li><PanelLink href="/timeline/posts" className="nav-category" current={pathname === "/timeline/posts"}><span className="nav-category-name">文章</span></PanelLink></li>
-            <li><PanelLink href="/timeline/notes" className="nav-category" current={pathname === "/timeline/notes"}><span className="nav-category-name">手记</span></PanelLink></li>
-          </ul>
-        </section>
-        <section className="nav-panel-main">
-          <p className="nav-panel-label">近期动态</p>
-          <EntryList entries={panels.recent} pathname={pathname} showKind />
-        </section>
-      </div>
-      <PanelFooter href="/timeline" label="查看时间线" />
     </div>
   );
 }
@@ -270,7 +249,21 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
           <GroupPanel className="is-notes" label="话题" groups={panels.topics.map((topic) => ({ ...topic, icon: topic.icon ?? "" }))} fallback={panels.recentNotes} pathname={pathname}
             footer={<PanelFooter href="/notes" label="查看全部手记" aside={`${panels.noteCount} 篇手记`} />} />
         ))}
-        {linkItem("时间线", "/timeline", isCurrent(pathname, "/timeline"), panels && <TimelinePanel panels={panels} pathname={pathname} />)}
+        {/* 时间线面板：全部 / 文章 / 手记三组，点组名进时间线对应的子页，鼠标停在哪组右边就列出它最近的 5 篇 */}
+        {linkItem("时间线", "/timeline", isCurrent(pathname, "/timeline"), panels && (
+          <GroupPanel
+            className="is-timeline"
+            label="分类"
+            groups={[
+              { name: "全部", href: "/timeline", count: panels.postCount + panels.noteCount, recent: panels.recent, showKind: true },
+              { name: "文章", href: "/timeline/posts", count: panels.postCount, recent: panels.recentPosts },
+              { name: "手记", href: "/timeline/notes", count: panels.noteCount, recent: panels.recentNotes },
+            ]}
+            fallback={panels.recent}
+            pathname={pathname}
+            footer={<PanelFooter href="/timeline" label="查看时间线" />}
+          />
+        ))}
         {linkItem("碎碎念", "/thinking", isCurrent(pathname, "/thinking"), null)}
         {/* “更多”没有自己的页面，触发器是普通按钮，点击或悬停只展开面板 */}
         <NavigationMenu.Item value="更多">
