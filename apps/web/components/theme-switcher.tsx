@@ -2,11 +2,10 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useSyncExternalStore } from "react";
-import { useIsland } from "../lib/island-store";
 import "./theme-switcher.css";
 
-// 开灯 / 熄灯：一个按钮来回切换，白 → 黑、黑 → 白。默认熄灯（深色），这是站点的主场；开灯存 theme=light。
-// 以前的“跟随系统”已去掉，存储里遗留的 system 按熄灯处理。
+// 浅色 / 深色主题：一个按钮来回切换。默认深色，选了浅色存 theme=light。
+// 以前的“跟随系统”已去掉，存储里遗留的 system 按深色处理。
 type Theme = "light" | "dark";
 const storageKey = "theme";
 const listeners = new Set<() => void>();
@@ -46,10 +45,6 @@ function toggle() {
     document.documentElement.dataset.theme = next;
     listeners.forEach((listener) => listener());
   };
-  // 页头夜航岛播报一下
-  useIsland.getState().push(next === "dark"
-    ? { icon: "moon", title: "熄灯了", detail: "星星都出来了，晚安" }
-    : { icon: "sun", title: "开灯了", detail: "天边还剩一点晚霞", duration: 2600 });
   if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) update();
   else document.startViewTransition({ update, types: ["theme"] });
 }
@@ -62,7 +57,7 @@ export function useTheme() {
 export default function ThemeToggle() {
   const theme = useTheme();
   return (
-    <button type="button" className="icon-button theme-toggle" onClick={toggle} aria-label={theme === "dark" ? "开灯" : "熄灯"}>
+    <button type="button" className="icon-button theme-toggle" onClick={toggle} aria-label={theme === "dark" ? "切换到浅色主题" : "切换到深色主题"}>
       {theme === "dark" ? <Moon size={18} strokeWidth={1.75} aria-hidden="true" /> : <Sun size={18} strokeWidth={1.75} aria-hidden="true" />}
     </button>
   );

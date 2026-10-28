@@ -135,7 +135,7 @@ export default function DebugPage() {
           </li>
           <li>
             <h2>页头夜航岛</h2>
-            <p className="post-meta">site-header.tsx：往下滚动后收成胶囊，悬停展开；下面的按钮在岛上播报示例活动（文章通知、开关灯现在都走这里），连点会排队</p>
+            <p className="post-meta">site-header.tsx：往下滚动后收成胶囊，悬停展开；下面的按钮在岛上播报示例活动（文章发布、修改、删除的通知走这里），连点会排队</p>
             <IslandButtons />
           </li>
           <li>

@@ -28,7 +28,7 @@ export default function StyleGuide() {
   return (
     <>
       <h2>设计系统：熄灯以后</h2>
-      <p className="post-meta">变量都在 globals.css 开头。切换开灯 / 熄灯看两套颜色：</p>
+      <p className="post-meta">变量都在 globals.css 开头。切换浅色 / 深色主题看两套颜色：</p>
       <ThemeToggle />
 
       <h3 className="guide-heading">颜色</h3>

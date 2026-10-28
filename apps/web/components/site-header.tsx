@@ -1,6 +1,6 @@
 "use client";
 
-import { FilePen, Info, Moon, NotebookPen, RefreshCw, Sun, Trash2 } from "lucide-react";
+import { FilePen, Info, NotebookPen, RefreshCw, Trash2 } from "lucide-react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -13,7 +13,7 @@ import "./site-header.css";
 // - bar：页面顶部，铺开成整条页头（站点标识 | 星座导航 | 工具），透明；
 // - compact：往下滚以后，收拢成正上方一枚深色胶囊，只显示头像和“现在在哪”（在读文章时是标题 + 阅读进度环）；
 // - expanded：鼠标移上胶囊、键盘聚焦或导航面板开着时，胶囊展开，导航和工具回到胶囊里；
-// - activity：有实时活动（开关灯、新文章……）时临时变形播报，几秒后缩回去。活动由 lib/island-store.ts 排队。
+// - activity：有实时活动（新文章发布、文章修改删除……）时临时变形播报，几秒后缩回去。活动由 lib/island-store.ts 排队。
 // 导航（nav）始终渲染、只用 CSS 按状态显隐，避免面板和手机菜单反复卸载。
 
 const spring = { type: "spring", stiffness: 380, damping: 32, mass: 0.9 } as const;
@@ -46,8 +46,6 @@ function NavigateListener({ onNavigate }: { onNavigate: () => void }) {
 const sectionOf = (pathname: string) => pathname === "/" ? "首页" : sections.find(([prefix]) => pathname === prefix || pathname.startsWith(`${prefix}/`))?.[1] ?? "页面";
 
 const activityIcons: Record<IslandActivityIcon, ReactNode> = {
-  moon: <Moon size={18} strokeWidth={1.75} />,
-  sun: <Sun size={18} strokeWidth={1.75} />,
   post: <FilePen size={18} strokeWidth={1.75} />,
   note: <NotebookPen size={18} strokeWidth={1.75} />,
   update: <RefreshCw size={18} strokeWidth={1.75} />,
@@ -129,7 +127,9 @@ export default function SiteHeader({ brand, nav }: { brand: ReactNode; nav: Reac
           style={{ borderRadius: mode === "activity" ? 26 : 999 }}
           onPointerEnter={(event) => { if (event.pointerType === "mouse") setHovered(true); }}
           onPointerLeave={(event) => { if (event.pointerType === "mouse") setHovered(false); }}
-          onFocus={() => setFocused(true)}
+          // 只有键盘聚焦（:focus-visible）才展开：鼠标点过导航链接或主题按钮后焦点会留在页头，
+          // 如果也算，往下读文章时岛会一直展开、不收成标题 + 进度环（回归测试 site-header-island.mjs）
+          onFocus={(event) => { if ((event.target as Element).matches(":focus-visible")) setFocused(true); }}
           onBlur={onBlur}
         >
           <motion.div layout="position" transition={spring} className="island-brand">

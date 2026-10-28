@@ -370,7 +370,7 @@
   padding-top: calc(var(--header-height) + var(--space-8));
 }
 
-.site-shell:has(.home-hero:not([style*="display: none"])) .site-header[data-mode="bar"] .site-header-inner,
+/* 页头不在这里加宽：首页和内页共用同一个页头、同样的宽度，头像和主题按钮靠近中间，换页时页头位置不动 */
 .site-shell:has(.home-hero:not([style*="display: none"])) .site-footer-inner {
   max-width: 1800px;
   padding-inline: var(--home-gutter);

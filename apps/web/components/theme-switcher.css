@@ -1,4 +1,4 @@
-/* 开灯 / 熄灯按钮（theme-switcher.tsx）：顶部导航右侧和手机菜单里共用的圆形图标按钮 */
+/* 浅色 / 深色主题切换按钮（theme-switcher.tsx）：顶部导航右侧和手机菜单里共用的圆形图标按钮 */
 .icon-button {
   display: inline-flex;
   align-items: center;

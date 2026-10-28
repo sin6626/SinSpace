@@ -1,12 +1,12 @@
 import { create } from "zustand";
 
 // 页头“夜航岛”（components/site-header.tsx）的共享状态，用 Zustand：
-// 页头、文章页的阅读进度、开关灯按钮、通知、导航面板分散在互不相邻的组件里，都要读写这份状态。
+// 页头、文章页的阅读进度、通知、导航面板分散在互不相邻的组件里，都要读写这份状态。
 // - reading：当前在读的文章/手记/页面（详情页挂 IslandReading 时登记，离开时清空），progress 是 0–1 的阅读进度；
-// - activities：要在岛上播报的实时活动（开关灯、新文章……），排队一条条播，每条显示 duration 毫秒；
+// - activities：要在岛上播报的实时活动（新文章、文章修改删除……），排队一条条播，每条显示 duration 毫秒；
 // - navOpen：导航面板是否展开着（展开时岛不能收起，否则面板会失去依附）。
 
-export type IslandActivityIcon = "moon" | "sun" | "post" | "note" | "update" | "remove" | "info";
+export type IslandActivityIcon = "post" | "note" | "update" | "remove" | "info";
 
 export type IslandActivity = {
   id: number;
