@@ -137,27 +137,27 @@
   }
 }
 
-/* 丛雨抱着“Sin”：后层身体 → 文字 → 前层手臂，三明治叠在一起（isolation 让后层的 z-index: -1 只沉到名字自己下面）。
-   名字换成和画里一样的圆体 Nunito 500 并放大；所有尺寸都用 em，改 font-size 人和字一起缩放。
-   对位数据（按画里 S 的高度与 Nunito 的 S 换算）：整张图宽 2.046em；图左边在 S 墨迹左边再往左 0.411em，
-   Nunito 的 S 墨迹离字框左边 0.048em，所以 left 为 -0.363em；line-height: 1 时字框底在基线下 0.171em，正好是图底到基线的距离。
-   Nunito 默认字距比画里宽，-0.05em 让三个字母的位置和画里一致，手才刚好压在 S 和 n 上 */
+/* 丛雨抱着“Sin”：后层（身体，含手）→ 文字 → 前层（压在字上的手指），三明治叠在一起；isolation 让后层的 z-index: -1 只沉到名字自己下面。
+   名字和标题同样大，只把字体换成和画里一样的圆体 Nunito；所有尺寸都用 em，改字号人和字一起缩放。
+   对位数据（scripts/prepare-mascot.mjs 打印的字母位置，按画里 S 的高 93px ≈ Nunito 650 的 S 高 0.724em 换算）：
+   素材 600×390 → 宽 4.671em；S 墨迹左边离图左 1.622em，Nunito 的 S 墨迹离字框左边 0.048em，所以 left 为 -1.575em；
+   基线离图底 0.564em，line-height: 1 时字框底在基线下 0.171em，所以 bottom 为 -0.393em。
+   画里字距比 Nunito 默认窄，-0.045em 让 S 和 n 的两头与画里一致，手指才刚好压在 S 和 n 的上沿 */
 .home-hero-title .home-hero-name {
   isolation: isolate;
-  /* 图比字框左宽出 0.363em、右宽出 0.405em；名字整层会画在旁边普通文字之上，边距要让开，否则“是”和“。”被头发盖住 */
-  margin-inline: 0.4em 0.42em;
+  /* 图比字框左宽出 1.575em、右宽出约 1.78em；名字整层会画在旁边普通文字之上，边距要让开，否则“是”和“。”被头发盖住 */
+  margin-inline: 1.6em 1.8em;
   font-family: var(--font-latin), sans-serif;
-  font-size: 6rem;
-  font-weight: 500;
+  font-weight: 650;
   line-height: 1;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.045em;
 }
 
 .home-hero-mascot {
   position: absolute;
-  bottom: 0;
-  left: -0.363em;
-  width: 2.046em;
+  bottom: -0.393em;
+  left: -1.575em;
+  width: 4.671em;
   max-width: none;
   height: auto;
   pointer-events: none;
@@ -181,9 +181,10 @@
   }
 }
 
+/* 名字后面躺着丛雨，小星挪到她头右上方的夜空里（原来的位置落在头发上看不见） */
 .home-hero-name .home-hero-star {
-  top: 0.12em;
-  right: -0.2em;
+  top: -1.3em;
+  right: -1.4em;
 }
 
 @keyframes home-hero-breathe {
@@ -200,7 +201,7 @@
 /* 手机上“Sin。”会换到第二行，名字往下让一点，丛雨的头才不会盖住上一行的“你好，我是” */
 @media (max-width: 639px) {
   .home-hero-title .home-hero-name {
-    margin-top: 0.45em;
+    margin-top: 1.3em;
   }
 }
 
@@ -322,10 +323,6 @@
   .home-hero-title {
     font-size: 1.75rem;
     line-height: 2.4;
-  }
-
-  .home-hero-title .home-hero-name {
-    font-size: 4.5rem;
   }
 
   .home-hero-socials {

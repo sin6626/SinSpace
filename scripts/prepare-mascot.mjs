@@ -1,6 +1,10 @@
-// 首屏“丛雨抱着 Sin”的素材处理：把生图得到的品红底 PNG 抠成透明，三层按同一范围裁切、缩放后导出 WebP。
-// 用法：node scripts/prepare-mascot.mjs <后层.png> <闭眼后层.png> <前层手臂.png> <带字的完整构图.png>
-// 四张图画布尺寸、人物位置必须一致；输出到 apps/web/public/mascot/，并打印裁切后的尺寸供 CSS 对位。
+// 首屏“丛雨抱着 Sin”的素材处理：生图得到的品红底 PNG → 三层透明 WebP（apps/web/public/mascot/）。
+// 用法：node scripts/prepare-mascot.mjs <带字的完整构图.png> <去掉字的后层.png> <闭眼的后层.png>
+// 三张图画布尺寸、人物位置必须一致。生图单独画的“只有手”那层位置总会变，所以手直接从完整构图里原位取：
+//   back  = 完整构图，只把字母那几块换成后层同位置的像素（把字擦掉，露出后面的身体）；
+//   front = 完整构图里压在字上的手（肤色区域）；
+//   blink = 只有闭眼那一小块（闭眼帧与后层不同的地方，羽化边缘），平时透明。
+// 最后打印字母在输出图里的位置，供 home-hero.css 换算 em。
 import { createRequire } from "node:module";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
@@ -9,11 +13,11 @@ const root = new URL("..", import.meta.url).pathname;
 // sharp 是 Next 自带的图片处理依赖，不单独安装
 const sharp = createRequire(createRequire(join(root, "apps/web/package.json")).resolve("next/package.json"))("sharp");
 
-const [backPath, blinkPath, frontPath, referencePath] = process.argv.slice(2);
-if (!referencePath) throw new Error("需要四个参数：后层、闭眼后层、前层手臂、带字的完整构图");
+const [referencePath, backPath, blinkPath] = process.argv.slice(2);
+if (!blinkPath) throw new Error("需要三个参数：带字的完整构图、去掉字的后层、闭眼的后层");
 
 const outDir = join(root, "apps/web/public/mascot");
-const outWidth = 720;
+const outWidth = 600;
 const key = [255, 0, 255];
 // 与品红的颜色距离小于 near 视为背景，大于 far 视为人物，中间是发丝等半透明边缘
 const near = 70;
@@ -34,72 +38,110 @@ async function keyOut(path) {
   return { data: out, width: info.width, height: info.height };
 }
 
-function bounds({ data, width, height }) {
-  let left = width, top = height, right = 0, bottom = 0;
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      if (data[(y * width + x) * 4 + 3] > 8) {
-        left = Math.min(left, x); right = Math.max(right, x);
-        top = Math.min(top, y); bottom = Math.max(bottom, y);
-      }
-    }
-  }
-  return { left, top, right, bottom };
-}
+const reference = await keyOut(referencePath);
+const back = await keyOut(backPath);
+const blink = await keyOut(blinkPath);
+const { width, height } = reference;
+const pixel = (layer, i) => [layer.data[i * 4], layer.data[i * 4 + 1], layer.data[i * 4 + 2]];
 
-// 生图给的前层连整条袖子一起画了，但参考构图里袖子在字后面、只有手压在字上。
-// 参考图里能看到字母（奶白色）的地方说明前面没东西挡，把前层这些像素扣掉，只留真正压住字的手
-// 肤色、白袖子上有零星像素颜色接近奶白，所以只认“周围一圈大多也是奶白”的成片区域，再向外扩约 2px 盖住字母的抗锯齿边
-async function clearVisibleLetters(front, path) {
-  const { data } = await sharp(path).removeAlpha().raw().toBuffer({ resolveWithObject: true });
-  const { width, height } = front;
-  const cream = new Uint8Array(width * height);
-  for (let i = 0; i < cream.length; i++) {
-    const [r, g, b] = [data[i * 3], data[i * 3 + 1], data[i * 3 + 2]];
-    cream[i] = r > 235 && g > 226 && g - b > 12 && r - g < 16 ? 1 : 0;
-  }
-  // 方框内计数用积分图：sum(x0..x1, y0..y1)
-  const integral = (mask) => {
-    const s = new Uint32Array((width + 1) * (height + 1));
-    for (let y = 0; y < height; y++) {
-      for (let x = 0, row = 0; x < width; x++) {
-        row += mask[y * width + x];
-        s[(y + 1) * (width + 1) + x + 1] = s[y * (width + 1) + x + 1] + row;
-      }
+// 方框内计数用积分图，用来做“成片才算”和向外扩
+function boxCounter(mask) {
+  const s = new Uint32Array((width + 1) * (height + 1));
+  for (let y = 0; y < height; y++) {
+    for (let x = 0, row = 0; x < width; x++) {
+      row += mask[y * width + x];
+      s[(y + 1) * (width + 1) + x + 1] = s[y * (width + 1) + x + 1] + row;
     }
-    return (x0, y0, x1, y1) => {
-      [x0, y0, x1, y1] = [Math.max(0, x0), Math.max(0, y0), Math.min(width - 1, x1), Math.min(height - 1, y1)];
-      return s[(y1 + 1) * (width + 1) + x1 + 1] - s[y0 * (width + 1) + x1 + 1] - s[(y1 + 1) * (width + 1) + x0] + s[y0 * (width + 1) + x0];
-    };
+  }
+  return (x, y, r) => {
+    const [x0, y0, x1, y1] = [Math.max(0, x - r), Math.max(0, y - r), Math.min(width - 1, x + r), Math.min(height - 1, y + r)];
+    return s[(y1 + 1) * (width + 1) + x1 + 1] - s[y0 * (width + 1) + x1 + 1] - s[(y1 + 1) * (width + 1) + x0] + s[y0 * (width + 1) + x0];
   };
-  const creamSum = integral(cream);
-  const solid = new Uint8Array(width * height);
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) solid[y * width + x] = creamSum(x - 6, y - 6, x + 6, y + 6) > 169 * 0.8 ? 1 : 0;
-  }
-  const solidSum = integral(solid);
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) if (solidSum(x - 4, y - 4, x + 4, y + 4) > 0) front.data[(y * width + x) * 4 + 3] = 0;
-  }
-  return front;
 }
 
-const layers = { back: await keyOut(backPath), blink: await keyOut(blinkPath), front: await clearVisibleLetters(await keyOut(frontPath), referencePath) };
-const all = Object.values(layers).map(bounds);
-const crop = {
-  left: Math.min(...all.map((b) => b.left)),
-  top: Math.min(...all.map((b) => b.top)),
-  width: Math.max(...all.map((b) => b.right)) - Math.min(...all.map((b) => b.left)) + 1,
-  height: Math.max(...all.map((b) => b.bottom)) - Math.min(...all.map((b) => b.top)) + 1,
-};
+function grow(mask, test) {
+  const count = boxCounter(mask);
+  const out = new Uint8Array(mask.length);
+  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) out[y * width + x] = test(count, x, y) ? 1 : 0;
+  return out;
+}
+
+// 字母：完整构图里是奶白、后层同位置不是奶白的像素（头发高光和字母几乎同色，但两张图里都有，靠这一点排除）。
+// 再要求成片：21×21 方框里八成五是字母才算笔画中心（笔画约 38px 粗），离笔画中心 14px 内的都算字母，
+// 最后向外扩 3px 吃掉抗锯齿边
+const isCream = ([r, g, b]) => r > 235 && g > 226 && g - b > 12 && r - g < 16;
+const cream = new Uint8Array(width * height);
+for (let i = 0; i < cream.length; i++) cream[i] = isCream(pixel(reference, i)) && !isCream(pixel(back, i)) ? 1 : 0;
+const strokeCenter = grow(cream, (count, x, y) => count(x, y, 10) > 441 * 0.85);
+const nearStroke = boxCounter(strokeCenter);
+const letterCore = cream.map((v, i) => (v && nearStroke(i % width, Math.floor(i / width), 14) > 0 ? 1 : 0));
+const letters = grow(letterCore, (count, x, y) => count(x, y, 3) > 0);
+
+// 手：离字母 40px 以内的肤色像素（含指甲和指缝阴影）。只取压在字上的这一圈：
+// 手的其余部分后层里原样就有；前层画在闭眼帧上面，取到脸会把闭着的眼睛盖回去
+const nearLetters = boxCounter(letterCore);
+const skin = new Uint8Array(width * height);
+for (let i = 0; i < skin.length; i++) {
+  const [r, g, b] = pixel(reference, i);
+  const isSkin = r > 190 && r - b > 18 && g - b > 4 && r - g > 12 && r - g < 75;
+  if (isSkin && !letterCore[i] && reference.data[i * 4 + 3] > 200 && nearLetters(i % width, Math.floor(i / width), 40) > 0) skin[i] = 1;
+}
+// 先开运算去掉字母边上那圈和肤色相近的抗锯齿细线（≤ 3px），再闭运算补手上的小洞
+const opened = grow(grow(skin, (count, x, y) => count(x, y, 2) === 25), (count, x, y) => count(x, y, 2) > 0);
+const hands = grow(grow(opened, (count, x, y) => count(x, y, 2) > 0), (count, x, y) => count(x, y, 2) === 25);
+const box = (() => {
+  let top = height, bottom = 0, left = width, right = 0;
+  letterCore.forEach((v, i) => {
+    if (!v) return;
+    const [x, y] = [i % width, Math.floor(i / width)];
+    top = Math.min(top, y); bottom = Math.max(bottom, y); left = Math.min(left, x); right = Math.max(right, x);
+  });
+  return { top, bottom, left, right };
+})();
+
+// 闭眼：闭眼帧与后层差别大的地方（只有眼睛），扩 14px 再羽化 10px
+const eyes = new Uint8Array(width * height);
+for (let i = 0; i < eyes.length; i++) {
+  const [a, b] = [pixel(blink, i), pixel(back, i)];
+  eyes[i] = Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) > 60 ? 1 : 0;
+}
+const eyeCore = grow(grow(eyes, (count, x, y) => count(x, y, 3) > 20), (count, x, y) => count(x, y, 14) > 0);
+const eyeCount = boxCounter(eyeCore);
+
+const layers = { back: Buffer.alloc(width * height * 4), front: Buffer.alloc(width * height * 4), blink: Buffer.alloc(width * height * 4) };
+for (let y = 0; y < height; y++) {
+  for (let x = 0; x < width; x++) {
+    const i = y * width + x;
+    const o = i * 4;
+    (letters[i] ? back.data : reference.data).copy(layers.back, o, o, o + 4);
+    if (hands[i]) reference.data.copy(layers.front, o, o, o + 4);
+    const feather = eyeCount(x, y, 10) / 441;
+    if (feather > 0) {
+      blink.data.copy(layers.blink, o, o, o + 3);
+      layers.blink[o + 3] = Math.round(blink.data[o + 3] * feather);
+    }
+  }
+}
+
+// 三层按后层的可见范围统一裁切
+let left = width, top = height, right = 0, bottom = 0;
+for (let i = 0; i < width * height; i++) {
+  if (layers.back[i * 4 + 3] > 8) {
+    const [x, y] = [i % width, Math.floor(i / width)];
+    left = Math.min(left, x); right = Math.max(right, x); top = Math.min(top, y); bottom = Math.max(bottom, y);
+  }
+}
+const crop = { left, top, width: right - left + 1, height: bottom - top + 1 };
+const scale = outWidth / crop.width;
 
 mkdirSync(outDir, { recursive: true });
-for (const [name, layer] of Object.entries(layers)) {
-  const info = await sharp(layer.data, { raw: { width: layer.width, height: layer.height, channels: 4 } })
+for (const [name, data] of Object.entries(layers)) {
+  const info = await sharp(data, { raw: { width, height, channels: 4 } })
     .extract(crop)
     .resize({ width: outWidth })
     .webp({ quality: 86, alphaQuality: 90, effort: 6 })
     .toFile(join(outDir, `${name}.webp`));
   console.log(name, `${info.width}x${info.height}`, `${(info.size / 1024).toFixed(1)}KB`);
 }
-console.log("裁切范围（原图像素）", crop);
+const at = (v, origin) => +((v - origin) * scale).toFixed(1);
+console.log("字母在输出图里（像素）", { left: at(box.left, crop.left), right: at(box.right, crop.left), top: at(box.top, crop.top), bottom: at(box.bottom, crop.top) });

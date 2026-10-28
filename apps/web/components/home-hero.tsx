@@ -67,7 +67,7 @@ async function Actions() {
 // 素材在 public/mascot，由 scripts/prepare-mascot.mjs 从生图结果抠图生成；纯装饰，读屏只读到“Sin”。
 function MascotLayer({ layer }: { layer: "back" | "blink" | "front" }) {
   // eslint-disable-next-line @next/next/no-img-element -- 三层要像素级叠在一起，直接用原图，不走响应式裁切
-  return <img className={`home-hero-mascot is-${layer}`} src={`/mascot/${layer}.webp`} alt="" aria-hidden="true" width={720} height={525} draggable={false} />;
+  return <img className={`home-hero-mascot is-${layer}`} src={`/mascot/${layer}.webp`} alt="" aria-hidden="true" width={600} height={390} draggable={false} />;
 }
 
 async function Motto() {
