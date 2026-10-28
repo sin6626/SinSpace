@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { unstable_rethrow } from "next/navigation";
-import { getNavigationData } from "../lib/blog-data";
+import { getNavigationData, getNavigationPanels, getOwner } from "../lib/blog-data";
+import { SocialIcon } from "./iconify-icon";
 import NavigationMenu, { type NavigationState } from "./navigation-menu";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -24,11 +25,17 @@ function links(value: unknown, labelKey: "name" | "title", prefix: string) {
 async function NavigationData() {
   let state: NavigationState;
   try {
-    const data = await getNavigationData();
+    // 悬停面板的数据和站长社交账号读不到时不影响导航本身，面板退回简单列表
+    const [data, panels, owner] = await Promise.all([
+      getNavigationData(),
+      getNavigationPanels().catch((error) => { unstable_rethrow(error); return null; }),
+      getOwner().catch((error) => { unstable_rethrow(error); return null; }),
+    ]);
     state = {
       status: "ready",
-      articles: links(data.categories, "name", "/categories/"),
       pages: links(data.pageMeta, "title", "/"),
+      panels,
+      socials: (owner?.socials ?? []).map((social) => ({ ...social, icon: <SocialIcon label={social.label} size={15} /> })),
     };
   } catch (error) {
     unstable_rethrow(error);

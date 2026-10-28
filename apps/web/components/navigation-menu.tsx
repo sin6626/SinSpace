@@ -1,34 +1,40 @@
 "use client";
 
 import { NavigationMenu } from "@base-ui/react/navigation-menu";
-import { ChevronDown } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { LayoutGroup, MotionConfig, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
+import type { NavigationEntry, getNavigationPanels } from "../lib/blog-data";
+import { formatDate } from "../lib/date";
 import MobileMenu from "./mobile-menu";
 import "./navigation-menu.css";
 
 type NavigationLink = { label: string; href: string };
+type Panels = Awaited<ReturnType<typeof getNavigationPanels>>;
 export type NavigationState =
   | { status: "loading" | "error" }
-  | { status: "ready"; articles: NavigationLink[]; pages: NavigationLink[] };
+  | {
+    status: "ready";
+    pages: NavigationLink[];
+    panels: Panels | null;
+    socials: { label: string; href: string; icon: ReactNode }[];
+  };
 
-// 一级导航是 space 的四个角落：作品、文章、手记、碎碎念（Core 的速记）。
-const corners: NavigationLink[] = [
-  { label: "作品", href: "/projects" },
-  { label: "文章", href: "/posts" },
-  { label: "手记", href: "/notes" },
-  { label: "碎碎念", href: "/thinking" },
-];
-
-const moreLinks: NavigationLink[] = [
-  { label: "时间线", href: "/timeline" },
-  { label: "友链", href: "/friends" },
-  { label: "一言", href: "/says" },
+// 一级导航的顺序：首页、文章、手记、时间线、碎碎念、更多（作品、友链、一言），开发环境末尾再加“调试”。
+// 首页、文章、手记、时间线本身是链接（点击跳转），悬停或聚焦时展开各自的面板；碎碎念只是链接；更多只展开。
+const moreLinks = [
+  { label: "作品", href: "/projects", note: "开源项目与作品集" },
+  { label: "友链", href: "/friends", note: "互联网上的朋友们" },
+  { label: "一言", href: "/says", note: "言语的碎片" },
 ];
 
 const isCurrent = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
+// 面板里的日期只显示“月·日”
+const monthDay = (created: string) => formatDate(created).slice(5).replace("/", "·");
+// 全站字数：一万以上写成“7.3 万字”
+const wordCount = (words: number) => (words >= 10000 ? { value: (words / 10000).toFixed(1), unit: "万字" } : { value: String(words), unit: "字" });
 
 // 一级项的内容：文字 + 脚下一颗暗星；当前页那一项再叠一颗亮星（同一个 layoutId，换页时亮星沿着连线移到新的一项）。
 function Star({ active }: { active: boolean }) {
@@ -47,9 +53,172 @@ function Star({ active }: { active: boolean }) {
   );
 }
 
+// 面板里的链接：点了就收起面板，交给 Next 的 Link 跳转
+function PanelLink({ href, className, children, current }: { href: string; className: string; children: ReactNode; current?: boolean }) {
+  return (
+    <NavigationMenu.Link className={className} active={current} closeOnClick render={<Link href={href} />}>
+      {children}
+    </NavigationMenu.Link>
+  );
+}
+
+// 一条条“月·日 标题 [类型]”的近期列表
+function EntryList({ entries, pathname, showKind }: { entries: NavigationEntry[]; pathname: string; showKind?: boolean }) {
+  if (!entries.length) return <p className="nav-panel-empty">还没有内容</p>;
+  return (
+    <ul className="nav-entries">
+      {entries.map((entry) => (
+        <li key={entry.id}>
+          <PanelLink href={entry.href} className="nav-entry" current={pathname === entry.href}>
+            <time dateTime={entry.created}>{monthDay(entry.created)}</time>
+            <span className="nav-entry-title">{entry.title}</span>
+            {showKind && <span className="nav-entry-kind">{entry.kind === "post" ? "文章" : "手记"}</span>}
+          </PanelLink>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function PanelFooter({ href, label, aside }: { href: string; label: string; aside?: ReactNode }) {
+  return (
+    <div className="nav-panel-footer">
+      <PanelLink href={href} className="nav-panel-more">{label}<ArrowRight size={14} aria-hidden="true" /></PanelLink>
+      {aside && <span>{aside}</span>}
+    </div>
+  );
+}
+
+// 首页面板：左边“此间”（全站篇数、字数、建站天数和社交账号），右边后台页面
+function HomePanel({ state, pathname }: { state: Extract<NavigationState, { status: "ready" }>; pathname: string }) {
+  const stats = state.panels?.stats;
+  const words = stats && wordCount(stats.words);
+  return (
+    <div className="nav-panel is-home">
+      {stats && (
+        <section className="nav-panel-side">
+          <p className="nav-panel-label">此间</p>
+          <dl className="nav-stats">
+            <div><dt>篇文字</dt><dd>{stats.writings}</dd></div>
+            {words && <div><dt>{words.unit}</dt><dd>{words.value}</dd></div>}
+            {stats.days && <div><dt>日</dt><dd>{stats.days}</dd></div>}
+          </dl>
+          {state.socials.length > 0 && (
+            <ul className="nav-socials">
+              {state.socials.map((social) => (
+                <li key={social.href}>
+                  <a href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label} title={social.label}>{social.icon}</a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+      <section className="nav-panel-main">
+        <p className="nav-panel-label">页面</p>
+        {state.pages.length ? (
+          <ul className="nav-page-grid">
+            {state.pages.map((page) => (
+              <li key={page.href}>
+                <PanelLink href={page.href} className="nav-link" current={pathname === page.href}>{page.label}</PanelLink>
+              </li>
+            ))}
+          </ul>
+        ) : <p className="nav-panel-empty">还没有页面</p>}
+      </section>
+    </div>
+  );
+}
+
+// 文章面板：左边分类和篇数，鼠标停在哪个分类，右边就列出它最近的 5 篇
+function PostsPanel({ panels, pathname }: { panels: Panels; pathname: string }) {
+  const [active, setActive] = useState(() => Math.max(0, panels.categories.findIndex((category) => category.recent.length)));
+  const category = panels.categories[active];
+  return (
+    <div className="nav-panel is-posts">
+      <div className="nav-panel-body">
+        <section className="nav-panel-side">
+          <p className="nav-panel-label">分类</p>
+          <ul className="nav-categories">
+            {panels.categories.map((item, index) => (
+              <li key={item.href} data-highlighted={index === active ? "" : undefined} onPointerEnter={() => setActive(index)} onFocus={() => setActive(index)}>
+                <PanelLink href={item.href} className="nav-category" current={pathname === item.href}>
+                  <span className="nav-category-name">{item.name}</span>
+                  <span className="nav-category-count">{item.count}</span>
+                </PanelLink>
+              </li>
+            ))}
+          </ul>
+        </section>
+        <section className="nav-panel-main">
+          <p className="nav-panel-label">{category ? `${category.name} · 最近` : "最近"}</p>
+          <EntryList entries={category?.recent ?? []} pathname={pathname} />
+        </section>
+      </div>
+      <PanelFooter href="/posts" label="查看全部文章" aside={`${panels.postCount} 篇文章`} />
+    </div>
+  );
+}
+
+// 手记面板：左边话题（带后台设置的图标），右边近期手记
+function NotesPanel({ panels, pathname }: { panels: Panels; pathname: string }) {
+  return (
+    <div className="nav-panel is-notes">
+      <div className="nav-panel-body">
+        {panels.topics.length > 0 && (
+          <section className="nav-panel-side">
+            <p className="nav-panel-label">话题</p>
+            <ul className="nav-categories">
+              {panels.topics.map((topic) => (
+                <li key={topic.href}>
+                  <PanelLink href={topic.href} className="nav-category">
+                    <span className="nav-category-name">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- 话题图标来自后台任意地址 */}
+                      {topic.icon ? <img className="nav-topic-icon" src={topic.icon} alt="" width={18} height={18} /> : <span className="nav-topic-icon" aria-hidden="true" />}
+                      {topic.name}
+                    </span>
+                    <span className="nav-category-count">{topic.count}</span>
+                  </PanelLink>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+        <section className="nav-panel-main">
+          <p className="nav-panel-label">近期手记</p>
+          <EntryList entries={panels.recentNotes} pathname={pathname} />
+        </section>
+      </div>
+      <PanelFooter href="/notes" label="查看全部手记" />
+    </div>
+  );
+}
+
+// 时间线面板：左边按类型去文章或手记列表，右边近期发布的文章与手记混排
+function TimelinePanel({ panels, pathname }: { panels: Panels; pathname: string }) {
+  return (
+    <div className="nav-panel is-timeline">
+      <div className="nav-panel-body">
+        <section className="nav-panel-side">
+          <p className="nav-panel-label">分类</p>
+          <ul className="nav-categories">
+            <li><PanelLink href="/posts" className="nav-category"><span className="nav-category-name">文章</span></PanelLink></li>
+            <li><PanelLink href="/notes" className="nav-category"><span className="nav-category-name">手记</span></PanelLink></li>
+          </ul>
+        </section>
+        <section className="nav-panel-main">
+          <p className="nav-panel-label">近期动态</p>
+          <EntryList entries={panels.recent} pathname={pathname} showKind />
+        </section>
+      </div>
+      <PanelFooter href="/timeline" label="查看时间线" />
+    </div>
+  );
+}
+
 export default function BlogNavigation({ state }: { state: NavigationState }) {
   const pathname = usePathname();
-  // 当前展开的子菜单。点击一级链接跳转时弹层是“点击打开”的，不会因鼠标离开而关闭，
+  // 当前展开的面板。点击一级链接跳转时弹层是“点击打开”的，不会因鼠标离开而关闭，
   // 所以路由变化时主动收起（渲染期间比较上一次路径，不用 effect）。
   const [openItem, setOpenItem] = useState<unknown>(null);
   const [lastPathname, setLastPathname] = useState(pathname);
@@ -59,38 +228,47 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
     setOpenItem(null);
   }
   const router = useRouter();
-  // “文章”本身是链接（点击跳转），悬停或聚焦时展开分类子菜单。
-  // 后台“页面”（关于我、关于本站）和时间线、友链、一言收在“更多”里。
-  const pages = state.status === "ready" ? state.pages : [];
-  const articles = state.status === "ready" ? state.articles : [];
-  const status = (empty: string, links: NavigationLink[]) => (
-    <>
-      {state.status === "loading" && <li className="navigation-message" role="status">正在读取导航…</li>}
-      {state.status === "error" && (
-        <li className="navigation-message" role="status">
-          导航读取失败。<button className="navigation-retry" type="button" onClick={() => router.refresh()}>重试</button>
-        </li>
-      )}
-      {state.status === "ready" && !links.length && empty && <li className="navigation-message">{empty}</li>}
-    </>
-  );
-  const subLinks = (links: NavigationLink[]) => links.map(({ label, href }) => (
-    <li key={href}>
-      <NavigationMenu.Link className="navigation-LinkCard" active={pathname === href} closeOnClick render={<Link href={href} />}>
-        <span className="navigation-LinkDot" aria-hidden="true" />
-        <span className="navigation-LinkTitle">{label}</span>
-      </NavigationMenu.Link>
-    </li>
-  ));
-
-  const moreCurrent = [...pages, ...moreLinks].some(({ href }) => pathname === href);
-  const articlesCurrent = isCurrent(pathname, "/posts") || pathname.startsWith("/categories/");
-
+  const ready = state.status === "ready" ? state : null;
+  const panels = ready?.panels ?? null;
+  const pages = ready?.pages ?? [];
   const devLinks = process.env.NODE_ENV !== "production" ? [{ label: "调试", href: "/debug" }] : [];
+
+  // 本身是链接、悬停展开面板的一级项。nativeButton={false}：触发器渲染成链接，回车/点击交给链接跳转，Base UI 负责展开面板。
+  // 触屏没有悬停：面板未展开时第一次点按只展开、不跳转；展开后再点才跳转。
+  const linkItem = (label: string, href: string, current: boolean, panel: ReactNode | null) => panel ? (
+    <NavigationMenu.Item key={href} value={label}>
+      <NavigationMenu.Trigger
+        className="navigation-Trigger"
+        nativeButton={false}
+        render={<Link href={href} />}
+        data-current={current ? "" : undefined}
+        aria-current={pathname === href ? "page" : undefined}
+        onPointerDown={(event) => { lastPointerType.current = event.pointerType; }}
+        onClick={(event) => {
+          if (lastPointerType.current === "touch" && openItem !== label) event.preventDefault();
+        }}
+      >
+        {label}<Star active={current} />
+        <NavigationMenu.Icon className="navigation-Icon" aria-hidden="true"><ChevronDown size={14} /></NavigationMenu.Icon>
+      </NavigationMenu.Trigger>
+      <NavigationMenu.Content className="navigation-Content">{panel}</NavigationMenu.Content>
+    </NavigationMenu.Item>
+  ) : (
+    <NavigationMenu.Item key={href}>
+      <NavigationMenu.Link className="navigation-Trigger" active={current} render={<Link href={href} />}>
+        {label}<Star active={current} />
+      </NavigationMenu.Link>
+    </NavigationMenu.Item>
+  );
+
+  const moreCurrent = moreLinks.some(({ href }) => isCurrent(pathname, href));
 
   return (
     <div className="navigation-Area">
-    <MobileMenu corners={[{ label: "首页", href: "/" }, ...corners]} more={[...pages, ...moreLinks, ...devLinks]} />
+    <MobileMenu
+      corners={[{ label: "首页", href: "/" }, { label: "文章", href: "/posts" }, { label: "手记", href: "/notes" }, { label: "时间线", href: "/timeline" }, { label: "碎碎念", href: "/thinking" }]}
+      more={[...pages, ...moreLinks, ...devLinks]}
+    />
     <NavigationMenu.Root
       className="navigation-Root"
       aria-label="主导航"
@@ -101,70 +279,40 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
       <MotionConfig reducedMotion="user">
       <LayoutGroup id="navigation">
       <NavigationMenu.List className="navigation-List">
-        <NavigationMenu.Item>
-          <NavigationMenu.Link className="navigation-Trigger" active={pathname === "/"} render={<Link href="/" />}>
-            首页<Star active={pathname === "/"} />
-          </NavigationMenu.Link>
-        </NavigationMenu.Item>
-        {corners.map(({ label, href }) => href === "/posts" ? (
-          <NavigationMenu.Item key={href} value={label}>
-            {/* nativeButton={false}：触发器渲染成链接，回车/点击交给链接跳转，Base UI 负责展开子菜单 */}
-            <NavigationMenu.Trigger
-              className="navigation-Trigger"
-              nativeButton={false}
-              render={<Link href={href} />}
-              data-current={articlesCurrent ? "" : undefined}
-              aria-current={pathname === href ? "page" : undefined}
-              onPointerDown={(event) => { lastPointerType.current = event.pointerType; }}
-              onClick={(event) => {
-                // 触屏没有悬停：子菜单未展开时第一次点按只展开、不跳转；展开后再点才跳转。
-                if (lastPointerType.current === "touch" && openItem !== label) event.preventDefault();
-              }}
-            >
-              {label}<Star active={articlesCurrent} />
-              <NavigationMenu.Icon className="navigation-Icon" aria-hidden="true"><ChevronDown size={14} /></NavigationMenu.Icon>
-            </NavigationMenu.Trigger>
-            <NavigationMenu.Content className="navigation-Content">
-              <p className="navigation-ContentTitle">分类</p>
-              <ul className="navigation-FlexLinkList">
-                {subLinks(articles)}
-                {status("暂无分类", articles)}
-              </ul>
-            </NavigationMenu.Content>
-          </NavigationMenu.Item>
-        ) : (
-          <NavigationMenu.Item key={href}>
-            <NavigationMenu.Link className="navigation-Trigger" active={isCurrent(pathname, href)} render={<Link href={href} />}>
-              {label}<Star active={isCurrent(pathname, href)} />
-            </NavigationMenu.Link>
-          </NavigationMenu.Item>
-        ))}
-        {/* “更多”没有自己的页面，触发器是普通按钮，点击或悬停只展开子菜单 */}
+        {linkItem("首页", "/", pathname === "/", ready && <HomePanel state={ready} pathname={pathname} />)}
+        {linkItem("文章", "/posts", isCurrent(pathname, "/posts") || pathname.startsWith("/categories/"), panels && <PostsPanel panels={panels} pathname={pathname} />)}
+        {linkItem("手记", "/notes", isCurrent(pathname, "/notes"), panels && <NotesPanel panels={panels} pathname={pathname} />)}
+        {linkItem("时间线", "/timeline", isCurrent(pathname, "/timeline"), panels && <TimelinePanel panels={panels} pathname={pathname} />)}
+        {linkItem("碎碎念", "/thinking", isCurrent(pathname, "/thinking"), null)}
+        {/* “更多”没有自己的页面，触发器是普通按钮，点击或悬停只展开面板 */}
         <NavigationMenu.Item value="更多">
           <NavigationMenu.Trigger className="navigation-Trigger" data-current={moreCurrent ? "" : undefined}>
             更多<Star active={moreCurrent} />
             <NavigationMenu.Icon className="navigation-Icon" aria-hidden="true"><ChevronDown size={14} /></NavigationMenu.Icon>
           </NavigationMenu.Trigger>
           <NavigationMenu.Content className="navigation-Content">
-            <p className="navigation-ContentTitle">更多</p>
-            <ul className="navigation-FlexLinkList">
-              {subLinks(pages)}
-              {status("", pages)}
-              {subLinks(moreLinks)}
-            </ul>
+            <div className="nav-panel is-more">
+              <ul className="nav-more">
+                {moreLinks.map((link) => (
+                  <li key={link.href}>
+                    <PanelLink href={link.href} className="nav-more-link" current={isCurrent(pathname, link.href)}>
+                      <span className="nav-more-name">{link.label}</span>
+                      <span className="nav-more-leader" aria-hidden="true" />
+                      <span className="nav-more-note">{link.note}</span>
+                    </PanelLink>
+                  </li>
+                ))}
+              </ul>
+              {state.status === "loading" && <p className="navigation-message" role="status">正在读取导航…</p>}
+              {state.status === "error" && (
+                <p className="navigation-message" role="status">
+                  导航读取失败。<button className="navigation-retry" type="button" onClick={() => router.refresh()}>重试</button>
+                </p>
+              )}
+            </div>
           </NavigationMenu.Content>
         </NavigationMenu.Item>
-        {process.env.NODE_ENV !== "production" && (
-          <NavigationMenu.Item>
-            <NavigationMenu.Link
-              className="navigation-Trigger"
-              active={pathname === "/debug"}
-              render={<Link href="/debug" />}
-            >
-              调试<Star active={pathname === "/debug"} />
-            </NavigationMenu.Link>
-          </NavigationMenu.Item>
-        )}
+        {devLinks.map((link) => linkItem(link.label, link.href, pathname === link.href, null))}
       </NavigationMenu.List>
       </LayoutGroup>
       </MotionConfig>

@@ -53,13 +53,13 @@ export default function DebugPage() {
             <h2>导航菜单</h2>
             <p className="post-meta">navigation.tsx 的加载占位</p>
             <p className="navigation-message" role="status">正在读取导航…</p>
-            <p className="post-meta">navigation-menu.tsx 的三种状态，悬停或点击“文章”查看弹层</p>
+            <p className="post-meta">navigation-menu.tsx 的三种状态，悬停“首页”“更多”查看面板（面板数据读取失败时，文章、手记、时间线退回普通链接）</p>
             <p className="post-meta">读取中</p>
             <BlogNavigation state={{ status: "loading" }} />
             <p className="post-meta">读取失败</p>
             <BlogNavigation state={{ status: "error" }} />
-            <p className="post-meta">没有分类和页面</p>
-            <BlogNavigation state={{ status: "ready", articles: [], pages: [] }} />
+            <p className="post-meta">没有页面、面板数据读取失败</p>
+            <BlogNavigation state={{ status: "ready", pages: [], panels: null, socials: [] }} />
           </li>
           <li>
             <h2>文章列表</h2>

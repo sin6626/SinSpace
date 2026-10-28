@@ -524,7 +524,7 @@ export async function getTopics() {
   const { data } = await client.topic.getAll();
   const counts = await Promise.all(data.map((topic) => client.note.getNoteByTopicId(topic.id, 1, 1)));
   return data
-    .map((topic, index) => ({ id: topic.id, name: topic.name, slug: topic.slug, count: counts[index].pagination.total }))
+    .map((topic, index) => ({ id: topic.id, name: topic.name, slug: topic.slug, icon: safeUrl(topic.icon ?? undefined), count: counts[index].pagination.total }))
     .filter((topic) => topic.count > 0)
     .sort((a, b) => b.count - a.count);
 }
@@ -538,5 +538,51 @@ export async function getNotesByTopic(topicId: string) {
   return {
     total: pagination.total,
     data: data.map((note) => ({ id: note.id, nid: note.nid, title: note.title, created: note.created })),
+  };
+}
+
+// 顶部导航悬停面板（navigation-menu.tsx）的数据，全部复用已有缓存：
+// 首页面板的“此间”三个数字取 Core 的 /aggregate/site_info（文章数、手记数、全站字数、第一篇发布日期；SDK 会把字段转成驼峰），
+// 文章面板按分类列出篇数和各分类最近 5 篇，手记面板列出话题和近期手记，时间线面板列出近期文章与手记。
+// 建站天数在缓存函数里按当时时间算，最多晚一个缓存周期（1 小时）变化，跨零点那一会儿可能差一天。
+export type NavigationEntry = { id: string; title: string; created: string; href: string; kind: "post" | "note" };
+
+export async function getNavigationPanels() {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheTag("blog:posts", "blog:notes", "blog:categories", "blog:navigation");
+  const [site, categories, timeline, topics] = await Promise.all([
+    getApiClient().proxy.aggregate.site_info.get<{ postCount?: number; noteCount?: number; totalWordCount?: number; firstPublishDate?: string }>(),
+    getCategories(),
+    getTimeline(),
+    getTopics().catch(() => []),
+  ]);
+  const entry = (item: Awaited<ReturnType<typeof getTimeline>>[number]): NavigationEntry => ({
+    id: item.id,
+    title: item.title,
+    created: item.created,
+    kind: item.kind,
+    href: item.kind === "post"
+      ? `/posts/${encodeURIComponent(item.category.slug)}/${encodeURIComponent(item.slug)}`
+      : `/notes/${item.nid}`,
+  });
+  const posts = timeline.filter((item) => item.kind === "post");
+  const first = Date.parse(site.firstPublishDate ?? "");
+  return {
+    stats: {
+      writings: (site.postCount ?? 0) + (site.noteCount ?? 0),
+      words: site.totalWordCount ?? 0,
+      days: Number.isFinite(first) ? Math.max(1, Math.ceil((Date.now() - first) / 86_400_000)) : null,
+    },
+    postCount: site.postCount ?? posts.length,
+    categories: categories.filter((category) => category.type === 0).map((category) => ({
+      name: category.name,
+      href: `/categories/${encodeURIComponent(category.slug)}`,
+      count: category.count ?? 0,
+      recent: posts.filter((item) => item.kind === "post" && item.category.slug === category.slug).slice(0, 5).map(entry),
+    })),
+    topics: topics.map((topic) => ({ name: topic.name, icon: topic.icon, count: topic.count, href: `/notes?topic=${encodeURIComponent(topic.name)}` })),
+    recentNotes: timeline.filter((item) => item.kind === "note").slice(0, 5).map(entry),
+    recent: timeline.slice(0, 5).map(entry),
   };
 }

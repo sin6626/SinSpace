@@ -23,7 +23,7 @@
   --danger: light-dark(#b42318, #f4a3a8);
   --success: light-dark(#15803d, #86efac);
   --ring: var(--primary);
-  --glass-popup: light-dark(rgb(255 255 255 / 82%), rgb(26 21 38 / 84%));    /*导航子菜单的半透明弹层*/
+  --glass-popup: light-dark(rgb(255 255 255 / 94%), rgb(24 19 35 / 95%));    /*导航子菜单的半透明弹层*/
   --glass-border: light-dark(rgb(35 29 51 / 10%), rgb(236 232 244 / 12%));
   --constellation-line: light-dark(rgb(35 29 51 / 14%), rgb(236 232 244 / 14%)); /*顶部导航的星座连线*/
   --star-glow: color-mix(in srgb, var(--primary) 60%, transparent);             /*星点的光晕*/

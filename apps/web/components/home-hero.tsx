@@ -3,7 +3,7 @@ import { unstable_rethrow } from "next/navigation";
 import { Suspense } from "react";
 import { getOwner, getSiteLikes, getSiteSettings, getSubscribeOptions, siteDescription, siteName } from "../lib/blog-data";
 import { getApiUrl } from "../lib/config";
-import IconifyIcon from "./iconify-icon";
+import IconifyIcon, { SocialIcon } from "./iconify-icon";
 import ScrollHint from "./scroll-hint";
 import SiteActions from "./site-actions";
 import Starfield from "./starfield";
@@ -25,12 +25,6 @@ async function loadOwner() {
   }
 }
 
-// 社交账号用真实的品牌标志（Iconify 的 simple-icons）。
-const socialIcons: Record<string, React.ReactNode> = {
-  GitHub: <IconifyIcon icon="simple-icons:github" size={18} />,
-  Bilibili: <IconifyIcon icon="simple-icons:bilibili" size={18} />,
-};
-
 async function Socials() {
   const owner = await loadOwner();
   if (!owner?.socials.length) return null;
@@ -39,7 +33,7 @@ async function Socials() {
       {owner.socials.map((social) => (
         <li key={social.href}>
           <a href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label} title={social.label}>
-            {socialIcons[social.label] ?? social.label.slice(0, 1)}
+            <SocialIcon label={social.label} />
           </a>
         </li>
       ))}

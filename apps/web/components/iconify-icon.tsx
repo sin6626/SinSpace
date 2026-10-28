@@ -29,3 +29,14 @@ export default function IconifyIcon({ icon, size = 18, className }: { icon: `${"
     />
   );
 }
+
+// 社交账号的品牌标志（后台个人资料里的 socialIds，见 blog-data.ts 的 socialLinks）；没有对应图标时用名字首字。首屏和导航面板共用。
+const socialIconNames: Record<string, `simple-icons:${string}`> = {
+  GitHub: "simple-icons:github",
+  Bilibili: "simple-icons:bilibili",
+};
+
+export function SocialIcon({ label, size = 18 }: { label: string; size?: number }) {
+  const icon = socialIconNames[label];
+  return icon ? <IconifyIcon icon={icon} size={size} /> : <>{label.slice(0, 1)}</>;
+}

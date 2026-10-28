@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { openBrowser, sleep } from "../headless-browser.mjs";
 
 const base = process.env.WEB_URL ?? "http://127.0.0.1:2323";
-const routes = [["/projects", "/"], ["/posts", "/"], ["/", "/notes"]];
+const routes = [["/timeline", "/"], ["/posts", "/"], ["/", "/notes"]];
 
 // 点导航后等到新页面的进场动画走到约 200ms（此时新页面还是半透明的）再返回
 const clickAndWaitMidTransition = (href) => `(async () => {

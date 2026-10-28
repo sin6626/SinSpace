@@ -19,13 +19,14 @@ const fingerprint = `(() => {
   };
 })()`;
 
+// 原来的 bug 出在首页 → 作品；2026-10-28 作品挪进了“更多”面板，顶部导航里没有它了，改用同样是内页的时间线。
 // 每条路线：先整页打开 start，再依次点导航跳到后面的地址；最后一站的指纹要等于直接打开它的指纹
 const routes = [
-  ["/", "/projects"],
+  ["/", "/timeline"],
   ["/", "/notes"],
   ["/", "/posts"],
-  ["/projects", "/"],
-  ["/", "/projects", "/"],
+  ["/timeline", "/"],
+  ["/", "/timeline", "/"],
 ];
 
 const browser = await openBrowser({ port: 9334 });
@@ -37,7 +38,7 @@ try {
     direct[path] = await browser.evaluate(fingerprint);
   }
   // 首页和内页的布局本来就不同，否则这个测试比较不出任何东西
-  assert.notDeepEqual(direct["/"], direct["/projects"], "首页与内页的布局指纹应当不同");
+  assert.notDeepEqual(direct["/"], direct["/timeline"], "首页与内页的布局指纹应当不同");
 
   for (const [start, ...steps] of routes) {
     await browser.goto(base + start);

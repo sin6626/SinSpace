@@ -9,7 +9,7 @@ import { openBrowser } from "../headless-browser.mjs";
 import { clickNavAndCaptureTransition } from "./helpers.mjs";
 
 const base = process.env.WEB_URL ?? "http://127.0.0.1:2323";
-const routes = [["/", "/projects"], ["/projects", "/"], ["/posts", "/notes"]];
+const routes = [["/", "/timeline"], ["/timeline", "/"], ["/posts", "/notes"]];
 const translateX = (transform) => (transform?.match(/matrix\(1, 0, 0, 1, ([-\d.]+),/) ?? [])[1] ?? "0";
 
 const browser = await openBrowser({ port: 9335 });

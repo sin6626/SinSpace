@@ -226,8 +226,8 @@
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   background-color: var(--glass-popup);
+  /* 只写不带前缀的 backdrop-filter：两种都写时 Lightning CSS 只留下后写的 -webkit- 版本，Chrome 就没有模糊了 */
   backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
   color: var(--foreground);
   box-shadow: var(--shadow-popup);
   transform-origin: var(--transform-origin);
@@ -254,13 +254,11 @@
   transition:
     opacity calc(var(--duration) * 0.5) ease,
     transform var(--duration) var(--easing);
-  padding: var(--space-2);
   width: calc(100vw - 40px);
   height: 100%;
 
   @media (min-width: 500px) {
     width: max-content;
-    max-width: 400px;
   }
 
   &[data-starting-style],
@@ -294,52 +292,86 @@
   height: 100%;
 }
 
-.navigation-ContentTitle {
-  margin: 0;
-  padding: var(--space-1) var(--space-3) var(--space-2);
+/* 悬停面板（navigation-menu.tsx 的 HomePanel / PostsPanel / NotesPanel / TimelinePanel 与“更多”）：
+   左右两栏，中间一条淡竖线；小标题字距拉开；底部一条淡线隔出“查看全部 →”。列表项悬停或当前时，前面的小星亮起。 */
+.nav-panel {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5, 1.25rem) var(--space-6);
+}
+
+.nav-panel.is-home {
+  grid-template-columns: auto minmax(14rem, 1fr);
+  gap: 0;
+  width: 32rem;
+}
+
+.nav-panel.is-posts { width: 38rem; }
+.nav-panel.is-notes { width: 36rem; }
+.nav-panel.is-timeline { width: 36rem; }
+.nav-panel.is-more { width: 22rem; }
+
+.nav-panel-body {
+  display: grid;
+  grid-template-columns: minmax(9.5rem, max-content) minmax(0, 1fr);
+}
+
+.nav-panel-side {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  padding-right: var(--space-6);
+  border-right: 1px solid var(--glass-border);
+}
+
+.nav-panel-main {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  min-width: 0;
+  padding-left: var(--space-6);
+}
+
+.nav-panel-body > .nav-panel-main:only-child {
+  padding-left: 0;
+}
+
+.nav-panel-label {
+  margin: 0 0 var(--space-1);
   color: var(--muted-foreground);
   font-size: var(--text-xs);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.18em;
 }
 
-.navigation-FlexLinkList {
-  box-sizing: border-box;
-  display: grid;
-  gap: 2px;
-  min-width: 10rem;
-  max-width: 400px;
-  padding: 0;
+.nav-panel-empty {
   margin: 0;
-  list-style: none;
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
 }
 
-/* 子菜单每项前一颗小星，悬停或当前时亮起 */
-.navigation-LinkCard {
-  box-sizing: border-box;
-  position: relative;
+/* 面板里所有可点的行：默认淡色，悬停变亮；聚焦有焦点框 */
+.nav-link,
+.nav-category,
+.nav-entry,
+.nav-more-link,
+.nav-panel-more {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  width: 100%;
-  padding: var(--space-2) var(--space-3);
-  border: 0;
   border-radius: var(--radius-sm);
-  background-color: transparent;
   color: var(--muted-foreground);
-  text-align: left;
   text-decoration: none;
-  transition: color var(--duration-fast), translate var(--duration-base) var(--ease-out);
+  outline: 0;
+  transition: color var(--duration-fast);
 
   @media (hover: hover) {
     &:hover {
       color: var(--foreground);
-      translate: 2px 0;
     }
   }
 
   &:focus-visible {
     outline: 2px solid var(--ring);
-    outline-offset: -2px;
+    outline-offset: 2px;
   }
 
   &[data-active] {
@@ -347,27 +379,264 @@
   }
 }
 
-.navigation-LinkDot {
-  flex: none;
-  width: 4px;
-  height: 4px;
-  border-radius: var(--radius-full);
-  background: currentColor;
-  opacity: 0.4;
-  transition: opacity var(--duration-base), box-shadow var(--duration-base);
+/* 首页面板：此间的三个数字 */
+.nav-stats {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
 }
 
-.navigation-LinkCard:hover .navigation-LinkDot,
-.navigation-LinkCard[data-active] .navigation-LinkDot {
+.nav-stats div {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.nav-stats dd {
+  margin: 0;
+  color: var(--foreground);
+  font-family: var(--font-latin), sans-serif;
+  font-size: 1.75rem;
+  font-weight: 300;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.nav-stats dt {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+}
+
+.nav-socials {
+  display: flex;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3) 0 0;
+  list-style: none;
+  border-top: 1px solid var(--glass-border);
+}
+
+.nav-socials a {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--radius-full);
+  color: var(--muted-foreground);
+  transition: color var(--duration-fast), background-color var(--duration-fast);
+
+  @media (hover: hover) {
+    &:hover {
+      background: color-mix(in srgb, var(--foreground) 8%, transparent);
+      color: var(--foreground);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+.nav-page-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1) var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-link {
+  padding: 0.375rem 0;
+  font-size: var(--text-sm);
+  letter-spacing: 0.04em;
+}
+
+/* 分类、话题：名字在左（前面一颗小星），篇数靠右 */
+.nav-categories {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-category {
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 0.375rem 0;
+  font-size: var(--text-sm);
+}
+
+.nav-category-name {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-left: var(--space-4);
+  white-space: nowrap;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    border-radius: var(--radius-full);
+    background: currentColor;
+    opacity: 0.35;
+    translate: 0 -50%;
+    transition: opacity var(--duration-base), box-shadow var(--duration-base), background-color var(--duration-base);
+  }
+}
+
+/* 当前高亮的分类（右边正列出它的文章）、悬停或当前页：小星亮起 */
+li[data-highlighted] > .nav-category,
+.nav-category[data-active] {
+  color: var(--foreground);
+}
+
+li[data-highlighted] > .nav-category .nav-category-name::before,
+.nav-category:hover .nav-category-name::before,
+.nav-category[data-active] .nav-category-name::before {
   opacity: 1;
+  background: var(--primary);
   box-shadow: 0 0 6px 1px var(--star-glow);
 }
 
-.navigation-LinkTitle {
+.nav-category-count {
+  color: var(--muted-foreground);
+  font-family: var(--font-latin), sans-serif;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.nav-topic-icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+/* 近期列表：月·日 | 标题（一行省略） | 类型 */
+.nav-entries {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-entry {
+  gap: var(--space-4);
+  padding: 0.375rem 0;
   font-size: var(--text-sm);
-  line-height: 1.25rem;
+}
+
+.nav-entry time {
+  flex: none;
+  min-width: 2.75rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-latin), sans-serif;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.nav-entry-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--foreground);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.85;
+  transition: opacity var(--duration-fast), color var(--duration-fast);
+}
+
+.nav-entry:hover .nav-entry-title,
+.nav-entry[data-active] .nav-entry-title {
+  opacity: 1;
+  color: var(--primary);
+}
+
+.nav-entry-kind {
+  flex: none;
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+}
+
+.nav-panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--glass-border);
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+}
+
+.nav-panel-more {
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+}
+
+/* 更多：名字 …… 一句说明 */
+.nav-more {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-more-link {
+  gap: var(--space-3);
+  padding: 0.5rem 0;
+}
+
+.nav-more-name {
+  color: var(--foreground);
+  font-size: var(--text-sm);
   letter-spacing: 0.04em;
   white-space: nowrap;
+}
+
+.nav-more-leader {
+  flex: 1;
+  min-width: 1.5rem;
+  border-bottom: 1px dotted color-mix(in srgb, var(--foreground) 22%, transparent);
+  translate: 0 -0.2em;
+}
+
+.nav-more-note {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.nav-more-link:hover .nav-more-name,
+.nav-more-link[data-active] .nav-more-name {
+  color: var(--primary);
+}
+
+/* 手机宽度用不到这些面板（顶部只剩菜单按钮），平板宽度下面板收窄成单栏 */
+@media (max-width: 767px) {
+  .nav-panel.is-home,
+  .nav-panel.is-posts,
+  .nav-panel.is-notes,
+  .nav-panel.is-timeline {
+    width: calc(100vw - 40px);
+  }
 }
 
 .navigation-Positioner {
@@ -381,8 +650,8 @@
   .navigation-Popup[data-ending-style],
   .navigation-Content,
   .navigation-Dot,
-  .navigation-LinkCard,
-  .navigation-LinkDot {
+  .nav-category-name::before,
+  .nav-entry-title {
     transition: none;
     animation: none !important;
   }
