@@ -27,6 +27,7 @@
   --glass-border: light-dark(rgb(35 29 51 / 10%), rgb(236 232 244 / 12%));
   --constellation-line: light-dark(rgb(35 29 51 / 14%), rgb(236 232 244 / 14%)); /*顶部导航的星座连线*/
   --star-glow: color-mix(in srgb, var(--primary) 60%, transparent);             /*星点的光晕*/
+  --moonlight: light-dark(#7a3d7f, #f6ead0);          /*月光色：首屏强调词与小星（熄灯时和月亮同色，开灯时深梅紫）*/
   --band-sky: light-dark(#f1d9ea, #1d1533);           /*内页顶部夜空带（开灯时是淡晚霞）*/
   --band-star: light-dark(rgb(255 255 255 / 90%), rgb(253 246 255 / 85%));
 

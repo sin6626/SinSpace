@@ -78,9 +78,9 @@ export default function HomeHero() {
         <div className="home-hero-half is-text">
           <div className="home-hero-content">
             <h1 id="home-hero-title" className="home-hero-title">
-              <span>你好，我是</span><strong>Sin</strong><span>。</span>
+              <span>你好，我是</span><strong>Sin<span className="home-hero-star" aria-hidden="true" /></strong><span>。</span>
               <br />
-              <span>一个在深夜写代码的</span><strong>大二学生</strong>
+              <span>一个在深夜写代码的</span><strong>大三学生</strong>
             </h1>
             <p className="home-hero-description">白天上课，晚上折腾前端、写博客、做点小东西。</p>
             <Suspense fallback={null}>

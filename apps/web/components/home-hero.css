@@ -76,13 +76,58 @@
   display: inline-block;
 }
 
+/* 强调词是“被月光照亮的字”：和月亮同色的暖奶白，带一圈很淡的月光晕（开灯时换成深梅紫）；
+   名字右上角缀一颗会轻轻闪的小星，样子和导航当前页的亮星一样 */
 .home-hero-title strong {
+  position: relative;
   margin-inline: 0.5rem;
   font-weight: 500;
-  background: linear-gradient(100deg, var(--primary), light-dark(#c2410c, #fff4e8));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--moonlight);
+  text-shadow: 0 0 1.5rem color-mix(in srgb, var(--moonlight) 40%, transparent);
+}
+
+.home-hero-star {
+  position: absolute;
+  top: 1.3em;
+  right: -0.4em;
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: var(--moonlight);
+  box-shadow: 0 0 6px 1px color-mix(in srgb, var(--moonlight) 70%, transparent);
+  animation: home-hero-twinkle 3.6s ease-in-out infinite;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+  }
+
+  &::before {
+    width: 18px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--moonlight), transparent);
+  }
+
+  &::after {
+    width: 1px;
+    height: 18px;
+    background: linear-gradient(to bottom, transparent, var(--moonlight), transparent);
+  }
+}
+
+@keyframes home-hero-twinkle {
+  0%, 100% { opacity: 0.55; scale: 0.8; }
+  50% { opacity: 1; scale: 1.15; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-hero-star {
+    animation: none;
+  }
 }
 
 .home-hero-description {
