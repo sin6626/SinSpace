@@ -49,7 +49,7 @@ function Section<T>({ title, note, allHref, items, empty, className, children }:
   );
 }
 
-// 竖向时间线的一条：前面一颗小星，上面一行日期和附加信息，下面一行标题；整条可点。
+// 竖向时间线的一条：前面一颗小星，标题在左，附加信息和日期靠右；整条可点。
 function TimelineItem({ href, created, title, meta, serif, pinned }: {
   href: string | null;
   created: string;
@@ -61,21 +61,21 @@ function TimelineItem({ href, created, title, meta, serif, pinned }: {
   return (
     <li className={pinned ? "home-timeline-item is-pinned" : "home-timeline-item"}>
       <span className="home-timeline-node" aria-hidden="true" />
-      <span className="home-timeline-meta">
-        <time dateTime={created}>{formatDate(created)}</time>
-        {meta}
-      </span>
       <span className={serif ? "home-timeline-title is-serif" : "home-timeline-title"}>
         {href ? <Link className="card-link" href={href}>{title}</Link> : title}
+      </span>
+      <span className="home-timeline-meta">
+        {meta}
+        <time dateTime={created}>{formatDate(created)}</time>
       </span>
     </li>
   );
 }
 
-// 首屏下面：左栏上下放文章和手记；右栏按 3:7 上下分成碎碎念和“最近发生的事”；两栏下面是技术栈滚动条。
+// 首屏下面：左栏上下放文章和手记；右栏按 2:3 上下分成碎碎念和“最近发生的事”；两栏下面是技术栈滚动条。
 export default async function HomeLatest() {
   const [posts, notes, murmurs] = await Promise.all([
-    load(async () => (await getPosts(1)).data.slice(0, 6)),
+    load(async () => (await getPosts(1)).data.slice(0, 5)),
     load(async () => (await getNotes(1)).data.slice(0, 5)),
     load(async () => (await getRecently()).data.slice(0, 6)),
   ]);
@@ -92,7 +92,7 @@ export default async function HomeLatest() {
                   created={post.created}
                   title={post.title}
                   pinned={post.pinned}
-                  meta={<>{post.category && <span>{post.category.name}</span>}{post.pinned && <span className="badge">置顶</span>}</>}
+                  meta={<>{post.pinned && <span className="badge">置顶</span>}{post.category && <span>{post.category.name}</span>}</>}
                 />
               ))}
             </ol>

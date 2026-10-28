@@ -238,8 +238,9 @@
 .home-room {
   max-width: 1800px;
   margin-inline: auto;
-  padding-top: var(--space-16);
-  scroll-margin-top: calc(var(--header-height) - var(--space-8));
+  /* 第一屏刚好滚出去时（也是“往下看看”滚到的位置），分区标题正好露在导航栏下面；
+     中段整体高度控制在一屏以内（1920×991 下约 760px），不用再往下滚就能看全 */
+  padding-top: calc(var(--header-height) + var(--space-8));
 }
 
 .site-shell:has(.home-hero:not([style*="display: none"])) .site-header-inner,
@@ -267,7 +268,7 @@
 }
 
 .home-columns .home-section + .home-section {
-  margin-top: 6rem;
+  margin-top: var(--space-16);
 }
 
 .home-columns .home-stack {
@@ -286,13 +287,12 @@
 }
 
 /* 文章、手记：竖向时间线。一条两端渐隐的淡线（和导航的星座连线同色）串起每条前面的小星；
-   星的右边上面一行是日期和分类（手记是心情、天气），下面一行是标题。悬停时星亮起、标题变强调色；置顶文章是带星芒的亮星。 */
+   每条一行：标题在左，分类（手记是心情、天气）和日期靠右。悬停时星亮起、标题变强调色；置顶文章是带星芒的亮星。 */
 .home-timeline {
   --node-x: 0.375rem; /*星点中心离左边的距离*/
   position: relative;
   display: grid;
-  gap: var(--space-2);
-  padding-block: var(--space-2);
+  padding-block: var(--space-1);
 
   &::before {
     content: "";
@@ -301,24 +301,26 @@
     bottom: 0;
     left: calc(var(--node-x) - 0.5px);
     width: 1px;
-    background: linear-gradient(to bottom, transparent, var(--constellation-line) 8%, var(--constellation-line) 92%, transparent);
+    background: linear-gradient(to bottom, transparent, var(--constellation-line) 10%, var(--constellation-line) 90%, transparent);
   }
 }
 
 .home-timeline-item {
   position: relative;
   display: grid;
-  gap: 0.375rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--space-6);
   margin-left: calc(-1 * var(--space-2));
-  padding: var(--space-3) var(--space-3) var(--space-3) calc(var(--node-x) + var(--space-2) + 1.5rem);
+  padding: 0.625rem var(--space-3) 0.625rem calc(var(--node-x) + var(--space-2) + 1.25rem);
   border-radius: var(--radius-sm);
   transition: background-color var(--duration-base);
 }
 
-/* 每条前面的小星，和日期那一行对齐 */
+/* 每条前面的小星，垂直居中在这一行 */
 .home-timeline-node {
   position: absolute;
-  top: calc(var(--space-3) + 0.5rem);
+  top: 50%;
   left: calc(var(--node-x) + var(--space-2));
   width: 5px;
   height: 5px;
@@ -357,28 +359,9 @@
   background: linear-gradient(to bottom, transparent, var(--primary), transparent);
 }
 
-.home-timeline-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-1) var(--space-3);
-  color: var(--muted-foreground);
-  font-size: var(--text-xs);
-  line-height: 1rem;
-}
-
-.home-timeline-meta time {
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.04em;
-}
-
-.home-timeline-meta .badge {
-  line-height: 1.2;
-}
-
 .home-timeline-title {
   overflow: hidden;
-  font-size: 1.0625rem;
+  font-size: 1rem;
   line-height: 1.5;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -387,6 +370,26 @@
 
 .home-timeline-title.is-serif {
   font-family: var(--font-serif);
+}
+
+.home-timeline-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.home-timeline-meta time {
+  min-width: 5.25rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.home-timeline-meta .badge {
+  line-height: 1.2;
 }
 
 @media (hover: hover) {
@@ -451,6 +454,21 @@
     width: calc(100% - 2rem);
   }
 
+  /* 手机上标题单独一行完整显示，分类和日期放到下一行 */
+  .home-timeline-item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+  }
+
+  .home-timeline-node {
+    top: 1.375rem;
+  }
+
+  .home-timeline-meta time {
+    min-width: 0;
+    text-align: left;
+  }
+
   .home-timeline-title {
     white-space: normal;
   }
@@ -474,13 +492,13 @@
   }
 }
 
-/* 右栏按 3:7 上下分成碎碎念和“最近发生的事”，总高度跟左栏一样；内容多时各自在框里滚动，底部渐隐 */
+/* 右栏按 2:3 上下分成碎碎念和“最近发生的事”，总高度跟左栏一样；内容多时各自在框里滚动，底部渐隐 */
 .home-side {
   display: grid;
-  grid-template-rows: minmax(0, 3fr) minmax(0, 7fr);
+  grid-template-rows: minmax(0, 2fr) minmax(0, 3fr);
   gap: var(--space-12);
   min-height: 0;
-  /* 右栏自己不撑高这一行：高度完全跟着左栏（文章 + 手记），再按 3:7 分给两块 */
+  /* 右栏自己不撑高这一行：高度完全跟着左栏（文章 + 手记），再按 2:3 分给两块 */
   contain: size;
 }
 
