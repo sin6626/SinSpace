@@ -1,7 +1,8 @@
 // 浏览器回归测试：顶部导航的悬停面板（2026-10-28 仿 Innei 的面板式导航）。
 // 检查：① 一级导航的顺序；② 悬停首页、文章、手记、时间线、更多都会弹出对应面板；
 // ③ 首页面板“此间”的篇数和字数不是 0（Core 的 site_info 字段经 SDK 转成驼峰，读错字段名时会全是 0）；
-// ④ 文章面板里鼠标移到另一个分类，右边的“X · 最近”跟着换；⑤ 弹层背景真的有模糊（backdrop-filter 曾被构建工具吞掉）。
+// ④ 文章面板里鼠标移到另一个分类，右边的“X · 最近”跟着换；⑤ 弹层背景真的有模糊（backdrop-filter 曾被构建工具吞掉）；
+// ⑥ 五个面板里的每个链接打开后都不是站内 404（手记面板的话题链接曾用话题名拼地址，而手记页按 slug 筛选，结果全是 404）。
 // 需要先运行 pnpm dev（默认 http://127.0.0.1:2323，可用 WEB_URL 覆盖）。用法：pnpm e2e
 import assert from "node:assert/strict";
 import { openBrowser, sleep } from "../headless-browser.mjs";
@@ -29,9 +30,11 @@ try {
   assert.deepEqual(order, ["首页", "文章", "手记", "时间线", "碎碎念", "更多"], `导航顺序不对：${order.join(" / ")}`);
 
   const panels = { 首页: "is-home", 文章: "is-posts", 手记: "is-notes", 时间线: "is-timeline", 更多: "is-more" };
+  const hrefs = new Map();
   for (const [label, className] of Object.entries(panels)) {
     await hover(label);
     assert.equal(await browser.evaluate(`!!document.querySelector(".navigation-Popup .nav-panel.${className}")`), true, `悬停“${label}”没有弹出面板`);
+    for (const href of await browser.evaluate(`[...document.querySelectorAll(".navigation-Popup .nav-panel a[href^='/']")].map((a) => a.getAttribute("href"))`)) hrefs.set(href, label);
   }
 
   await hover("首页");
@@ -52,7 +55,15 @@ try {
   const after = await browser.evaluate(`document.querySelector(".is-posts .nav-panel-main .nav-panel-label").textContent`);
   assert.equal(after, `${name} · 最近`, `移到“${name}”后右边没有跟着换（之前是 ${before}）`);
 
-  console.log(`PASS 导航顺序、五个悬停面板、此间数字 ${stats.join("/")}、弹层模糊、文章面板随分类切换（${before} → ${after}）`);
+  // 逐个整页打开面板里的站内链接，正文不能是站内 404（app/not-found.tsx 的 .empty-state，状态码仍可能是 200，所以看正文）
+  const broken = [];
+  for (const [href, label] of hrefs) {
+    await browser.goto(base + href, 1500);
+    if (await browser.evaluate(`!!document.querySelector(".site-content .empty-state")`)) broken.push(`${label}：${decodeURIComponent(href)}`);
+  }
+  assert.deepEqual(broken, [], `面板里有链接打开是 404：${broken.join("；")}`);
+
+  console.log(`PASS 面板内 ${hrefs.size} 个链接都能打开；导航顺序、五个悬停面板、此间数字 ${stats.join("/")}、弹层模糊、文章面板随分类切换（${before} → ${after}）`);
 } finally {
   browser.close();
 }

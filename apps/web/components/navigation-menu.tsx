@@ -272,7 +272,8 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
     <NavigationMenu.Root
       className="navigation-Root"
       aria-label="主导航"
-      closeDelay={500}
+      // 鼠标离开后多久收起面板：原来 500ms 用着粘手，150ms 足够鼠标从导航滑进面板（中间有透明的悬停桥）
+      closeDelay={150}
       value={openItem}
       onValueChange={setOpenItem}
     >

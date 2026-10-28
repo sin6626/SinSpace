@@ -581,7 +581,8 @@ export async function getNavigationPanels() {
       count: category.count ?? 0,
       recent: posts.filter((item) => item.kind === "post" && item.category.slug === category.slug).slice(0, 5).map(entry),
     })),
-    topics: topics.map((topic) => ({ name: topic.name, icon: topic.icon, count: topic.count, href: `/notes?topic=${encodeURIComponent(topic.name)}` })),
+    // 手记页按话题的 slug 筛选（和页内“按话题”抽屉一致），不能用名字
+    topics: topics.map((topic) => ({ name: topic.name, icon: topic.icon, count: topic.count, href: `/notes?topic=${encodeURIComponent(topic.slug)}` })),
     recentNotes: timeline.filter((item) => item.kind === "note").slice(0, 5).map(entry),
     recent: timeline.slice(0, 5).map(entry),
   };
