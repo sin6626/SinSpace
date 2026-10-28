@@ -63,6 +63,13 @@ async function Actions() {
   );
 }
 
+// 丛雨抱着名字：身体（后层、闭眼帧）在字后面，手臂（前层）在字前面，三张图画布一致、叠在同一位置。
+// 素材在 public/mascot，由 scripts/prepare-mascot.mjs 从生图结果抠图生成；纯装饰，读屏只读到“Sin”。
+function MascotLayer({ layer }: { layer: "back" | "blink" | "front" }) {
+  // eslint-disable-next-line @next/next/no-img-element -- 三层要像素级叠在一起，直接用原图，不走响应式裁切
+  return <img className={`home-hero-mascot is-${layer}`} src={`/mascot/${layer}.webp`} alt="" aria-hidden="true" width={720} height={525} draggable={false} />;
+}
+
 async function Motto() {
   return (await getSiteSettings().catch(() => null))?.description ?? siteDescription;
 }
@@ -75,7 +82,18 @@ export default function HomeHero() {
         <div className="home-hero-half is-text">
           <div className="home-hero-content">
             <h1 id="home-hero-title" className="home-hero-title">
-              <span>你好，我是</span><strong>Sin<span className="home-hero-star" aria-hidden="true" /></strong><span>。</span>
+              <span>你好，我是</span>
+              {/* “Sin。”包成一块：窄屏放不下一行时一起换行，句号不会单独掉到下一行 */}
+              <span>
+                <strong className="home-hero-name">
+                  <MascotLayer layer="back" />
+                  <MascotLayer layer="blink" />
+                  Sin
+                  <MascotLayer layer="front" />
+                  <span className="home-hero-star" aria-hidden="true" />
+                </strong>
+                <span>。</span>
+              </span>
               <br />
               <span>一个在深夜写代码的</span><strong>大三学生</strong>
             </h1>
