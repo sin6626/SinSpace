@@ -83,14 +83,14 @@
   display: inline-block;
 }
 
-/* 强调词是“被月光照亮的字”：和月亮同色的暖奶白，带一圈很淡的月光晕（开灯时换成深梅紫）；
+/* 强调词是“被月光照亮的字”：和月亮同色的暖奶白，带一圈很淡的月光晕（开灯时换成暮色深青加白色光晕，见 globals.css）；
    名字右上角缀一颗会轻轻闪的小星，样子和导航当前页的亮星一样 */
 .home-hero-title strong {
   position: relative;
   margin-inline: 0.5rem;
   font-weight: 400;
   color: var(--moonlight);
-  text-shadow: 0 0 1.5rem color-mix(in srgb, var(--moonlight) 40%, transparent);
+  text-shadow: 0 0 1.5rem var(--moonlight-glow);
 }
 
 .home-hero-star {
@@ -100,8 +100,8 @@
   width: 5px;
   height: 5px;
   border-radius: var(--radius-full);
-  background: var(--moonlight);
-  box-shadow: 0 0 6px 1px color-mix(in srgb, var(--moonlight) 70%, transparent);
+  background: var(--evening-star);
+  box-shadow: 0 0 6px 1px color-mix(in srgb, var(--evening-star) 70%, transparent);
   animation: home-hero-twinkle 3.6s ease-in-out infinite;
 
   &::before,
@@ -116,13 +116,13 @@
   &::before {
     width: 18px;
     height: 1px;
-    background: linear-gradient(to right, transparent, var(--moonlight), transparent);
+    background: linear-gradient(to right, transparent, var(--evening-star), transparent);
   }
 
   &::after {
     width: 1px;
     height: 18px;
-    background: linear-gradient(to bottom, transparent, var(--moonlight), transparent);
+    background: linear-gradient(to bottom, transparent, var(--evening-star), transparent);
   }
 }
 
