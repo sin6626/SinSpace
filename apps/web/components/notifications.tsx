@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { Toast } from "@base-ui/react/toast";
 import { io, type Socket } from "socket.io-client";
+import { useIsland, type IslandActivityIcon } from "../lib/island-store";
 import { getNotification, notificationSettings } from "../lib/notification-copy";
 import "./notifications.css";
 
@@ -26,15 +27,19 @@ export default function Notifications({ url, children }: { url: string; children
 function Connection({ url, children }: { url: string; children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [online, setOnline] = useState<number | null>(null);
-  // Base UI: 获取 Toast的管理器, 返回一个管理器, add方法是用于添加Toast 通知的
-  const { add } = Toast.useToastManager();
   useEffect(() => {
     const connection = io(url, { transports: ["websocket"], autoConnect: false });
+    // 文章发布、修改、删除改由页头夜航岛播报（原来是右下角 Toast）；新文章带上标题
     const onMessage = (message: unknown) => {
       const count = onlineCount(message);
       if (count !== null) setOnline(count);
       const notification = getNotification(message);
-      if (notification) add(notification);
+      if (!notification) return;
+      const type = (message as { type: string }).type;
+      const icons: Record<string, IslandActivityIcon> = { POST_CREATE: "post", POST_UPDATE: "update", POST_DELETE: "remove" };
+      const data = (message as { data?: { title?: unknown } }).data;
+      const title = typeof data?.title === "string" ? `《${data.title}》` : undefined;
+      useIsland.getState().push({ icon: icons[type] ?? "info", title: notification.title, detail: title ?? notification.description, duration: 5000 });
     };
     connection.on("message", onMessage);
     connection.on("connect", () => setSocket(connection));
@@ -43,7 +48,7 @@ function Connection({ url, children }: { url: string; children: React.ReactNode 
       connection.off("message", onMessage);
       connection.disconnect();
     };
-  }, [url, add]);
+  }, [url]);
   return <SocketContext value={socket}><OnlineContext value={online}>{children}</OnlineContext></SocketContext>;
 }
 

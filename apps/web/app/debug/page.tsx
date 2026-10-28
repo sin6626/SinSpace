@@ -8,6 +8,7 @@ import RecentlyAttitude from "@/components/recently-attitude";
 import SubscribeForm from "@/components/subscribe-form";
 import { getApiUrl } from "@/lib/config";
 import StyleGuide from "./style-guide";
+import IslandButtons from "./island-buttons";
 import ToastButtons from "./toast-buttons";
 
 export const metadata: Metadata = { title: "调试" };
@@ -131,6 +132,11 @@ export default function DebugPage() {
             <h2>通知 Toast</h2>
             <p className="post-meta">文案来自 lib/notification-copy.ts，只在本页弹出，不走 WebSocket，也不清缓存</p>
             <ToastButtons />
+          </li>
+          <li>
+            <h2>页头夜航岛</h2>
+            <p className="post-meta">site-header.tsx：往下滚动后收成胶囊，悬停展开；下面的按钮在岛上播报示例活动（文章通知、开关灯现在都走这里），连点会排队</p>
+            <IslandButtons />
           </li>
           <li>
             <h2>文章正文</h2>

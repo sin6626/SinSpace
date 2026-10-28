@@ -11,6 +11,7 @@ import { ArticleAiNotes, ArticleLanguages, loadArticleAi } from "./article-ai";
 import ArticleStats from "./article-stats";
 import Comments from "./comments";
 import { ArticleNotifications, ReadingCount } from "./notifications";
+import IslandReading from "./island-reading";
 import NoteUnlock from "./note-unlock";
 import "./post-detail.css";
 
@@ -46,6 +47,7 @@ export default async function NoteDetail({ params, searchParams }: { params: Pro
   return (
     <article className="post-detail note-detail" lang={ai.lang ?? undefined}>
       <ArticleNotifications id={note.id} />
+      <IslandReading title={body.title} kind="手记" />
       <header className="page-heading">
         <nav className="detail-crumb" aria-label="位置">
           <Link href="/notes">手记</Link>

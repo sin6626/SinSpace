@@ -28,13 +28,6 @@
     display: none;
   }
 
-  .site-header .site-header-inner {
-    grid-template-columns: 1fr auto;
-  }
-
-  .site-header .navigation-Area {
-    justify-self: end;
-  }
 }
 
 .mobile-menu {

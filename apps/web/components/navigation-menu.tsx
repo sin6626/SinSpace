@@ -5,7 +5,8 @@ import { ArrowRight, ChevronDown } from "lucide-react";
 import { LayoutGroup, MotionConfig, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useIsland } from "../lib/island-store";
 import type { NavigationEntry, getNavigationPanels } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
 import MobileMenu from "./mobile-menu";
@@ -187,6 +188,9 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
     setLastPathname(pathname);
     setOpenItem(null);
   }
+  // 面板开着时告诉页头夜航岛别收起（否则面板会失去依附）
+  const setNavOpen = useIsland((store) => store.setNavOpen);
+  useEffect(() => setNavOpen(openItem !== null), [openItem, setNavOpen]);
   const router = useRouter();
   const ready = state.status === "ready" ? state : null;
   const panels = ready?.panels ?? null;

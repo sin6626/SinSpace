@@ -2,6 +2,7 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useSyncExternalStore } from "react";
+import { useIsland } from "../lib/island-store";
 import "./theme-switcher.css";
 
 // 开灯 / 熄灯：一个按钮来回切换，白 → 黑、黑 → 白。默认熄灯（深色），这是站点的主场；开灯存 theme=light。
@@ -45,6 +46,10 @@ function toggle() {
     document.documentElement.dataset.theme = next;
     listeners.forEach((listener) => listener());
   };
+  // 页头夜航岛播报一下
+  useIsland.getState().push(next === "dark"
+    ? { icon: "moon", title: "熄灯了", detail: "星星都出来了，晚安" }
+    : { icon: "sun", title: "开灯了", detail: "天边还剩一点晚霞", duration: 2600 });
   if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) update();
   else document.startViewTransition({ update, types: ["theme"] });
 }

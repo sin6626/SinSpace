@@ -29,6 +29,11 @@
   --star-glow: color-mix(in srgb, var(--primary) 60%, transparent);             /*星点的光晕*/
   /* 首屏“被照亮的字”：熄灯时和月亮同色的暖奶白，带一圈月光晕；
      开灯时天是淡紫到桃粉的黄昏，同色系的深梅紫会糊进天里，所以跳到互补的暮色深青（取丛雨的发色），光晕换成白色把字托起来 */
+  --island-bg: rgb(9 7 16 / 92%);                         /*页头夜航岛收拢后的深色胶囊（开灯、熄灯都是深色，像灵动岛）*/
+  --island-fg: #ece8f4;
+  --island-muted: #a59fb8;
+  --island-primary: #e0a6e8;
+  --island-border: rgb(236 232 244 / 12%);
   --moonlight: light-dark(#0c524e, #f6ead0);
   --moonlight-glow: light-dark(rgb(255 255 255 / 60%), rgb(246 234 208 / 40%));
   --evening-star: light-dark(#ffffff, #f6ead0);       /*名字旁的小星：开灯时像黄昏最早亮起的长庚星，亮白*/
@@ -325,60 +330,7 @@ a:focus-visible,
   mask-image: linear-gradient(to bottom, #000 40%, transparent);
 }
 
-/* 页头本身透明，导航胶囊悬浮在页面上；页面往下滚一点后才铺上一层很淡的夜色毛玻璃，避免正文文字从站名底下穿过时看不清
-   （滚动驱动动画，不支持的浏览器一直是这层淡底）。首页在 home-hero.css 里改为滚出第一屏时才出现。 */
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: var(--z-header);
-  view-transition-name: site-header;
-  background: color-mix(in srgb, var(--background) 60%, transparent);
-  backdrop-filter: blur(12px) saturate(140%);
-}
-
-@supports (animation-timeline: scroll()) {
-  .site-header {
-    background: transparent;
-    backdrop-filter: none;
-    animation: site-header-solid linear both;
-    animation-timeline: scroll(root);
-    animation-range: 0 6rem;
-  }
-}
-
-@keyframes site-header-solid {
-  to {
-    background: color-mix(in srgb, var(--background) 60%, transparent);
-    backdrop-filter: blur(12px) saturate(140%);
-  }
-}
-
-/* 三段：站名靠左、导航胶囊居中、开关灯靠右；内页与正文同宽，站名和按钮分别对齐正文的左右边（首页在 home-hero.css 改宽） */
-.site-header-inner {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: var(--space-4);
-  max-width: var(--article-max-width);
-  min-height: var(--header-height);
-  margin-inline: auto;
-  padding: 0 var(--space-6);
-}
-
-.site-brand {
-  justify-self: start;
-  font-size: var(--text-base);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-}
-
-.site-header-tools {
-  justify-self: end;
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-}
+/* 页头（夜航岛）的样式在 components/site-header.css */
 
 /* 在线人数：一个轻轻呼吸的小绿点 */
 .site-online {

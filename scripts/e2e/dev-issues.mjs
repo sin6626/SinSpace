@@ -8,10 +8,17 @@ import { openBrowser } from "../headless-browser.mjs";
 
 const base = process.env.WEB_URL ?? "http://127.0.0.1:2323";
 const pages = ["/", "/posts", "/notes", "/timeline", "/timeline/posts", "/projects", "/friends", "/thinking", "/debug"];
+// 动态路由也要查（页头曾在 Suspense 外读 usePathname，只在详情页这类动态路由报错）：从时间线上取第一篇文章和第一篇手记
 
 const browser = await openBrowser({ port: 9338 });
 try {
   await browser.setViewport(1920, 991);
+  await browser.goto(`${base}/timeline`, 3000);
+  const details = await browser.evaluate(`(() => {
+    const hrefs = [...document.querySelectorAll(".timeline-list a")].map((a) => a.getAttribute("href"));
+    return [hrefs.find((h) => h.startsWith("/posts/")), hrefs.find((h) => h.startsWith("/notes/"))].filter(Boolean);
+  })()`);
+  pages.push(...details);
   const problems = [];
   for (const path of pages) {
     browser.errors.length = 0;

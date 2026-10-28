@@ -4,11 +4,11 @@ import { Geist_Mono, Noto_Sans_SC, Noto_Serif_SC, Nunito } from "next/font/googl
 import Notifications from "@/components/notifications";
 import { getApiUrl } from "../lib/config";
 import { getSiteSettings, siteName } from "../lib/blog-data";
-import Link from "next/link";
 import { Suspense } from "react";
 import Navigation from "@/components/navigation";
 import SiteFooter from "@/components/site-footer";
-import ThemeToggle from "@/components/theme-switcher";
+import SiteHeader from "@/components/site-header";
+import { getOwner } from "../lib/blog-data";
 import "./globals.css";
 
 // 英文和数字用 Nunito：圆润的无衬线体，细的用 200（ExtraLight），强调用 600（SemiBold）。
@@ -59,8 +59,16 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-async function SiteName() {
-  return (await getSiteSettings().catch(() => null))?.name ?? siteName;
+// 页头的站点标识：后台头像 + 站名（头像读不到时只显示站名）
+async function SiteBrand() {
+  const [settings, owner] = await Promise.all([getSiteSettings().catch(() => null), getOwner().catch(() => null)]);
+  return (
+    <>
+      {/* eslint-disable-next-line @next/next/no-img-element -- 头像来自后台任意地址，不走 Next 图片优化 */}
+      {owner?.avatar && <img className="site-brand-avatar" src={owner.avatar} alt="" width={32} height={32} />}
+      <span className="site-brand-name">{settings?.name ?? siteName}</span>
+    </>
+  );
 }
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -82,17 +90,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             跳到主要内容
           </a>
           <div className="site-shell">
-            <header className="site-header">
-              <div className="site-header-inner">
-                <Link className="site-brand" href="/">
-                  <Suspense fallback={siteName}><SiteName /></Suspense>
-                </Link>
-                <Navigation />
-                <div className="site-header-tools">
-                  <ThemeToggle />
-                </div>
-              </div>
-            </header>
+            <SiteHeader
+              brand={<Suspense fallback={<span className="site-brand-name">{siteName}</span>}><SiteBrand /></Suspense>}
+              nav={<Navigation />}
+            />
             {/* 视图过渡套在铺满整行的 .site-page 上，而不是宽度随页面变化的 main：
                 否则首页（全宽）和内页（48rem）之间切换时，过渡层会在两种宽度间变形，整页画面被压缩 */}
             <ViewTransition default="page-switch">

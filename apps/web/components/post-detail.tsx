@@ -1,4 +1,5 @@
 import { ArticleNotifications, ReadingCount } from "./notifications";
+import IslandReading from "./island-reading";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
@@ -41,6 +42,7 @@ export default async function PostDetail({ params, searchParams }: {
   return (
     <article className="post-detail" lang={ai.lang ?? undefined}>
       <ArticleNotifications id={post.id} />
+      <IslandReading title={body.title} kind="文章" />
       <header className="page-heading">
         <nav className="detail-crumb" aria-label="位置">
           <Link href="/posts">文章</Link>

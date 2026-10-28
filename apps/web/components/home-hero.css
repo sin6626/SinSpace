@@ -370,7 +370,7 @@
   padding-top: calc(var(--header-height) + var(--space-8));
 }
 
-.site-shell:has(.home-hero:not([style*="display: none"])) .site-header-inner,
+.site-shell:has(.home-hero:not([style*="display: none"])) .site-header[data-mode="bar"] .site-header-inner,
 .site-shell:has(.home-hero:not([style*="display: none"])) .site-footer-inner {
   max-width: 1800px;
   padding-inline: var(--home-gutter);
@@ -598,24 +598,6 @@
 
   .home-timeline-title {
     white-space: normal;
-  }
-}
-
-/* 导航在夜空上是透明的，往下滚出第一屏时渐渐变成半透明的夜色条（滚动驱动动画，不支持的浏览器保持半透明） */
-@supports (animation-timeline: scroll()) {
-  .site-shell:has(.home-hero:not([style*="display: none"])) .site-header {
-    background: transparent;
-    backdrop-filter: none;
-    animation: home-hero-header linear both;
-    animation-timeline: scroll(root);
-    animation-range: 55svh 90svh;
-  }
-}
-
-@keyframes home-hero-header {
-  to {
-    background: color-mix(in srgb, var(--background) 78%, transparent);
-    backdrop-filter: blur(12px) saturate(140%);
   }
 }
 
