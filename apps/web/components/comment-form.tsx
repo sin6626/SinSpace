@@ -2,13 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useId, useState, type FormEvent } from "react";
+import { useIsland } from "../lib/island-store";
 import { refreshAfterWrite } from "./cache-actions";
 import { signInWithGitHub, signOut, useLoginError, useReaderSession } from "./reader-session";
 
 export type CommentRefType = "Post" | "Note" | "Page" | "Recently";
 
 // allowGuest：后台是否允许游客评论；github：后台是否启用了 GitHub 登录。
-type Props = { apiUrl: string; allowGuest: boolean; github: boolean } & ({ refId: string; refType: CommentRefType; replyTo?: never } | { replyTo: { id: string; author: string }; refId?: never; refType?: never });
+// variant="chat"：文章侧栏评论悬浮窗里的紧凑输入框（标签只给读屏、一行身份信息、发送结果由页头夜航岛播报），
+// 回复对象由悬浮窗管理，发出或取消后调用 onDone。
+type Props = { apiUrl: string; allowGuest: boolean; github: boolean; variant?: "chat"; onDone?: () => void } & ({ refId: string; refType: CommentRefType; replyTo?: never } | { replyTo: { id: string; author: string }; refId?: never; refType?: never });
 
 // Core 的报错格式是 { message: string | string[] }，表单校验错误是数组。
 async function readError(response: Response) {
@@ -19,13 +22,15 @@ async function readError(response: Response) {
 
 // 评论直接从浏览器提交到 Core：Core 按访客 IP 做垃圾过滤、归属地和频率限制，经 Next 转发会全变成服务器 IP。
 // 游客填昵称、邮箱、网址（交给浏览器自动填充，不在本地另存）；GitHub 登录后的读者走读者接口，身份取自 Core 的登录 Cookie。
-export default function CommentForm({ apiUrl, allowGuest, github, refId, refType, replyTo }: Props) {
+export default function CommentForm({ apiUrl, allowGuest, github, refId, refType, replyTo, variant, onDone }: Props) {
+  const chat = variant === "chat";
+  const push = useIsland((state) => state.push);
   const id = useId();
   const router = useRouter();
   const session = useReaderSession(apiUrl);
   const loginError = useLoginError();
   const reader = session.status === "reader" ? session.reader : null;
-  const [open, setOpen] = useState(!replyTo);
+  const [open, setOpen] = useState(!replyTo || chat);
   const [status, setStatus] = useState<{ type: "idle" | "sending" } | { type: "done" | "error"; message: string }>({ type: "idle" });
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -51,7 +56,10 @@ export default function CommentForm({ apiUrl, allowGuest, github, refId, refType
       });
       if (!response.ok) return setStatus({ type: "error", message: await readError(response) });
       form.reset();
-      setStatus({
+      if (chat) {
+        push({ icon: "comment", title: body.isWhispers ? "悄悄话已发送" : "评论已发送", detail: body.isWhispers ? "只有博主能看到" : "博主开启审核时，通过后才会显示", duration: 3200 });
+        setStatus({ type: "idle" });
+      } else setStatus({
         type: "done",
         message: body.isWhispers
           ? "悄悄话已发送，只有博主能看到。"
@@ -60,6 +68,7 @@ export default function CommentForm({ apiUrl, allowGuest, github, refId, refType
       // 列表有缓存，发完让评论与思考列表的缓存立即失效并刷新，否则看起来像没发出去（再点会被 Core 的 20 秒防重拦成 409）。
       await refreshAfterWrite(["comments", "recently"]);
       router.refresh();
+      onDone?.();
     } catch {
       setStatus({ type: "error", message: "网络错误，评论没有发出去，请稍后重试。" });
     }
@@ -89,7 +98,7 @@ export default function CommentForm({ apiUrl, allowGuest, github, refId, refType
     );
   }
   return (
-    <form className="comment-form" onSubmit={submit} aria-label={replyTo ? `回复 ${replyTo.author}` : "发表评论"}>
+    <form className="comment-form" data-variant={variant} onSubmit={submit} aria-label={replyTo ? `回复 ${replyTo.author}` : "发表评论"}>
       {reader ? (
         <div className="comment-identity">
           {/* eslint-disable-next-line @next/next/no-img-element -- GitHub 头像，不走 next/image 白名单 */}
@@ -106,18 +115,18 @@ export default function CommentForm({ apiUrl, allowGuest, github, refId, refType
       {!replyTo && loginError && <p className="post-meta" role="alert">{loginError}</p>}
       {!reader && <div className="comment-fields">
         <label htmlFor={`${id}-author`}>昵称</label>
-        <input className="field" id={`${id}-author`} name="author" required maxLength={20} autoComplete="nickname" />
+        <input className="field" id={`${id}-author`} name="author" required maxLength={20} autoComplete="nickname" placeholder={chat ? "昵称" : undefined} />
         <label htmlFor={`${id}-mail`}>邮箱（不公开）</label>
-        <input className="field" id={`${id}-mail`} name="mail" type="email" required maxLength={50} autoComplete="email" placeholder="用于头像和回复通知" />
+        <input className="field" id={`${id}-mail`} name="mail" type="email" required maxLength={50} autoComplete="email" placeholder={chat ? "邮箱" : "用于头像和回复通知"} title={chat ? "邮箱不公开，用于头像和回复通知" : undefined} />
         <label htmlFor={`${id}-url`}>网站（可选）</label>
-        <input className="field" id={`${id}-url`} name="url" type="url" maxLength={50} autoComplete="url" placeholder="https://" />
+        <input className="field" id={`${id}-url`} name="url" type="url" maxLength={50} autoComplete="url" placeholder={chat ? "网站（选填）" : "https://"} />
       </div>}
       <label htmlFor={`${id}-text`}>{replyTo ? `回复 @${replyTo.author}` : "评论内容"}</label>
-      <textarea className="field" id={`${id}-text`} name="text" required maxLength={500} rows={replyTo ? 3 : 4} placeholder="支持 Markdown，最多 500 字" />
+      <textarea className="field" id={`${id}-text`} name="text" required maxLength={500} rows={chat ? 2 : replyTo ? 3 : 4} placeholder={chat ? "说点什么…（支持 Markdown）" : "支持 Markdown，最多 500 字"} />
       <div className="comment-actions">
         <label><input type="checkbox" name="whisper" /> 悄悄话（仅博主可见）</label>
-        {replyTo && <button className="btn btn-ghost" type="button" onClick={() => { setOpen(false); setStatus({ type: "idle" }); }}>取消</button>}
-        <button className="btn btn-primary" type="submit" disabled={status.type === "sending"}>{status.type === "sending" ? "发送中…" : "发送"}</button>
+        {replyTo && !chat && <button className="btn btn-ghost" type="button" onClick={() => { setOpen(false); setStatus({ type: "idle" }); }}>取消</button>}
+        <button className={chat ? "btn btn-primary btn-sm" : "btn btn-primary"} type="submit" disabled={status.type === "sending"}>{status.type === "sending" ? "发送中…" : "发送"}</button>
       </div>
       {(status.type === "done" || status.type === "error") && (
         <p className="post-meta" role={status.type === "error" ? "alert" : "status"}>{status.message}</p>

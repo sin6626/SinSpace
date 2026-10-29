@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ArticleBody from "@/components/article-body";
+import { ChatStream, toMessages } from "@/components/comment-chat";
+import CommentChatPanel from "@/components/comment-chat-panel";
+import type { Thread } from "@/components/comments";
+import "@/components/article-actions.css";
 import BlogNavigation from "@/components/navigation-menu";
 import NoteUnlock from "@/components/note-unlock";
 import RecentlyAttitude from "@/components/recently-attitude";
@@ -10,6 +14,19 @@ import { getApiUrl } from "@/lib/config";
 import StyleGuide from "./style-guide";
 import IslandButtons from "./island-buttons";
 import ToastButtons from "./toast-buttons";
+
+// 评论悬浮窗的示例消息（不读库）
+const sampleComment = (id: string, author: string, text: string, created: string, extra: Partial<Thread> = {}) => ({
+  id, author, text, created, avatar: "", url: "", location: "江苏", pinned: false, deleted: false, parentId: null, owner: false, ...extra,
+});
+const sampleChat: Thread[] = [
+  { ...sampleComment("c1", "路过的星星", "读到白板那一节停下来试了一下，`Excalidraw` 嵌进来居然能拖动！", "2026-10-27T13:20:00Z"), replies: [
+    sampleComment("c2", "Sin", "能拖的，只是不会保存～", "2026-10-27T14:02:00Z", { owner: true, parentId: "c1" }),
+    sampleComment("c3", "路过的星星", "懂了，谢谢博主", "2026-10-28T01:10:00Z", { parentId: "c2" }),
+  ], hiddenReplies: 0 },
+  { ...sampleComment("c4", "夜猫子", "这条评论被作者删掉了", "2026-10-28T15:40:00Z", { deleted: true }), replies: [], hiddenReplies: 0 },
+  { ...sampleComment("c5", "Moon", "目录跳转好丝滑。\n\n- 第一点\n- 第二点", "2026-10-29T06:30:00Z", { pinned: true }), replies: [], hiddenReplies: 0 },
+];
 
 export const metadata: Metadata = { title: "调试" };
 
@@ -122,6 +139,15 @@ export default function DebugPage() {
             <p className="post-meta" role="status">悄悄话已发送，只有博主能看到。</p>
             <p className="post-meta" role="alert">网络错误，评论没有发出去，请稍后重试。</p>
             <p className="post-meta">读者登录（reader-session.ts）：未登录显示“用 GitHub 登录 / 或以游客身份填写下方信息”，已登录显示“以 某某 的身份评论 · 退出”并隐藏昵称邮箱网址；关闭游客评论时只显示“用 GitHub 登录后评论”。</p>
+          </li>
+          <li>
+            <h2>评论悬浮窗</h2>
+            <p className="post-meta">comment-chat.tsx + comment-chat-panel.tsx（文章侧栏的评论按钮）。下面是示例消息：两天、博主回复在右侧、回复引用、已删除、Markdown；空状态见任意没有评论的文章。输入框是真实表单，目标 ID 全 0，Core 必然拒绝。</p>
+            <div className="article-actions debug-chat">
+              <CommentChatPanel title="调试页示例文章" total={sampleChat.length} form={{ apiUrl: getApiUrl(), allowGuest: true, github: false }} closedReason={null} target={{ refId: "000000000000000000000000", refType: "Post" }}>
+                <ChatStream messages={toMessages(sampleChat)} canReply truncated={false} />
+              </CommentChatPanel>
+            </div>
           </li>
           <li>
             <h2>邮件订阅</h2>

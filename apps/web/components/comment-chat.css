@@ -1,0 +1,440 @@
+/* 文章侧栏的评论悬浮窗（comment-chat.tsx 消息流 + comment-chat-panel.tsx 外壳）。
+   像聊天软件：顶部标题栏，中间按时间排的消息流（每天一条日期分隔，博主在右侧、强调色气泡），底部固定输入框。 */
+
+.chat-positioner {
+  z-index: var(--z-popup);
+}
+
+.chat-popup {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(25rem, calc(100vw - 2rem));
+  height: min(38rem, var(--available-height));
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  background:
+    radial-gradient(120% 40% at 100% 0%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 70%),
+    var(--surface);
+  box-shadow: var(--shadow-popup);
+  outline: 0;
+  transform-origin: var(--transform-origin);
+  transition: opacity var(--duration-base) var(--ease-out), scale var(--duration-base) var(--ease-out);
+}
+
+.chat-popup[data-starting-style],
+.chat-popup[data-ending-style] {
+  opacity: 0;
+  scale: 0.96;
+}
+
+/* 标题栏：边读边聊 + 条数，下面一行小字是这篇的标题 */
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.chat-heading {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+
+.chat-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.chat-title span {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.chat-subtitle {
+  margin: 0;
+  overflow: hidden;
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-close {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .chat-close:hover {
+    background: var(--accent);
+    color: var(--foreground);
+  }
+}
+
+.chat-close:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* 消息流：上下边缘渐隐，滚动不连带页面 */
+.chat-scroller {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding: var(--space-2) var(--space-4) var(--space-6);
+  mask-image: linear-gradient(to bottom, transparent, #000 var(--space-4), #000 calc(100% - var(--space-4)), transparent);
+}
+
+.chat-stream {
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* 日期分隔：两侧一段渐隐的细线，和导航星座线同色 */
+.chat-day {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.chat-day::before,
+.chat-day::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--constellation-line));
+}
+
+.chat-day::after {
+  background: linear-gradient(to left, transparent, var(--constellation-line));
+}
+
+.chat-message {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.chat-avatar {
+  display: block;
+  flex: none;
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+  object-fit: cover;
+}
+
+.chat-body {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-1);
+  min-width: 0;
+  max-width: calc(100% - 2.5rem);
+}
+
+.chat-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-2);
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+}
+
+.chat-meta strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.chat-meta a {
+  color: inherit;
+}
+
+.chat-meta time {
+  font-variant-numeric: tabular-nums;
+}
+
+.chat-badge {
+  padding: 0 0.375rem;
+  border-radius: var(--radius-full);
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+/* 气泡：靠头像的那个角收小，像从头像那边说出来的话 */
+.chat-bubble {
+  max-width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: 4px 14px 14px 14px;
+  /* 用前景色调淡：深浅两种主题下都比浮层底色亮一档（--muted 在深色里和底色几乎一样） */
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  overflow-wrap: anywhere;
+  transition: box-shadow var(--duration-base), background-color var(--duration-base);
+}
+
+.chat-text > * + * {
+  margin-top: var(--space-2);
+}
+
+.chat-text a {
+  color: var(--link);
+}
+
+.chat-text code {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.9em;
+}
+
+.chat-text pre {
+  overflow-x: auto;
+}
+
+.chat-text blockquote {
+  color: var(--muted-foreground);
+}
+
+.chat-text :is(ul, ol) {
+  padding-left: 1.25em;
+  list-style: revert;
+}
+
+/* 回复：气泡顶部引用被回复的那句话 */
+.chat-quote {
+  display: -webkit-box;
+  margin-bottom: var(--space-1);
+  padding-left: var(--space-2);
+  overflow: hidden;
+  border-left: 2px solid var(--border-strong);
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.chat-quote span {
+  margin-right: var(--space-1);
+  color: var(--primary);
+}
+
+.chat-deleted {
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+/* 博主：放到右边，强调色淡底气泡 */
+.chat-message[data-owner] {
+  flex-direction: row-reverse;
+}
+
+.chat-message[data-owner] .chat-body {
+  justify-items: end;
+}
+
+.chat-message[data-owner] .chat-meta {
+  flex-direction: row-reverse;
+}
+
+.chat-message[data-owner] .chat-bubble {
+  border-radius: 14px 4px 14px 14px;
+  background: var(--primary-soft);
+}
+
+/* 正在回复的那条亮起 */
+.chat-message[data-replying] .chat-bubble {
+  box-shadow: 0 0 0 1.5px var(--primary), 0 0 18px -6px var(--star-glow);
+}
+
+/* “回复”平时藏着，悬停或键盘聚焦到这条时出现 */
+.chat-reply {
+  padding: 0 var(--space-1);
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  font: inherit;
+  font-size: var(--text-xs);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--duration-fast), color var(--duration-fast);
+}
+
+.chat-message:is(:hover, :focus-within, [data-replying]) .chat-reply {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .chat-reply {
+    opacity: 1;
+  }
+}
+
+.chat-reply:hover {
+  color: var(--primary);
+}
+
+.chat-reply:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* 还没人说话：三颗小星连成一段星座 */
+.chat-empty {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-1);
+  height: 100%;
+  min-height: 12rem;
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.chat-empty-stars {
+  width: 5rem;
+  height: 2.5rem;
+  margin-bottom: var(--space-3);
+  background:
+    radial-gradient(circle at 12% 70%, var(--moonlight) 0 2px, transparent 3px),
+    radial-gradient(circle at 50% 25%, var(--moonlight) 0 2.5px, transparent 3.5px),
+    radial-gradient(circle at 88% 60%, var(--moonlight) 0 1.5px, transparent 2.5px),
+    linear-gradient(to bottom right, transparent calc(50% - 0.5px), var(--constellation-line) 50%, transparent calc(50% + 0.5px)) 12% 25% / 38% 45% no-repeat,
+    linear-gradient(to top right, transparent calc(50% - 0.5px), var(--constellation-line) 50%, transparent calc(50% + 0.5px)) 50% 25% / 38% 35% no-repeat;
+  filter: drop-shadow(0 0 4px var(--moonlight-glow));
+}
+
+.chat-empty-hint {
+  font-size: var(--text-xs);
+}
+
+/* 输入区：固定在底部 */
+.chat-composer {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 92%, var(--background));
+}
+
+.chat-closed {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.chat-replying {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+  border-left: 2px solid var(--primary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--primary-soft);
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+}
+
+.chat-replying strong {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.chat-replying button {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.chat-replying button:hover {
+  color: var(--foreground);
+}
+
+/* 悬浮窗里的评论表单（comment-form.tsx 的 variant="chat"）：标签只给读屏，三个身份信息一行，输入框两行 */
+.comment-form[data-variant="chat"] {
+  gap: var(--space-2);
+  margin-top: 0;
+}
+
+.comment-form[data-variant="chat"] > label,
+.comment-form[data-variant="chat"] .comment-fields label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.comment-form[data-variant="chat"] .comment-fields {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: none;
+  gap: var(--space-2);
+}
+
+.comment-form[data-variant="chat"] .field {
+  padding-block: var(--space-1);
+  font-size: var(--text-xs);
+}
+
+.comment-form[data-variant="chat"] textarea.field {
+  min-height: 3.5rem;
+  max-height: 10rem;
+  font-size: var(--text-sm);
+  resize: none;
+  field-sizing: content;
+}
+
+.comment-form[data-variant="chat"] .comment-identity {
+  font-size: var(--text-xs);
+}
+
+.comment-form[data-variant="chat"] .comment-identity .btn {
+  min-height: 0;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+}
+
+.comment-form[data-variant="chat"] .comment-actions {
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-popup,
+  .chat-bubble,
+  .chat-reply {
+    transition: none;
+  }
+}

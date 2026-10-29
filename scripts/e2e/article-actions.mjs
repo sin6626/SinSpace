@@ -1,6 +1,6 @@
 // 浏览器回归测试：文章目录下的操作栏（components/article-actions.tsx）与阅读胶囊里的日期、进度。
-// ① 有喜欢、评论、分享、回到顶部（后台开了订阅时还有订阅）；② 回到顶部在页面顶部时隐藏，往下读后出现，进度环跟着读的进度走；
-// ③ 夜航岛阅读胶囊显示发布日期和百分比；④ 分享在电脑上复制链接并由夜航岛播报“链接已复制”；
+// ① 有喜欢、评论（边读边聊的悬浮窗，调试页有示例消息流）、分享、回到顶部（后台开了订阅时还有订阅）；② 回到顶部在页面顶部时隐藏，往下读后出现，进度环跟着读的进度走；
+// ③ 夜航岛阅读胶囊显示发布日期和百分比；④ 分享用系统分享面板（Web Share API），不支持时复制链接并由夜航岛播报“链接已复制”；
 // ⑤ 目录比屏幕长时目录自己滚动，操作栏仍在屏幕内；⑥ 侧栏的心和文末“喜欢这篇”共用状态（点赞请求在页面里用替身拦截，不写日常库）；⑦ 点目录平滑滚动、标题停在夜航岛下方；⑧ 滚到页面最底下时悬浮栏不被页脚挡住；⑨ 点回到顶部会回到页面顶端。
 // 需要先运行 pnpm dev（默认 http://127.0.0.1:2323，可用 WEB_URL 覆盖）。用法：pnpm e2e
 import assert from "node:assert/strict";
@@ -25,7 +25,7 @@ try {
   const top = await browser.evaluate(`({
     like: !!document.querySelector(".article-actions .is-like"),
     share: !!document.querySelector('.article-actions [aria-label^="分享"]'),
-    comment: !!document.querySelector('.article-actions [aria-label="去评论"]'),
+    comment: !!document.querySelector('.article-actions [aria-label^="评论"]'),
     topVisible: document.querySelector(".article-actions .is-top").hasAttribute("data-visible"),
   })`);
   assert.ok(top.like && top.share && top.comment, `操作栏缺少按钮：${JSON.stringify(top)}`);
@@ -47,10 +47,17 @@ try {
   assert.ok(Number.parseInt(reading.percent) > 20 && Number.parseInt(reading.percent) < 80, `读到正文一半时百分比应当在中间：${reading.percent}`);
   assert.match(reading.date, /^\d{2}\/\d{2}$/, `阅读胶囊应当显示发布日期：${reading.date}`);
 
+  // 分享：支持 Web Share API 时调起系统分享面板（替身记下参数，不真的弹出）；不支持时复制链接并由夜航岛播报
+  await browser.evaluate(`Object.defineProperty(navigator, "share", { configurable: true, value: async (data) => { window.__shared = data; } })`);
+  await click('.article-actions [aria-label^="分享"]');
+  await sleep(300);
+  const native = await browser.evaluate("window.__shared ?? null");
+  assert.ok(native && native.title && decodeURI(native.url).endsWith(decodeURI(post)), `应当用系统分享面板分享本文：${JSON.stringify(native)}`);
+  await browser.evaluate(`Object.defineProperty(navigator, "share", { configurable: true, value: undefined })`);
   await click('.article-actions [aria-label^="分享"]');
   await sleep(500);
   const shared = await browser.evaluate(`(async () => ({ island: document.querySelector(".island").innerText, clip: await navigator.clipboard.readText() }))()`);
-  assert.match(shared.island, /链接已复制/, `分享后夜航岛应当播报“链接已复制”：${shared.island}`);
+  assert.match(shared.island, /链接已复制/, `不支持系统分享时夜航岛应当播报“链接已复制”：${shared.island}`);
   assert.ok(shared.clip.endsWith(decodeURI(post)) || decodeURI(shared.clip).endsWith(decodeURI(post)), `剪贴板应当是本文地址：${shared.clip}`);
 
   // 点赞：替身拦截 /activity/like（不写库），点侧栏的心，文末按钮也应当变成已喜欢
@@ -74,6 +81,10 @@ try {
   await browser.evaluate(`document.querySelector('.article-toc a[href="${target}"]').scrollIntoView({ block: "nearest" })`);
   await click(`.article-toc a[href="${target}"]`);
   await sleep(150);
+  // 2026-10-29 的 bug：点目录时地址栏换锚点（replaceState）被 Next 当成路由更新，整页跑了一遍换页动画（失焦淡出再上浮），
+  // 目录跟着消失再出现，连续点相近的两项时页面上下抖
+  const pageAnimations = await browser.evaluate(`document.getAnimations().map((a) => a.animationName).filter((name) => /^page-/.test(name))`);
+  assert.deepEqual(pageAnimations, [], `点目录不应触发换页动画：${pageAnimations.join("、")}`);
   const midway = await browser.evaluate("scrollY");
   await sleep(1500);
   const landed = await browser.evaluate(`({ y: scrollY, top: document.getElementById(decodeURIComponent(${JSON.stringify(target)}.slice(1))).getBoundingClientRect().top, island: document.querySelector(".island").getBoundingClientRect().bottom, hash: location.hash })`);
@@ -81,15 +92,22 @@ try {
   assert.ok(landed.top > landed.island && landed.top < 140, `跳转后标题应当停在夜航岛下方（标题顶 ${landed.top}，岛底 ${landed.island}）`);
   assert.equal(landed.hash, target, "地址栏应当带上章节锚点");
 
-  // 评论按钮：滚到文末评论区，开放评论时光标进评论框
-  await browser.evaluate("scrollTo(0, 0)");
+  // 评论悬浮窗：不滚动页面，光标进输入框；点文章不关、Esc 关
+  await browser.evaluate("scrollTo(0, 1500)");
   await sleep(600);
-  await click('.article-actions [aria-label="去评论"]');
-  await sleep(1800);
-  const comment = await browser.evaluate(`({ bottom: innerHeight + scrollY >= document.documentElement.scrollHeight - 2, top: document.getElementById("comments").getBoundingClientRect().top, textarea: !!document.querySelector("#comments textarea"), focused: document.activeElement?.closest("#comments") !== null && document.activeElement?.tagName === "TEXTAREA" })`);
-  // 评论区离页尾近时滚到底就停了，此时只要求评论区顶部在页头下方的屏幕上半部
-  assert.ok(comment.bottom ? comment.top > 60 && comment.top < 495 : Math.abs(comment.top - 84) < 4, `点评论按钮应当滚到评论区（评论区顶 ${comment.top}）`);
-  assert.ok(!comment.textarea || comment.focused, "开放评论时光标应当在评论框里");
+  await click('.article-actions [aria-label^="评论"]');
+  await sleep(600);
+  const chat = await browser.evaluate(`({ y: scrollY, open: !!document.querySelector(".chat-popup")?.checkVisibility(), focus: document.activeElement?.closest(".chat-popup") ? document.activeElement.tagName : null, guest: !!document.querySelector(".chat-popup textarea") })`);
+  assert.ok(chat.open, "点评论按钮应当打开悬浮窗");
+  assert.equal(chat.y, 1500, `打开评论悬浮窗不应滚动页面（scrollY ${chat.y}）`);
+  assert.ok(!chat.guest || chat.focus === "TEXTAREA", `打开后光标应当在输入框里（现在在 ${chat.focus}）`);
+  await click("article p");
+  await sleep(400);
+  assert.ok(await browser.evaluate(`!!document.querySelector(".chat-popup")?.checkVisibility()`), "点文章时悬浮窗不应关闭（边读边聊）");
+  await browser.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+  await browser.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+  await sleep(500);
+  assert.ok(await browser.evaluate(`!document.querySelector(".chat-popup")?.checkVisibility()`), "按 Esc 应当关闭悬浮窗");
 
   // 2026-10-29 的 bug：滚到页面最底下时页脚（z-index 1）盖住悬浮栏下半截，喜欢/分享/回顶点不了、目录末尾几项不能悬停
   await browser.evaluate("scrollTo(0, document.documentElement.scrollHeight)");
@@ -106,7 +124,37 @@ try {
   await sleep(1500);
   assert.ok(await browser.evaluate("scrollY") < 5, "点回到顶部后应当回到页面顶端");
 
-  console.log(`PASS 文章操作栏：按钮齐全、回到顶部随进度出现（剩余 ${reading.ring.toFixed(2)}）、胶囊显示 ${reading.date} 与 ${reading.percent}、分享复制并播报、喜欢状态同步、目录平滑跳转、评论按钮直达评论框、滚到底不被页脚挡住、回到顶部`);
+  // 调试页的示例消息流：按时间排、博主在右侧、打开时停在最新一条；点“回复”出现回复对象并亮起那条，× 取消
+  await browser.goto(`${base}/debug`);
+  await browser.evaluate(`document.querySelector(".debug-chat .article-action").scrollIntoView({ block: "center" })`);
+  await sleep(400);
+  await click(".debug-chat .article-action");
+  await sleep(900);
+  const stream = await browser.evaluate(`(() => {
+    const scroller = document.querySelector(".chat-scroller");
+    const owner = document.querySelector(".chat-message[data-owner]");
+    return {
+      ids: [...document.querySelectorAll(".chat-message")].map((li) => li.dataset.id),
+      ownerRight: owner.querySelector(".chat-avatar").getBoundingClientRect().x > owner.querySelector(".chat-bubble").getBoundingClientRect().x,
+      atBottom: scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 2,
+    };
+  })()`);
+  assert.deepEqual(stream.ids, ["c1", "c2", "c3", "c4", "c5"], `消息应当按时间排成一条流：${stream.ids}`);
+  assert.ok(stream.ownerRight, "博主的消息应当在右侧");
+  assert.ok(stream.atBottom, "打开时应当停在最新一条");
+  await browser.evaluate(`document.querySelector('.chat-message[data-id="c1"]').scrollIntoView({ block: "center" })`);
+  await sleep(200);
+  await click('.chat-message[data-id="c1"] .chat-bubble');
+  await click('.chat-message[data-id="c1"] .chat-reply');
+  await sleep(300);
+  const replying = await browser.evaluate(`({ chip: document.querySelector(".chat-replying")?.innerText ?? "", lit: document.querySelector('.chat-message[data-id="c1"]').hasAttribute("data-replying"), focus: document.activeElement?.tagName })`);
+  assert.match(replying.chip, /@路过的星星/, `点回复后输入框上方应当显示回复对象：${replying.chip}`);
+  assert.ok(replying.lit && replying.focus === "TEXTAREA", `被回复的那条应当亮起、光标回到输入框：${JSON.stringify(replying)}`);
+  await click('.chat-replying button');
+  await sleep(200);
+  assert.ok(await browser.evaluate(`!document.querySelector(".chat-replying") && !document.querySelector("[data-replying]")`), "取消后回复对象和高亮都应当清掉");
+
+  console.log(`PASS 文章操作栏：按钮齐全、回到顶部随进度出现（剩余 ${reading.ring.toFixed(2)}）、胶囊显示 ${reading.date} 与 ${reading.percent}、系统分享与复制兜底、喜欢状态同步、目录平滑跳转不触发换页动画、评论悬浮窗（不滚页面、点文章不关、Esc 关；示例消息流、回复）、滚到底不被页脚挡住、回到顶部`);
 } finally {
   browser.close();
 }

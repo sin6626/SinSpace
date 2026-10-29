@@ -39,7 +39,7 @@ export default async function PageDetail({ params }: { params: Promise<{ slug: s
         </Suspense>
       </div>
       {/* 右侧悬浮栏：目录 + 操作（喜欢、分享、订阅、回到顶部），宽屏悬浮在正文右侧留白里，窄屏隐藏 */}
-      <ArticleAside title={page.title} />
+      <ArticleAside title={page.title} comments={{ refId: page.id, refType: "Page", allowComment: page.allowComment }} />
     </article>
   );
 }

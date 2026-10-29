@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUp, Bell, Heart, MessagesSquare, Share2 } from "lucide-react";
+import { ArrowUp, Bell, Heart, Share2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useIsland } from "../lib/island-store";
 import { useArticleLike } from "../lib/use-article-like";
@@ -9,11 +9,13 @@ import "./article-actions.css";
 
 type Like = { apiUrl: string; id: string; type: "post" | "note"; count: number };
 
-// 文章目录下面的一排操作（参考 Shiro 的 PostActionAside，做了改动）：喜欢、分享、订阅，再加一个 Shiro 没有的“回到顶部”。
+// 文章目录下面的一排操作（参考 Shiro 的 PostActionAside，做了改动）：喜欢、评论（边读边聊的悬浮窗）、分享、订阅，再加一个 Shiro 没有的“回到顶部”。
 // 回到顶部的按钮外面套着阅读进度环（读的是页头夜航岛同一份进度），读得越多画得越满；还在页面顶部时淡出隐藏。
-export default function ArticleActions({ title, like, subscribe }: {
+// comments：评论悬浮窗（comment-chat.tsx，服务端组件，作为节点传进来）
+export default function ArticleActions({ title, like, comments, subscribe }: {
   title: string;
   like: Like | null;
+  comments: ReactNode;
   subscribe: { apiUrl: string; siteName: string; types: ("post_c" | "note_c")[]; mailIcon: ReactNode } | null;
 }) {
   const progress = useIsland((state) => state.reading?.progress ?? 0);
@@ -21,7 +23,7 @@ export default function ArticleActions({ title, like, subscribe }: {
   return (
     <div className="article-actions" role="group" aria-label="文章操作">
       {like && <LikeButton like={like} />}
-      <CommentButton />
+      {comments}
       <ShareButton title={title} />
       {subscribe && (
         <SubscribePopover {...subscribe} side="left" triggerClassName="article-action" triggerLabel="订阅更新">
@@ -50,33 +52,19 @@ function LikeButton({ like }: { like: Like }) {
   );
 }
 
-// 读到一半想说两句：平滑滚到文末评论区，并把光标放进评论框（评论关闭时只滚过去）。
-// 站内跳转后上一页还藏在 DOM 里，可能有两个 #comments，取看得见的那个。
-function CommentButton() {
-  function toComments() {
-    const section = [...document.querySelectorAll<HTMLElement>("#comments")].find((element) => element.checkVisibility());
-    if (!section) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    section.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-    section.querySelector("textarea")?.focus({ preventScroll: true });
-  }
-  return (
-    <button type="button" className="article-action" onClick={toComments} aria-label="去评论" title="去评论">
-      <MessagesSquare size={18} strokeWidth={1.75} aria-hidden="true" />
-    </button>
-  );
-}
-
-// 手机等支持系统分享的设备调起分享面板；电脑上复制链接，并在页头夜航岛上播报一下
+// 和 Shiro 一样用 Web Share API 调起系统分享面板（macOS 上有隔空投送、信息、备忘录、拷贝等，选项由系统提供）；
+// 浏览器不支持（如 Firefox 桌面版）或调用失败时退回复制链接，并在页头夜航岛上播报。用户取消分享（AbortError）什么都不做。
 function ShareButton({ title }: { title: string }) {
   const push = useIsland((state) => state.push);
   async function share() {
     const url = window.location.href.split("#")[0];
-    if (navigator.share && window.matchMedia("(pointer: coarse)").matches) {
+    if (navigator.share) {
       try {
         await navigator.share({ title, url });
-      } catch {}
-      return;
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+      }
     }
     try {
       await navigator.clipboard.writeText(url);
@@ -86,7 +74,7 @@ function ShareButton({ title }: { title: string }) {
     }
   }
   return (
-    <button type="button" className="article-action" onClick={share} aria-label="分享这篇（复制链接）" title="分享">
+    <button type="button" className="article-action" onClick={share} aria-label="分享这篇" title="分享">
       <Share2 size={18} strokeWidth={1.75} aria-hidden="true" />
     </button>
   );

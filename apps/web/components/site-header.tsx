@@ -1,6 +1,6 @@
 "use client";
 
-import { FilePen, Info, Link2, NotebookPen, RefreshCw, Trash2 } from "lucide-react";
+import { FilePen, Info, Link2, MessageCircle, NotebookPen, RefreshCw, Trash2 } from "lucide-react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -50,6 +50,7 @@ function NavigateListener({ onNavigate }: { onNavigate: () => void }) {
 
 const activityIcons: Record<IslandActivityIcon, ReactNode> = {
   link: <Link2 size={18} strokeWidth={1.75} />,
+  comment: <MessageCircle size={18} strokeWidth={1.75} />,
   post: <FilePen size={18} strokeWidth={1.75} />,
   note: <NotebookPen size={18} strokeWidth={1.75} />,
   update: <RefreshCw size={18} strokeWidth={1.75} />,

@@ -390,6 +390,8 @@ export async function getComments(refId: string, page: number) {
       pinned: Boolean(comment.pin),
       deleted: Boolean(comment.isDeleted),
       parentId: comment.parentCommentId ?? null,
+      // 博主在后台或以博主身份登录发的评论，评论悬浮窗里放在右侧
+      owner: reader?.role === "owner",
     };
   };
   return {

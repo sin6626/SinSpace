@@ -78,7 +78,7 @@ export default async function NoteDetail({ params, searchParams }: { params: Pro
         </Suspense>
       </div>
       {/* 右侧悬浮栏：目录 + 操作（喜欢、分享、订阅、回到顶部），宽屏悬浮在正文右侧留白里，窄屏隐藏 */}
-      <ArticleAside title={body.title} like={{ id: note.id, type: "note", count: note.count.like }} />
+      <ArticleAside title={body.title} like={{ id: note.id, type: "note", count: note.count.like }} comments={{ refId: note.id, refType: "Note", allowComment: note.allowComment }} />
     </article>
   );
 }

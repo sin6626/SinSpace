@@ -65,7 +65,9 @@ function jump(event: MouseEvent<HTMLAnchorElement>, id: string) {
   event.preventDefault();
   const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
   heading.scrollIntoView({ behavior, block: "start" });
-  history.replaceState(null, "", `#${encodeURIComponent(id)}`);
+  // 带上现有的 history.state（里面有 Next 的 __NA 标记）：Next 改写过 replaceState，state 不带标记时会当成路由更新，
+  // 在 startTransition 里同步路由，整页跑一遍换页视图过渡（目录消失再出现、连点时页面上下抖）
+  history.replaceState(history.state, "", `#${encodeURIComponent(id)}`);
 }
 
 // children 是没有标题时显示的默认右栏内容。
