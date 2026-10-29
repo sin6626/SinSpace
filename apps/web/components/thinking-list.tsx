@@ -20,7 +20,7 @@ function refHref(ref: NonNullable<Item["ref"]>, categories: { id: string; slug: 
   return null;
 }
 
-// 碎碎念（Core 的“速记 / 动态”）：一张张小卡片，正文按 Markdown 完整显示，附带引用的文章/手记/页面，可赞/踩和评论（评论默认收起）。
+// 思考（Core 的“速记 / 动态”）：引用网站、书或站内文章写下的看法。一张张小卡片，正文按 Markdown 完整显示，附带引用的文章/手记/页面，可赞/踩和评论（评论默认收起）。
 export default async function ThinkingList({ searchParams }: { searchParams: Promise<{ before?: string | string[] }> }) {
   const { before } = await searchParams;
   if (before !== undefined && (typeof before !== "string" || !/^[a-f\d]{24}$/i.test(before))) notFound();
@@ -30,7 +30,7 @@ export default async function ThinkingList({ searchParams }: { searchParams: Pro
     [result, categories] = await Promise.all([getRecently(before), getCategories()]);
   } catch (error) {
     unstable_rethrow(error);
-    return <p className="post-list-content" role="alert">碎碎念读取失败。<a href={before ? `/thinking?before=${before}` : "/thinking"}>重试</a></p>;
+    return <p className="post-list-content" role="alert">思考读取失败。<a href={before ? `/thinking?before=${before}` : "/thinking"}>重试</a></p>;
   }
   if (before && !result.data.length) notFound();
   const last = result.data.at(-1);
@@ -38,18 +38,18 @@ export default async function ThinkingList({ searchParams }: { searchParams: Pro
   return (
     <>
       <header className="page-heading">
-        <h1>碎碎念</h1>
-        <p className="post-meta">平日里的小事和小快乐。</p>
+        <h1>思考</h1>
+        <p className="post-meta">读到的、看到的，和我的看法。</p>
       </header>
       <div className="post-list-content">
         {result.data.length ? (
-          <ul className="murmur-list">
+          <ul className="thinking-list">
             {result.data.map((item) => {
               const href = item.ref && refHref(item.ref, categories);
               return (
-                <li key={item.id} className="murmur-card">
+                <li key={item.id} className="thinking-card">
                   <ArticleBody text={item.content} emptyText="" />
-                  <p className="post-meta murmur-meta">
+                  <p className="post-meta thinking-meta">
                     <time dateTime={item.created}>{formatDate(item.created)}</time>
                     {item.ref && (href ? <Link href={href}>引用：{item.ref.title}</Link> : <span>引用：{item.ref.title}</span>)}
                     <RecentlyAttitude apiUrl={getApiUrl()} id={item.id} up={item.up} down={item.down} />
@@ -66,9 +66,9 @@ export default async function ThinkingList({ searchParams }: { searchParams: Pro
               );
             })}
           </ul>
-        ) : <p className="post-empty">还没有碎碎念。</p>}
+        ) : <p className="post-empty">还没有思考。</p>}
         {(before || (result.hasMore && last)) && (
-          <nav className="post-pagination" aria-label="碎碎念分页">
+          <nav className="post-pagination" aria-label="思考分页">
             {before ? <Link href="/thinking">回到最新</Link> : <span />}
             {result.hasMore && last ? <Link href={`/thinking?before=${last.id}`} rel="next">更早</Link> : <span />}
           </nav>

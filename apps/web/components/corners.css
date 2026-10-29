@@ -257,13 +257,13 @@ a.entry-tag:focus-visible {
   color: var(--primary);
 }
 
-/* 碎碎念：一张张完整显示的小卡片 */
-.murmur-list {
+/* 思考（速记）：一张张完整显示的小卡片 */
+.thinking-list {
   display: grid;
   gap: var(--space-4);
 }
 
-.murmur-card {
+.thinking-card {
   padding: var(--space-4) var(--space-6);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -272,36 +272,13 @@ a.entry-tag:focus-visible {
   overflow-wrap: anywhere;
 }
 
-.murmur-card .article-body {
+.thinking-card .article-body {
   font-size: var(--text-base);
 }
 
-.murmur-meta {
+.thinking-meta {
   align-items: center;
   margin-top: var(--space-3);
-}
-
-/* 首页碎碎念预览：只显示一行摘录和日期 */
-.murmur-preview {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.murmur-preview li {
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  background: var(--muted);
-}
-
-.murmur-preview p {
-  line-height: var(--leading-normal);
-}
-
-.murmur-preview time {
-  display: block;
-  margin-top: var(--space-1);
-  color: var(--muted-foreground);
-  font-size: var(--text-xs);
 }
 
 /* 友链：圆形头像的小卡片，两列 */

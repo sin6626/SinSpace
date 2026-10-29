@@ -1,4 +1,4 @@
-import { Feather, FileText, Heart, Lightbulb, MessageSquare, type LucideIcon } from "lucide-react";
+import { Feather, FileText, Heart, Lightbulb, MessageCircleMore, MessageSquare, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { unstable_rethrow } from "next/navigation";
 import { getRecentActivity, type RecentActivity } from "../lib/blog-data";
@@ -11,6 +11,7 @@ const icons: Record<RecentActivity["kind"], LucideIcon> = {
   like: Heart,
   post: FileText,
   note: Feather,
+  murmur: MessageCircleMore,
   recent: Lightbulb,
 };
 
@@ -37,10 +38,14 @@ function Body({ item }: { item: RecentActivity }) {
           {item.text && <p className="activity-bubble">{item.text}</p>}
         </>
       );
+    case "murmur":
     case "recent":
       return (
         <>
-          <p className="activity-line"><small>写了一条</small><Link className="activity-link" href="/thinking"><b>碎碎念</b></Link></p>
+          <p className="activity-line">
+            <small>{item.kind === "murmur" ? "说了句" : "写了一条"}</small>
+            <Link className="activity-link" href={item.href ?? "/"}><b>{item.kind === "murmur" ? "碎碎念" : "思考"}</b></Link>
+          </p>
           {item.text && <p className="activity-bubble">{item.text}</p>}
         </>
       );

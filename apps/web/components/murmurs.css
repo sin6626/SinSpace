@@ -1,0 +1,184 @@
+/* 碎碎念：睡前的自言自语。按天分段（日期横在两条淡线中间），每天一串气泡，头像在左边跟着滚动 */
+.murmur-stream {
+  display: grid;
+  gap: var(--space-12);
+}
+
+.murmur-date {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.murmur-date::before,
+.murmur-date::after {
+  content: "";
+  flex: 1;
+  align-self: center;
+  height: 1px;
+  background: var(--constellation-line);
+}
+
+.murmur-date small {
+  font-size: var(--text-xs);
+  font-weight: 400;
+}
+
+.murmur-year {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.murmur-group {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-3);
+}
+
+.murmur-avatar {
+  position: sticky;
+  top: calc(var(--header-height) + var(--space-4));
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: 0 0 0 2px var(--background), 0 0 14px var(--moonlight-glow);
+  object-fit: cover;
+  font-weight: 600;
+}
+
+.murmur-bubbles {
+  display: grid;
+  justify-items: start;
+  gap: 0.375rem;
+}
+
+/* 一串气泡靠头像那一侧收窄圆角，像同一个人连着说了几句 */
+.murmur-bubble {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  column-gap: var(--space-3);
+  max-width: min(36rem, 100%);
+  padding: 0.625rem 0.875rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px 18px 18px 6px;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  overflow-wrap: anywhere;
+  transition: border-color var(--duration-fast);
+}
+
+.murmur-bubble:first-child {
+  border-top-left-radius: 4px;
+}
+
+.murmur-bubble:last-child {
+  border-bottom-left-radius: 18px;
+}
+
+.murmur-bubble:hover {
+  border-color: var(--border-strong);
+}
+
+/* 有图的气泡固定宽度，图片的百分比宽度才和后台拖的一致 */
+.murmur-bubble[data-image] {
+  width: min(36rem, 100%);
+}
+
+.murmur-bubble time {
+  margin-left: auto;
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.6;
+}
+
+.murmur-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+}
+
+.murmur-body > * {
+  margin: 0;
+}
+
+.murmur-body > * + * {
+  margin-top: var(--space-2);
+}
+
+.murmur-body ul,
+.murmur-body ol {
+  padding-left: 1.25em;
+}
+
+.murmur-body ul {
+  list-style: disc;
+}
+
+.murmur-body ol {
+  list-style: decimal;
+}
+
+.murmur-body blockquote {
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--border-strong);
+  color: var(--muted-foreground);
+}
+
+.murmur-body code {
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  font-size: 0.875em;
+}
+
+.murmur-body pre {
+  overflow-x: auto;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+}
+
+.murmur-body pre code {
+  padding: 0;
+  background: none;
+}
+
+.murmur-body a {
+  color: var(--link);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.murmur-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-block: var(--space-1);
+  border-radius: 12px;
+}
+
+@media (max-width: 639px) {
+  .murmur-group {
+    grid-template-columns: 1.75rem minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+
+  .murmur-avatar {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+}

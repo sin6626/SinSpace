@@ -23,12 +23,13 @@ export type NavigationState =
     socials: { label: string; href: string; icon: ReactNode }[];
   };
 
-// 一级导航的顺序：首页、文章、手记、时间线、碎碎念、更多（作品、友链、一言），开发环境末尾再加“调试”。
+// 一级导航的顺序：首页、文章、手记、时间线、碎碎念、更多（作品、友链、一言、思考），开发环境末尾再加“调试”。
 // 首页、文章、手记、时间线本身是链接（点击跳转），悬停或聚焦时展开各自的面板；碎碎念只是链接；更多只展开。
 const moreLinks = [
   { label: "作品", href: "/projects", note: "开源项目与作品集" },
   { label: "友链", href: "/friends", note: "互联网上的朋友们" },
   { label: "一言", href: "/says", note: "言语的碎片" },
+  { label: "思考", href: "/thinking", note: "读到的、看到的和我的看法" },
 ];
 
 const isCurrent = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
@@ -231,7 +232,7 @@ export default function BlogNavigation({ state, account }: { state: NavigationSt
   return (
     <div className="navigation-Area">
     <MobileMenu
-      corners={[{ label: "首页", href: "/" }, { label: "文章", href: "/posts" }, { label: "手记", href: "/notes" }, { label: "时间线", href: "/timeline" }, { label: "碎碎念", href: "/thinking" }]}
+      corners={[{ label: "首页", href: "/" }, { label: "文章", href: "/posts" }, { label: "手记", href: "/notes" }, { label: "时间线", href: "/timeline" }, { label: "碎碎念", href: "/murmurs" }]}
       more={[...pages, ...moreLinks, ...devLinks]}
       account={account}
     />
@@ -270,7 +271,7 @@ export default function BlogNavigation({ state, account }: { state: NavigationSt
             footer={<PanelFooter href="/timeline" label="查看时间线" />}
           />
         ))}
-        {linkItem("碎碎念", "/thinking", isCurrent(pathname, "/thinking"), null)}
+        {linkItem("碎碎念", "/murmurs", isCurrent(pathname, "/murmurs"), null)}
         {/* “更多”没有自己的页面，触发器是普通按钮，点击或悬停只展开面板 */}
         <NavigationMenu.Item value="更多">
           <NavigationMenu.Trigger className="navigation-Trigger" data-current={moreCurrent ? "" : undefined}>

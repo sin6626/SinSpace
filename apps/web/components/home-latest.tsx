@@ -2,7 +2,8 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { unstable_rethrow } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
-import { getNotes, getPosts, getRecently } from "../lib/blog-data";
+import { getMurmurs, getNotes, getPosts } from "../lib/blog-data";
+import { murmurImageSources } from "../lib/murmur";
 import { formatDate } from "../lib/date";
 import { excerpt } from "../lib/excerpt";
 import { postHref } from "./post-list";
@@ -77,7 +78,7 @@ export default async function HomeLatest() {
   const [posts, notes, murmurs] = await Promise.all([
     load(async () => (await getPosts(1)).data.slice(0, 5)),
     load(async () => (await getNotes(1)).data.slice(0, 5)),
-    load(async () => (await getRecently()).data.slice(0, 6)),
+    load(async () => (await getMurmurs(1)).data.slice(0, 6)),
   ]);
   return (
     <div className="home-columns">
@@ -116,15 +117,28 @@ export default async function HomeLatest() {
         </Section>
       </div>
       <aside className="home-side">
-        <Section title="碎碎念" note="平日里的小事" allHref="/thinking" items={murmurs} empty="今晚还没有碎碎念。" className="home-side-murmurs">
+        <Section title="碎碎念" note="随口说的闲话" allHref="/murmurs" items={murmurs} empty="今晚还没有碎碎念。" className="home-side-murmurs">
           {(items) => (
             <ul className="home-murmurs">
-              {items.map((item) => (
-                <li key={item.id}>
-                  <time dateTime={item.created}>{formatDate(item.created)}</time>
-                  <p>{excerpt(item.content, 140)}</p>
-                </li>
-              ))}
+              {items.map((item) => {
+                const images = murmurImageSources(item.content);
+                const text = excerpt(item.content, 140);
+                return (
+                  <li key={item.id}>
+                    <time dateTime={item.created}>{formatDate(item.created)}</time>
+                    {text && <p>{text}</p>}
+                    {images.length > 0 && (
+                      <div className="home-murmur-thumbs" aria-label={`${images.length} 张图`}>
+                        {images.slice(0, 3).map((src) => (
+                          // eslint-disable-next-line @next/next/no-img-element -- 图床上的缩略预览
+                          <img key={src} src={src} alt="" loading="lazy" />
+                        ))}
+                        {images.length > 3 && <span>+{images.length - 3}</span>}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </Section>

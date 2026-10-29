@@ -7,6 +7,7 @@ import CommentChatPanel from "@/components/comment-chat-panel";
 import type { Thread } from "@/components/comments";
 import "@/components/article-actions.css";
 import BlogNavigation from "@/components/navigation-menu";
+import { MurmurStream } from "@/components/murmur-list";
 import NoteUnlock from "@/components/note-unlock";
 import RecentlyAttitude from "@/components/recently-attitude";
 import SubscribeForm from "@/components/subscribe-form";
@@ -29,6 +30,16 @@ const sampleChat: Thread[] = [
 ];
 
 export const metadata: Metadata = { title: "调试" };
+
+// 碎碎念的示例（不读库）：同一天连着几句、带图（40% 与默认 100%）、行内代码和链接，以及跨年的一天
+const sampleImage = `${getApiUrl()}/objects/avatar/Sin.jpg`;
+const sampleMurmurs = [
+  { id: "m1", content: `Container Query 容器查询：按父容器的宽度来写响应式。\n\n![](${sampleImage} "w=40%")`, created: "2026-10-29T14:20:00Z", modified: null },
+  { id: "m2", content: "`field-sizing: content` 能让文本框跟着内容长高，不用 JS。", created: "2026-10-29T13:05:00Z", modified: "2026-10-29T13:30:00Z" },
+  { id: "m3", content: "今天好困", created: "2026-10-29T12:00:00Z", modified: null },
+  { id: "m4", content: `只有一张图，没写宽度就是 100%：\n\n![](${sampleImage})`, created: "2026-10-27T15:00:00Z", modified: null },
+  { id: "m5", content: "跨年的那一天会写上年份。[MDN](https://developer.mozilla.org)", created: "2025-12-31T15:00:00Z", modified: null },
+];
 
 const sampleMarkdown = `## 二级标题
 
@@ -116,7 +127,7 @@ export default function DebugPage() {
             <NoteUnlock nid={1} />
           </li>
           <li>
-            <h2>时间线、友链、一言与碎碎念</h2>
+            <h2>时间线、友链、一言与思考</h2>
             <p className="post-meta">timeline/friends/says/thinking 的加载占位，timeline-list.tsx、friend-list.tsx、say-list.tsx、thinking-list.tsx 的读取失败与空列表</p>
             <p className="post-list-content" role="status">正在读取时间线…</p>
             <p className="post-empty">还没有内容。</p>
@@ -124,8 +135,15 @@ export default function DebugPage() {
             <p className="post-list-content" role="alert">友链读取失败。<Link href="/debug">重试</Link></p>
             <p className="post-empty">还没有友链。</p>
             <p className="post-empty">还没有一言。</p>
-            <p className="post-empty">还没有碎碎念。</p>
+            <p className="post-empty">还没有思考。</p>
             <p className="post-meta">recently-attitude.tsx 的赞/踩（真实组件，点击会请求 Core）：<RecentlyAttitude apiUrl={getApiUrl()} id="000000000000000000000000" up={3} down={1} /></p>
+          </li>
+          <li id="debug-murmurs">
+            <h2>碎碎念</h2>
+            <p className="post-meta">murmur-list.tsx 的 MurmurStream（示例数据，不读库）：按天分段、跨年写年份、图片按标题里的宽度显示；以及读取失败与空列表</p>
+            <MurmurStream items={sampleMurmurs} name="Sin" />
+            <p className="post-list-content" role="alert">碎碎念读取失败。<Link href="/debug">重试</Link></p>
+            <p className="post-empty">还没有碎碎念。</p>
           </li>
           <li>
             <h2>评论</h2>

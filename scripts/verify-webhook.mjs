@@ -67,15 +67,16 @@ try {
     assert.deepEqual(await tagsFor(`PROJECT_${action}`, JSON.stringify({ id })), ['blog:projects'])
     assert.deepEqual(await tagsFor(`SAY_${action}`, JSON.stringify({ id })), ['blog:says'])
     assert.deepEqual(await tagsFor(`RECENTLY_${action}`, JSON.stringify({ id })), ['blog:recently'])
+    assert.deepEqual(await tagsFor(`MURMUR_${action}`, JSON.stringify({ id })), ['blog:murmurs'])
     assert.deepEqual(await tagsFor(`LINK_${action}`, JSON.stringify({ id })), ['blog:links'])
     assert.deepEqual(await tagsFor(`COMMENT_${action}`, JSON.stringify({ id })), ['blog:comments'])
   }
-  assert.deepEqual((await tagsFor('CONTENT_REFRESH', '"restore_done"')).sort(), ['blog:categories', 'blog:comments', 'blog:links', 'blog:navigation', 'blog:notes', 'blog:pages', 'blog:posts', 'blog:projects', 'blog:recently', 'blog:says', 'blog:theme'])
+  assert.deepEqual((await tagsFor('CONTENT_REFRESH', '"restore_done"')).sort(), ['blog:categories', 'blog:comments', 'blog:links', 'blog:murmurs', 'blog:navigation', 'blog:notes', 'blog:pages', 'blog:posts', 'blog:projects', 'blog:recently', 'blog:says', 'blog:theme'])
   for (const event of ['READER_CREATE', 'LINK_APPLY', 'VISITOR_ONLINE']) await expectStatus(event, JSON.stringify({ id }), 400)
   await expectStatus('NOTE_UPDATE', JSON.stringify({ id: 'bad' }), 400)
   failInvalidation = true
   await expectStatus('POST_UPDATE', JSON.stringify({ id }), 500)
-  console.log('PASS webhook signatures, raw UTF-8, input limits, health check, post/note/page/category/topic/say/recently/comment/project/link/restore tags, allowlist and cache failure')
+  console.log('PASS webhook signatures, raw UTF-8, input limits, health check, post/note/page/category/topic/say/recently/murmur/comment/project/link/restore tags, allowlist and cache failure')
 } finally {
   if (previous === undefined) delete process.env.MIX_SPACE_WEBHOOK_SECRET
   else process.env.MIX_SPACE_WEBHOOK_SECRET = previous

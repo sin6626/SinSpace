@@ -295,11 +295,11 @@ export async function getSiteLikes() {
   return typeof value === "number" ? value : Number(value) || 0;
 }
 
-// 首页“最近发生的事”（同 Shiro）：Core 的 /activity/recent 返回评论、点赞、新文章、新手记、新碎碎念五类，
+// 首页“最近发生的事”（同 Shiro）：Core 的 /activity/recent 返回评论、点赞、新文章、新手记、新碎碎念、新思考六类，
 // 评论只含已公开、非悄悄话的。点赞没有 Webhook 事件，缓存短一些。文章只给了 slug，借时间线换算出带分类的地址。
 export type RecentActivity = {
   key: string;
-  kind: "comment" | "like" | "post" | "note" | "recent";
+  kind: "comment" | "like" | "post" | "note" | "murmur" | "recent";
   created: string;
   title?: string;
   href: string | null;
@@ -311,7 +311,7 @@ export type RecentActivity = {
 export async function getRecentActivity() {
   "use cache";
   cacheLife({ stale: 60, revalidate: 120, expire: 600 });
-  cacheTag("blog:posts", "blog:notes", "blog:comments", "blog:recently", "blog:categories");
+  cacheTag("blog:posts", "blog:notes", "blog:comments", "blog:recently", "blog:murmurs", "blog:categories");
   const [data, timeline] = await Promise.all([getApiClient().activity.getRecentActivities(), getTimeline()]);
   const posts = new Map(timeline.flatMap((item) => item.kind === "post" ? [[item.slug, `/posts/${encodeURIComponent(item.category.slug)}/${encodeURIComponent(item.slug)}`]] : []));
   const record = data as unknown as Record<string, Array<Record<string, unknown>>>;
@@ -327,12 +327,13 @@ export async function getRecentActivity() {
   const items: RecentActivity[] = [
     ...(record.comment ?? []).map((item) => ({
       key: `comment-${item.id}-${item.created}`, kind: "comment" as const, created: String(item.created),
-      title: text(item.title) ?? (String(item.type).toLowerCase().startsWith("recent") ? "一条碎碎念" : undefined),
+      title: text(item.title) ?? (String(item.type).toLowerCase().startsWith("recent") ? "一条思考" : undefined),
       href: href(item.type, item), author: text(item.author), avatar: safeUrl(text(item.avatar)), text: excerpt(text(item.text), 80),
     })),
     ...(record.like ?? []).map((item) => ({ key: `like-${item.id}`, kind: "like" as const, created: String(item.created), title: text(item.title) ?? "已删除的内容", href: href(item.type, item) })),
     ...(record.post ?? []).map((item) => ({ key: `post-${item.id}`, kind: "post" as const, created: String(item.created), title: text(item.title), href: href("posts", item) })),
     ...(record.note ?? []).map((item) => ({ key: `note-${item.id}`, kind: "note" as const, created: String(item.created), title: text(item.title), href: href("notes", item) })),
+    ...(record.murmur ?? []).map((item) => ({ key: `murmur-${item.id}`, kind: "murmur" as const, created: String(item.created), href: "/murmurs", text: excerpt(text(item.content), 80) || "（一张图）" })),
     ...(record.recent ?? []).map((item) => ({ key: `recent-${item.id}`, kind: "recent" as const, created: String(item.created), href: "/thinking", text: excerpt(text(item.content), 80) })),
   ];
   return items.sort((a, b) => Date.parse(b.created) - Date.parse(a.created)).slice(0, 12);
@@ -369,7 +370,19 @@ export async function getSays(page: number) {
   };
 }
 
-// 动态按 id 游标分页：before 取上一页最后一条的 id。
+// 碎碎念：站长随手记的闲话（Core /murmurs），按页读，每页 20 条，从新到旧。
+export async function getMurmurs(page = 1) {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheTag("blog:murmurs");
+  const { data, pagination } = await getApiClient().murmur.getList(page, 20);
+  return {
+    data: data.map(({ id, content, created, modified }) => ({ id, content, created, modified: modified ?? null })),
+    pagination: { ...pagination },
+  };
+}
+
+// 思考（Core 的速记）按 id 游标分页：before 取上一页最后一条的 id。
 export async function getRecently(before?: string) {
   "use cache";
   cacheLife({ stale: 60, revalidate: 300, expire: 3600 });

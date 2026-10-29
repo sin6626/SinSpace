@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { openBrowser } from "../headless-browser.mjs";
 
 const base = process.env.WEB_URL ?? "http://127.0.0.1:2323";
-const pages = ["/", "/posts", "/notes", "/timeline", "/timeline/posts", "/projects", "/friends", "/thinking", "/debug"];
+const pages = ["/", "/posts", "/notes", "/timeline", "/timeline/posts", "/projects", "/friends", "/murmurs", "/thinking", "/debug"];
 // 动态路由也要查（页头曾在 Suspense 外读 usePathname，只在详情页这类动态路由报错）：从时间线上取第一篇文章和第一篇手记
 
 const browser = await openBrowser({ port: 9338 });

@@ -564,6 +564,27 @@
   line-height: var(--leading-relaxed);
 }
 
+/* 碎碎念里的图：文字下面一排小方块缩略图，最多 3 张，多的写 +N */
+.home-murmur-thumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.home-murmur-thumbs img {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+.home-murmur-thumbs span {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
 @media (max-width: 1023px) {
   .home-columns {
     grid-template-columns: minmax(0, 1fr);

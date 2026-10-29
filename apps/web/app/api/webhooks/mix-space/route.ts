@@ -13,6 +13,8 @@ const kindTags = {
   TOPIC: ["blog:notes"],
   SAY: ["blog:says"],
   RECENTLY: ["blog:recently"],
+  // 碎碎念：列表、首页右栏和“最近发生的事”都挂在 blog:murmurs 上
+  MURMUR: ["blog:murmurs"],
   // 评论审核通过、置顶不发事件，靠 blog:comments 的短缓存兜底。
   COMMENT: ["blog:comments"],
   // Core 的事件枚举没有 PROJECT_*、LINK_*（友链只有 LINK_APPLY），只有后台勾选“全部事件”时才会收到；

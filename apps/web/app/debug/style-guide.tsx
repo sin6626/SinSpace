@@ -87,7 +87,7 @@ export default function StyleGuide() {
       <ul className="project-grid guide-gap">
         <li><ProjectCard project={{ id: "p", name: "作品卡片", description: "没有图标时用名字的首字。", avatar: undefined, projectUrl: "https://example.com", previewUrl: undefined, docUrl: undefined }} headingLevel={3} /></li>
       </ul>
-      <div className="murmur-card guide-gap"><p>碎碎念卡片：完整显示的一小段话。</p><p className="post-meta murmur-meta"><time dateTime={created}>2026/10/27</time></p></div>
+      <div className="thinking-card guide-gap"><p>思考卡片：完整显示的一小段话。</p><p className="post-meta thinking-meta"><time dateTime={created}>2026/10/27</time></p></div>
     </>
   );
 }
