@@ -13,6 +13,7 @@ export enum FileReferenceType {
   Note = 'note',
   Page = 'page',
   Draft = 'draft',
+  Murmur = 'murmur',
 }
 
 @index({ fileUrl: 1 })

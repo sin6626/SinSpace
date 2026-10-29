@@ -53,6 +53,7 @@ import { ReaderModule } from './modules/reader/reader.module'
 import { RecentlyModule } from './modules/recently/recently.module'
 import { RenderEjsModule } from './modules/render/render.module'
 import { SayModule } from './modules/say/say.module'
+import { MurmurModule } from './modules/murmur/murmur.module'
 import { SearchModule } from './modules/search/search.module'
 import { ServerTimeModule } from './modules/server-time/server-time.module'
 import { ServerlessModule } from './modules/serverless/serverless.module'
@@ -106,6 +107,7 @@ import { TaskQueueModule } from './processors/task-queue/task-queue.module'
     RecentlyModule,
     ReaderModule,
     SayModule,
+    MurmurModule,
     SearchModule,
     ServerlessModule,
     ServerTimeModule,

@@ -376,6 +376,7 @@ export class ActivityController {
       like: transformedLike,
       comment,
       recent: recentPublish.recent,
+      murmur: recentPublish.murmur,
       post,
       note,
     }

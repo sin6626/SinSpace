@@ -7,6 +7,7 @@ import { BusinessEvents, EventScope } from '~/constants/business-event.constant'
 import {
   NOTE_COLLECTION_NAME,
   POST_COLLECTION_NAME,
+  MURMUR_COLLECTION_NAME,
   RECENTLY_COLLECTION_NAME,
 } from '~/constants/db.constant'
 import { ErrorCodeEnum } from '~/constants/error-code.constant'
@@ -556,7 +557,7 @@ export class ActivityService implements OnModuleInit, OnModuleDestroy {
   }
 
   async getRecentPublish() {
-    const [recent, post, note] = await Promise.all([
+    const [recent, murmur, post, note] = await Promise.all([
       this.databaseService.db
         .collection(RECENTLY_COLLECTION_NAME)
         .find()
@@ -569,6 +570,13 @@ export class ActivityService implements OnModuleInit, OnModuleDestroy {
         .sort({
           created: -1,
         })
+        .limit(3)
+        .toArray(),
+      this.databaseService.db
+        .collection(MURMUR_COLLECTION_NAME)
+        .find()
+        .project({ content: 1, created: 1 })
+        .sort({ created: -1 })
         .limit(3)
         .toArray(),
       this.databaseService.db
@@ -608,6 +616,7 @@ export class ActivityService implements OnModuleInit, OnModuleDestroy {
 
     return {
       recent,
+      murmur,
       post,
       note,
     }
