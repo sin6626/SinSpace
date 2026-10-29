@@ -16,6 +16,7 @@ import {
 } from '@haklex/rich-kit-shiro'
 
 import '@haklex/rich-diff/style.css'
+import './note-serif-font'
 
 import { useUIStore } from '~/stores/ui'
 

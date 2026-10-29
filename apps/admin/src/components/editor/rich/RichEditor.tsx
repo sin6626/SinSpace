@@ -27,6 +27,7 @@ import '@excalidraw/excalidraw/index.css'
 import '@haklex/rich-kit-shiro/style.css'
 import '@haklex/rich-plugin-toolbar/style.css'
 import '@haklex/rich-ext-nested-doc/style.css'
+import './note-serif-font'
 
 import { filesApi } from '~/api/files'
 import { API_URL } from '~/constants/env'

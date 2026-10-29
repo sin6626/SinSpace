@@ -301,6 +301,9 @@ importers:
       '@excalidraw/excalidraw':
         specifier: 0.18.1
         version: 0.18.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@fontsource-variable/noto-serif-sc':
+        specifier: 5.3.1
+        version: 5.3.1
       '@haklex/rich-diff':
         specifier: 0.0.85
         version: 0.0.85(@base-ui/react@1.9.0(@types/react@19.3.0)(date-fns@4.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@lexical/extension@0.41.0)(@lexical/link@0.41.0)(@lexical/list@0.41.0)(@lexical/markdown@0.41.0)(@lexical/react@0.41.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(yjs@13.6.29))(@lexical/rich-text@0.41.0)(@lexical/table@0.41.0)(@lexical/utils@0.41.0)(@types/react@19.3.0)(katex@0.16.28)(lexical@0.41.0)(lucide-react@0.574.0(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(shiki@3.23.0)
@@ -2736,6 +2739,9 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
+
+  '@fontsource-variable/noto-serif-sc@5.3.1':
+    resolution: {integrity: sha512-aIHcBaL13QctVaJFeT6wqfgO9Rq/cNtD5g2ob4ze59fYPYwacGthnIrHBe83kDpMEB/k6VGtGc6fS99RImcoSQ==}
 
   '@haklex/cm-editor@0.0.85':
     resolution: {integrity: sha512-W8+uhL9SqwlNNcTDVRPbFqcTU3pkkg9hkzvPLzvqy7C9EorVXFS929/Az5qtOPnxFlaJ96w2dV82kMjEM3TRSA==}
@@ -14536,6 +14542,8 @@ snapshots:
   '@floating-ui/utils@0.2.11': {}
 
   '@floating-ui/utils@0.2.12': {}
+
+  '@fontsource-variable/noto-serif-sc@5.3.1': {}
 
   '@haklex/cm-editor@0.0.85':
     dependencies:
