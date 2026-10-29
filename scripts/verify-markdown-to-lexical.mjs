@@ -56,6 +56,10 @@ assert.ok(top.every((n) => /^[\w-]{8}$/.test(n.$?.blockId)), "每个顶层块都
 
 const [heading, para, bullet, numbered, check, quote, alert, code, , table, image, , gallery] = top;
 assert.equal(heading.tag, "h2");
+const paragraphs = [];
+const findParagraphs = (node) => (node.type === "paragraph" && paragraphs.push(node), node.children?.forEach(findParagraphs), node.content && findParagraphs(node.content.root));
+findParagraphs(state.root);
+assert.ok(paragraphs.length > 3 && paragraphs.every((p) => p.textFormat === 0 && p.textStyle === ""), "段落（含表格、提示框里的）要带编辑器默认的 textFormat/textStyle");
 const formats = Object.fromEntries(para.children.filter((n) => n.type === "text").map((n) => [n.text, n.format]));
 assert.equal(formats["加粗"], 1, "加粗格式位");
 assert.equal(formats["斜体"], 2, "斜体格式位");

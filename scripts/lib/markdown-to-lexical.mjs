@@ -25,6 +25,8 @@ const ALERT = /^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*/i;
 const BANNERS = new Set(["note", "tip", "important", "warning", "caution"]);
 const CONTAINER_OPEN = /^:::\s*(note|tip|important|warning|caution|details)\b(.*)$/;
 const element = (type, children, extra = {}) => ({ type, version: 1, children, direction: null, format: "", indent: 0, ...extra });
+// 段落带上编辑器保存时会写的 textFormat/textStyle，否则后台一打开就判定内容有变、自动多存几个版本
+const paragraphNode = (children) => element("paragraph", children, { textFormat: 0, textStyle: "" });
 const text = (value, format = 0) => ({ type: "text", version: 1, text: value, format, detail: 0, mode: "normal", style: "" });
 const linebreak = { type: "linebreak", version: 1 };
 const blockId = () => randomBytes(6).toString("base64url").slice(0, 8);
@@ -122,7 +124,7 @@ function paragraph(node, ctx) {
   let images = [];
   const flushText = () => {
     const children = inlines(run, ctx).filter((n, i, all) => !(n.type === "linebreak" && (i === 0 || i === all.length - 1)));
-    if (children.some((n) => n.type !== "linebreak")) blocks.push(element("paragraph", children));
+    if (children.some((n) => n.type !== "linebreak")) blocks.push(paragraphNode(children));
     run = [];
   };
   const flushImages = () => {
@@ -190,7 +192,7 @@ function quoteNode(node, ctx) {
 
 function tableNode(node, ctx) {
   const rows = node.children.map((row, r) =>
-    element("tablerow", row.children.map((cell) => element("tablecell", [element("paragraph", inlines(cell.children, ctx))], { headerState: r === 0 ? 1 : 0, colSpan: 1, rowSpan: 1, backgroundColor: null }))),
+    element("tablerow", row.children.map((cell) => element("tablecell", [paragraphNode(inlines(cell.children, ctx))], { headerState: r === 0 ? 1 : 0, colSpan: 1, rowSpan: 1, backgroundColor: null }))),
   );
   return element("table", rows);
 }
@@ -204,7 +206,7 @@ const blockHandlers = {
   list: (node, ctx) => [listNode(node, ctx)],
   code: (node) => [{ type: "code-block", version: 1, language: node.lang ?? "", code: node.value }],
   table: (node, ctx) => [tableNode(node, ctx)],
-  html: (node) => (node.value.trim() ? [element("paragraph", [text(node.value)])] : []),
+  html: (node) => (node.value.trim() ? [paragraphNode([text(node.value)])] : []),
   // 脚注定义收集起来，文末统一生成一个 footnote-section
   footnoteDefinition: (node, ctx) => ((ctx.footnotes[node.identifier] = node.children.map(plain).join("\n")), []),
 };

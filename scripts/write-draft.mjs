@@ -13,12 +13,14 @@ import { collectImageUrls, collectLinkCardUrls, lexicalToMarkdown, markdownToLex
 const root = resolve(import.meta.dirname, "..");
 const configPath = join(root, ".local/publish.json");
 const cachePath = join(root, ".local/publish/uploads.json");
+const versionsPath = join(root, ".local/publish/draft-versions.json");
 
 const args = process.argv.slice(2);
 const file = args.find((arg) => !arg.startsWith("--"));
 const target = args.includes("--prod") ? "prod" : "local";
 const dryRun = args.includes("--dry-run");
-if (!file) fail("用法：pnpm draft <文章.md> [--prod] [--dry-run]");
+const force = args.includes("--force");
+if (!file) fail("用法：pnpm draft <文章.md> [--prod] [--dry-run] [--force]");
 
 function fail(message) {
   console.error(`✗ ${message}`);
@@ -192,21 +194,28 @@ const draft = {
   typeSpecificData: await kind.specific(),
 };
 
-// 文件里记着各目标的草稿 ID：有就更新同一份草稿（后台保留历史版本），草稿被删了就新建
+// 文件里记着各目标的草稿 ID：有就更新同一份草稿（后台保留历史版本），草稿被删了就新建。
+// 后台编辑器开着时每 10 秒会把它手里的内容存回去，和脚本互相覆盖；所以记住脚本上次写入后的版本号，
+// 写之前草稿版本对不上（期间有人在后台改过）就停下，确认要覆盖时加 --force
 const drafts = { ...front.drafts };
+const versions = existsSync(versionsPath) ? JSON.parse(readFileSync(versionsPath, "utf8")) : {};
 let saved;
 if (drafts[target]) {
-  saved = await request(`/drafts/${drafts[target]}`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(draft) });
-  if (saved.status === 404) {
-    console.error("! 原草稿已不存在，新建一份");
-    saved = null;
+  const versionKey = `${target}:${drafts[target]}`;
+  const current = await request(`/drafts/${drafts[target]}`);
+  if (current.ok && versions[versionKey] && current.data.version !== versions[versionKey] && !force) {
+    fail(`后台在脚本上次写入后改过这份草稿（v${versions[versionKey]} → v${current.data.version}），可能编辑器正开着。先关掉编辑器再写；确认要用文件内容覆盖，加 --force`);
   }
+  saved = current.status === 404 ? null : await request(`/drafts/${drafts[target]}`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(draft) });
+  if (!saved) console.error("! 原草稿已不存在，新建一份");
 }
 saved ??= await request("/drafts", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(draft) });
 if (!saved.ok) fail(`写草稿失败（${saved.status}）：${saved.data?.message ?? JSON.stringify(saved.data)}`);
 
 const id = saved.data.id ?? saved.data._id;
 drafts[target] = id;
+mkdirSync(dirname(versionsPath), { recursive: true });
+writeFileSync(versionsPath, JSON.stringify({ ...versions, [`${target}:${id}`]: saved.data.version }, null, 2));
 writeFileSync(file, `---\n${yaml.dump({ ...front, drafts }, { lineWidth: -1 })}---\n${body}`);
 // 草稿写成功后图片才算被引用（孤儿清理不会删），这时才记进上传缓存
 if (Object.keys(fresh).length) {
