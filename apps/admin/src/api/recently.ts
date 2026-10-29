@@ -6,11 +6,11 @@ export const recentlyApi = {
   // 获取最近访问列表
   getAll: () => request.get<RecentlyModel[]>('/recently/all'),
 
-  // 创建速记
+  // 创建思考
   create: (data: { content: string }) =>
     request.post<RecentlyModel>('/recently', { data }),
 
-  // 更新速记
+  // 更新思考
   update: (id: string, data: { content: string }) =>
     request.put<RecentlyModel>(`/recently/${id}`, { data }),
 

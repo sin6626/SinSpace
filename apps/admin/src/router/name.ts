@@ -36,6 +36,7 @@ export enum RouteName {
   Home = 'home',
   Setup = 'setup',
   ListShortHand = 'shorthand',
+  Murmur = 'murmur',
   Snippet = 'snippet',
   Webhook = 'webhook',
 

@@ -23,7 +23,7 @@ const RefTypeLabels: Record<ArticleRefType, string> = {
   Post: '文章',
   Note: '笔记',
   Page: '页面',
-  Recently: '速记',
+  Recently: '思考',
 }
 
 const RefTypeIcons: Record<ArticleRefType, typeof FileTextIcon> = {

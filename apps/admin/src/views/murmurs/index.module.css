@@ -1,0 +1,387 @@
+/* 后台碎碎念：顶部常驻输入框 + 按天分组的消息流。整体比后台其他列表更轻、更圆一点，像随手记的小本子 */
+.page {
+  @apply mx-auto flex max-w-2xl flex-col gap-8 px-4 py-6;
+}
+
+/* 输入框 */
+.composer {
+  @apply relative flex flex-col border border-neutral-200 bg-white;
+  border-radius: 14px;
+  transition:
+    border-color 150ms,
+    box-shadow 150ms;
+
+  /* 后台主色接近黑色，聚焦只加一圈淡光，不用实线描黑 */
+  &:focus-within,
+  &[data-drag-over] {
+    border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 6%, transparent);
+  }
+
+  &[data-drag-over]::after {
+    @apply pointer-events-none absolute inset-0 grid place-items-center text-sm font-medium;
+    content: '松手把图片放进来';
+    border-radius: inherit;
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  }
+
+  :global(.dark) & {
+    @apply border-neutral-800 bg-neutral-900;
+  }
+}
+
+.textarea {
+  @apply block w-full resize-none border-0 bg-transparent px-4 pt-4 pb-2 text-neutral-900 outline-none;
+  min-height: 5.5rem;
+  max-height: 50vh;
+  field-sizing: content;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.75;
+
+  &::placeholder {
+    @apply text-neutral-400;
+  }
+
+  :global(.dark) & {
+    @apply text-neutral-100;
+
+    &::placeholder {
+      @apply text-neutral-600;
+    }
+  }
+}
+
+.composerFooter {
+  @apply flex items-center justify-between gap-3 px-2 pb-2 pl-2.5;
+}
+
+.tools {
+  @apply flex min-w-0 items-center gap-1.5;
+}
+
+.toolButton {
+  @apply flex size-8 shrink-0 items-center justify-center rounded-full text-neutral-500 transition-colors;
+
+  &:hover {
+    @apply bg-neutral-100 text-neutral-800;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 1px;
+  }
+
+  :global(.dark) &:hover {
+    @apply bg-neutral-800 text-neutral-200;
+  }
+
+  svg {
+    @apply size-[18px];
+  }
+}
+
+.hint {
+  @apply truncate text-xs text-neutral-400;
+
+  kbd {
+    @apply rounded border border-neutral-200 px-1 font-sans text-[11px] text-neutral-500;
+  }
+
+  :global(.dark) & kbd {
+    @apply border-neutral-700 text-neutral-400;
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+/* 图片区：每行一张，按百分比宽度靠左；四角拖动缩放 */
+.stage {
+  @apply flex flex-col gap-3 px-4 pt-1 pb-3;
+}
+
+.stageRow {
+  @apply w-full;
+}
+
+.frame {
+  @apply relative min-w-12 select-none;
+  border-radius: 10px;
+  touch-action: none;
+
+  img {
+    @apply block w-full;
+    border-radius: inherit;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+  }
+
+  &:hover,
+  &:focus-within,
+  &[data-dragging] {
+    .handle,
+    .widthBadge,
+    .removeImage {
+      opacity: 1;
+    }
+  }
+
+  &:hover img,
+  &[data-dragging] img {
+    box-shadow: 0 0 0 1.5px var(--color-primary);
+  }
+}
+
+.handle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--color-primary);
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  opacity: 0;
+  transition: opacity 120ms, transform 120ms;
+
+  &:hover {
+    transform: scale(1.2);
+  }
+
+  &[data-corner='nw'] {
+    top: -7px;
+    left: -7px;
+    cursor: nwse-resize;
+  }
+
+  &[data-corner='ne'] {
+    top: -7px;
+    right: -7px;
+    cursor: nesw-resize;
+  }
+
+  &[data-corner='sw'] {
+    bottom: -7px;
+    left: -7px;
+    cursor: nesw-resize;
+  }
+
+  &[data-corner='se'] {
+    right: -7px;
+    bottom: -7px;
+    cursor: nwse-resize;
+  }
+}
+
+.widthBadge {
+  @apply pointer-events-none absolute bottom-2 left-2 rounded-md px-1.5 py-0.5 text-xs text-white tabular-nums;
+  background: rgb(0 0 0 / 0.6);
+  opacity: 0;
+  transition: opacity 120ms;
+}
+
+.removeImage {
+  @apply absolute top-2 right-2 flex size-6 items-center justify-center rounded-full text-white;
+  background: rgb(0 0 0 / 0.55);
+  opacity: 0;
+  transition:
+    opacity 120ms,
+    background 120ms;
+
+  &:hover {
+    @apply bg-red-500;
+  }
+
+  &:focus-visible {
+    opacity: 1;
+    outline: 2px solid #fff;
+  }
+
+  svg {
+    @apply size-3.5;
+  }
+}
+
+.uploading {
+  @apply absolute inset-0 flex items-center justify-center gap-2 text-sm text-neutral-700;
+  border-radius: inherit;
+  background: rgb(255 255 255 / 0.6);
+  backdrop-filter: blur(2px);
+
+  :global(.dark) & {
+    @apply text-neutral-200;
+    background: rgb(0 0 0 / 0.45);
+  }
+}
+
+/* 按天分组的消息流 */
+.timeline {
+  @apply flex flex-col gap-7;
+}
+
+.total {
+  @apply m-0 -mb-3 px-1 text-xs text-neutral-400;
+}
+
+.dayHeader {
+  @apply mb-2 flex items-baseline gap-2 px-1;
+}
+
+.dayName {
+  @apply text-sm font-semibold text-neutral-800;
+
+  :global(.dark) & {
+    @apply text-neutral-200;
+  }
+}
+
+.dayDetail,
+.dayCount {
+  @apply text-xs text-neutral-400;
+}
+
+.dayCount {
+  @apply ml-auto tabular-nums;
+}
+
+.thread {
+  @apply overflow-hidden border border-neutral-200 bg-white;
+  border-radius: 14px;
+
+  :global(.dark) & {
+    @apply border-neutral-800 bg-neutral-900;
+  }
+}
+
+.entry {
+  @apply relative grid items-start gap-3 px-4 py-3.5;
+  grid-template-columns: 2.75rem minmax(0, 1fr);
+  transition: background 150ms;
+
+  & + & {
+    @apply border-t border-neutral-100;
+
+    :global(.dark) & {
+      @apply border-neutral-800;
+    }
+  }
+
+  &:hover:not([data-editing]) {
+    @apply bg-neutral-50;
+
+    .entryActions {
+      opacity: 1;
+    }
+  }
+
+  &:focus-within .entryActions {
+    opacity: 1;
+  }
+
+  :global(.dark) &:hover:not([data-editing]) {
+    @apply bg-neutral-800/40;
+  }
+
+  /* 编辑时输入框占满整行，时间仍在左边 */
+  &[data-editing] .composer {
+    box-shadow: none;
+  }
+}
+
+.entryTime {
+  @apply flex flex-col gap-0.5 pt-[3px] text-xs text-neutral-400 tabular-nums;
+
+  span {
+    @apply text-[11px] text-neutral-300;
+
+    :global(.dark) & {
+      @apply text-neutral-600;
+    }
+  }
+}
+
+.body {
+  @apply flex min-w-0 flex-col gap-2.5 pr-14;
+}
+
+.bodyText {
+  @apply m-0 whitespace-pre-wrap break-words text-neutral-800;
+  font-size: 15px;
+  line-height: 1.75;
+
+  :global(.dark) & {
+    @apply text-neutral-200;
+  }
+}
+
+.bodyImage {
+  @apply block max-w-full;
+  border-radius: 10px;
+}
+
+.entryActions {
+  @apply absolute top-2.5 right-3 flex items-center gap-0.5 opacity-0;
+  transition: opacity 150ms;
+}
+
+.actionButton {
+  @apply flex size-7 items-center justify-center rounded-full text-neutral-400 transition-colors;
+
+  &:hover {
+    @apply bg-neutral-200/70 text-neutral-700;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 1px;
+  }
+
+  :global(.dark) &:hover {
+    @apply bg-neutral-700 text-neutral-200;
+  }
+
+  svg {
+    @apply size-3.5;
+  }
+}
+
+.deleteButton:hover {
+  @apply bg-red-50 text-red-600;
+
+  :global(.dark) & {
+    @apply bg-red-950 text-red-400;
+  }
+}
+
+.more {
+  @apply self-center;
+}
+
+.end {
+  @apply m-0 text-center text-xs text-neutral-400;
+}
+
+.empty {
+  @apply flex flex-col items-center py-14 text-center;
+}
+
+.emptyIcon {
+  @apply mb-3 size-10 text-neutral-300;
+}
+
+.emptyTitle {
+  @apply m-0 mb-1.5 text-base font-medium text-neutral-800;
+
+  :global(.dark) & {
+    @apply text-neutral-200;
+  }
+}
+
+.emptyDescription {
+  @apply m-0 text-sm text-neutral-500;
+}

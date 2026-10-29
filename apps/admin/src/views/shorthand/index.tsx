@@ -65,7 +65,7 @@ const RecentlyItem = defineComponent({
       : null
 
     return () => (
-      <article class={styles.card} aria-label="速记条目">
+      <article class={styles.card} aria-label="思考条目">
         <div class={styles.content}>
           <p class={styles.text}>{props.item.content}</p>
         </div>
@@ -186,7 +186,7 @@ const RecentlyItem = defineComponent({
                   </NTooltip>
                 ),
                 default: () => (
-                  <span class="max-w-48 break-all">确定要删除这条速记吗？</span>
+                  <span class="max-w-48 break-all">确定要删除这条思考吗？</span>
                 ),
               }}
             </NPopconfirm>
@@ -210,11 +210,11 @@ const EmptyState = defineComponent({
         <div class={styles.emptyIcon} aria-hidden="true">
           <NoteIcon />
         </div>
-        <h3 class={styles.emptyTitle}>还没有速记</h3>
-        <p class={styles.emptyDescription}>记录你的灵感、想法或日常碎片</p>
+        <h3 class={styles.emptyTitle}>还没有思考</h3>
+        <p class={styles.emptyDescription}>引用一个网站、一本书或一首歌，写下你的看法</p>
         <NButton type="primary" onClick={props.onCreate}>
           <AddIcon class="mr-1.5" />
-          写一条速记
+          写一条思考
         </NButton>
       </div>
     )
@@ -266,7 +266,7 @@ export default defineComponent({
       <HeaderActionButton
         onClick={handleCreate}
         icon={<AddIcon />}
-        aria-label="新建速记"
+        aria-label="新建思考"
       />,
     )
 
@@ -282,7 +282,7 @@ export default defineComponent({
               key="list"
               class={styles.list}
               role="feed"
-              aria-label="速记列表"
+              aria-label="思考列表"
             >
               {data.value.map((item, index) => (
                 <RecentlyItem

@@ -43,7 +43,7 @@ const SubscribeTags = defineComponent({
     const bits = [
       { bit: SubscribePostCreateBit, label: '博文', color: 'blue' },
       { bit: SubscribeNoteCreateBit, label: '手记', color: 'green' },
-      { bit: SubscribeRecentCreateBit, label: '速记', color: 'amber' },
+      { bit: SubscribeRecentCreateBit, label: '思考', color: 'amber' },
       { bit: SubscribeSayCreateBit, label: '说说', color: 'purple' },
     ]
 

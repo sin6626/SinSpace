@@ -24,6 +24,7 @@ import {
   ListTodo as ListTodoIcon,
   FileCode2 as MarkdownIcon,
   Hammer as MidHammer,
+  MessageCircleMore as MurmurIcon,
   Pencil as PencilAltIcon,
   Pencil as PencilIcon,
   Users as PhUsersThreeBold,
@@ -262,10 +263,19 @@ export const routeForMenu: Array<RouteRecordRaw> = [
     ],
   },
   {
+    path: '/murmurs',
+    name: RouteName.Murmur,
+    meta: {
+      title: '碎碎念',
+      icon: <MurmurIcon />,
+    },
+    component: () => import('../views/murmurs'),
+  },
+  {
     path: '/recently',
     name: RouteName.ListShortHand,
     meta: {
-      title: '速记',
+      title: '思考',
       icon: <PencilIcon />,
     },
     component: () => import('../views/shorthand'),

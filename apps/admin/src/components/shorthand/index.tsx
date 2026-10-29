@@ -14,7 +14,7 @@ export const useShorthand = () => {
       quickHandText.value = ''
       return new Promise<RecentlyModel | null>((resolve, reject) => {
         const dialog = modal.create({
-          title: '速记',
+          title: '思考',
           type: 'success',
 
           content() {
@@ -75,7 +75,7 @@ export const useShorthand = () => {
       quickHandText.value = item.content
       return new Promise<RecentlyModel | null>((resolve, reject) => {
         const dialog = modal.create({
-          title: '编辑速记',
+          title: '编辑思考',
           type: 'info',
 
           content() {

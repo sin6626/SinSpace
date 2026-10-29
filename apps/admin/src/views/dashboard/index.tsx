@@ -405,12 +405,12 @@ export const DashBoardView = defineComponent({
               ]}
             />
             <ActionStatItem
-              label="速记"
+              label="思考"
               value={stat.value.recently}
               icon={<PencilIcon />}
               actions={[
                 {
-                  name: '新建速记',
+                  name: '新建思考',
                   primary: true,
                   onClick: () => createShortHand(),
                 },
