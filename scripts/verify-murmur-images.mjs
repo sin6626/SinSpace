@@ -4,14 +4,18 @@ import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 
 // 检查碎碎念正文里图片的读写规则（后台 apps/admin/src/views/murmurs/murmur-images.ts）：宽度写在图片标题里、地址不变，
-// 编辑时文字与图片分开、保存时拼回去。用法：node scripts/verify-murmur-images.mjs（pnpm verify）
+// 编辑时文字与图片分开、保存时拼回去；前台 apps/web/lib/murmur.ts 读宽度的规则与后台一致。用法：node scripts/verify-murmur-images.mjs（pnpm verify）
 const require = createRequire(new URL('../apps/web/package.json', import.meta.url))
 const ts = require('typescript')
-const source = readFileSync(new URL('../apps/admin/src/views/murmurs/murmur-images.ts', import.meta.url), 'utf8')
-const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText
-const module = { exports: {} }
-vm.runInNewContext(code, { module, exports: module.exports })
-const { splitContent, parseMurmur, composeMurmur, widthOf, imageMarkdown } = module.exports
+function load(path) {
+  const source = readFileSync(new URL(path, import.meta.url), 'utf8')
+  const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText
+  const module = { exports: {} }
+  vm.runInNewContext(code, { module, exports: module.exports })
+  return module.exports
+}
+const { splitContent, parseMurmur, composeMurmur, widthOf, imageMarkdown } = load('../apps/admin/src/views/murmurs/murmur-images.ts')
+const web = load('../apps/web/lib/murmur.ts')
 const plain = (value) => JSON.parse(JSON.stringify(value))
 
 const a = 'https://s3.example.com/dev/a.webp'
@@ -37,4 +41,7 @@ assert.equal(composeMurmur(' 说一句 \n', [{ alt: '', src: a, width: 30 }, { a
 assert.equal(composeMurmur('', [{ alt: '', src: a, width: 100 }]), `![](${a})`, '只有图片也可以')
 assert.equal(composeMurmur('只有字', []), '只有字')
 assert.deepEqual(plain(parseMurmur(composeMurmur(parsed.text, parsed.images))), plain(parsed), '读出再保存不变')
-console.log('PASS murmur image width in title, split text and images for editing, compose back unchanged')
+// 前台读宽度与后台同一规则
+for (const title of [undefined, '', 'w=40%', 'w=5%', 'w=300%', 'w=40', '随便的标题']) assert.equal(web.murmurImageWidth(title), widthOf(title), `前后台对 ${title} 的宽度应当一致`)
+assert.deepEqual(plain(web.murmurImageSources(`字 ![](${a} "w=40%") ![](javascript:alert(1)) ![猫](${b})`)), [a, b], '首页缩略图只取 http(s) 图片')
+console.log('PASS murmur image width in title (admin and web agree), split text and images for editing, compose back unchanged')
