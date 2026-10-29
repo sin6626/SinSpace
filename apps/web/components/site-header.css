@@ -218,7 +218,7 @@
   align-items: center;
   gap: var(--space-2);
   min-width: 0;
-  max-width: min(26rem, calc(100vw - 8rem));
+  max-width: min(34rem, calc(100vw - 8rem));
   height: 1.75rem;
   padding: 0 var(--space-2) 0 var(--space-1);
   border: 0;
@@ -249,6 +249,32 @@
   white-space: nowrap;
 }
 
+/* 发布日期（月/日）与阅读进度：进度环 + 百分比，刚开始读时也看得出它在 */
+.island-date {
+  flex: none;
+  color: var(--muted-foreground);
+  font-family: var(--font-latin), sans-serif;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.island-progress {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.375rem;
+  padding-left: var(--space-2);
+  border-left: 1px solid color-mix(in srgb, var(--island-fg) 14%, transparent);
+}
+
+.island-percent {
+  min-width: 2.25em;
+  color: var(--muted-foreground);
+  font-family: var(--font-latin), sans-serif;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
 .island-ring {
   flex: none;
   rotate: -90deg;
@@ -256,11 +282,11 @@
 
 .island-ring circle {
   fill: none;
-  stroke-width: 2;
+  stroke-width: 2.5;
 }
 
 .island-ring-track {
-  stroke: color-mix(in srgb, var(--island-fg) 16%, transparent);
+  stroke: color-mix(in srgb, var(--island-fg) 28%, transparent);
 }
 
 .island-ring-bar {

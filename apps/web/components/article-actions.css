@@ -1,0 +1,146 @@
+/* 文章目录下的操作（article-actions.tsx）：一排圆形小按钮，和目录之间隔一条淡线。平时是淡色，悬停变亮。 */
+.article-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.article-action {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--muted-foreground);
+  font: inherit;
+  cursor: pointer;
+  transition: color var(--duration-base), background-color var(--duration-base), opacity var(--duration-slow) var(--ease-out), translate var(--duration-slow) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .article-action:hover {
+    background: var(--accent);
+    color: var(--foreground);
+  }
+}
+
+.article-action:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.article-action[data-popup-open] {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.article-action-count {
+  font-family: var(--font-latin), sans-serif;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 喜欢过：实心强调色的心 */
+.article-action.is-like[aria-pressed="true"] {
+  color: var(--primary);
+}
+
+.article-action.is-like[aria-pressed="true"] svg {
+  fill: currentColor;
+}
+
+.article-action.is-like:active svg {
+  scale: 1.25;
+}
+
+.article-action.is-like svg {
+  transition: scale var(--duration-fast) var(--ease-out);
+}
+
+/* 回到顶部：箭头外一圈阅读进度环；还在顶部时淡出、不可点 */
+.article-action.is-top {
+  width: 2.5rem;
+  margin-left: auto;
+  padding: 0;
+  opacity: 0;
+  translate: 0 0.375rem;
+  pointer-events: none;
+}
+
+.article-action.is-top[data-visible] {
+  opacity: 1;
+  translate: 0 0;
+  pointer-events: auto;
+}
+
+.article-action-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  rotate: -90deg;
+}
+
+.article-action-ring circle {
+  fill: none;
+  stroke-width: 2;
+}
+
+.article-action-ring-track {
+  stroke: var(--border);
+}
+
+.article-action-ring-bar {
+  stroke: var(--primary);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 120ms linear;
+}
+
+@media (hover: hover) {
+  .article-action.is-top:hover .article-action-ring-bar {
+    filter: drop-shadow(0 0 4px var(--star-glow));
+  }
+}
+
+/* 窄屏时整个侧栏（含目录）隐藏，没有目录的文章也不单独露出这一排 */
+@media (width < 90rem) {
+  .article-actions {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-action,
+  .article-action-ring-bar,
+  .article-action.is-like svg {
+    transition: none;
+  }
+}
+
+/* 悬浮时目录太长：目录自己滚动，操作栏固定在底部，始终看得见 */
+@media (min-width: 90rem) {
+  .site-details:has(.article-actions) {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .site-details:has(.article-actions) .article-toc {
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .article-actions {
+    flex: none;
+  }
+}

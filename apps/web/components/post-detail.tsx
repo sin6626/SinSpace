@@ -7,7 +7,7 @@ import { getPost, getTimeline } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
 import { getApiUrl } from "../lib/config";
 import ArticleBody from "./article-body";
-import ArticleToc from "./article-toc";
+import ArticleAside from "./article-aside";
 import { ArticleAiNotes, ArticleLanguages, loadArticleAi } from "./article-ai";
 import ArticleStats from "./article-stats";
 import "./post-detail.css";
@@ -42,7 +42,7 @@ export default async function PostDetail({ params, searchParams }: {
   return (
     <article className="post-detail" lang={ai.lang ?? undefined}>
       <ArticleNotifications id={post.id} />
-      <IslandReading title={body.title} kind="文章" />
+      <IslandReading title={body.title} kind="文章" date={formatDate(post.created)} />
       <header className="page-heading">
         <nav className="detail-crumb" aria-label="位置">
           <Link href="/posts">文章</Link>
@@ -67,8 +67,8 @@ export default async function PostDetail({ params, searchParams }: {
           <Comments refId={post.id} refType="Post" allowComment={post.allowComment} />
         </Suspense>
       </div>
-      {/* 文章目录：宽屏悬浮在正文右侧留白里，窄屏隐藏（globals.css 的 .site-details） */}
-      <aside className="site-details" aria-label="文章目录"><ArticleToc /></aside>
+      {/* 右侧悬浮栏：目录 + 操作（喜欢、分享、订阅、回到顶部），宽屏悬浮在正文右侧留白里，窄屏隐藏 */}
+      <ArticleAside title={body.title} like={{ id: post.id, type: "post", count: post.count.like }} />
     </article>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
-import { Popover } from "@base-ui/react/popover";
 import { Toast } from "@base-ui/react/toast";
-import { Bell, Heart, X } from "lucide-react";
-import { useRef, useState, type ReactNode } from "react";
-import SubscribeForm from "./subscribe-form";
+import { Bell, Heart } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import SubscribePopover from "./subscribe-popover";
 import "./site-actions.css";
 
 type Props = { apiUrl: string; siteName: string; likes: number | null; subscribeTypes: ("post_c" | "note_c")[] | null; mailIcon: ReactNode };
@@ -56,8 +55,6 @@ function Actions({ apiUrl, siteName, likes, subscribeTypes, mailIcon }: Props) {
   const [hearts, setHearts] = useState<FloatingHeart[]>([]);
   const [pending, setPending] = useState(false);
   const toast = Toast.useToastManager();
-  // 订阅浮层打开时光标直接落在邮箱输入框里；触屏时不聚焦输入框，免得一打开就弹出软键盘挡住浮层
-  const emailRef = useRef<HTMLInputElement>(null);
 
   function celebrate(text: string, heartCount: number) {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -125,26 +122,10 @@ function Actions({ apiUrl, siteName, likes, subscribeTypes, mailIcon }: Props) {
         </Toast.Viewport>
       </div>
       {subscribeTypes && (
-        <Popover.Root>
-          <Popover.Trigger className="site-action is-subscribe">
-            订阅
-            <Bell size={16} aria-hidden="true" />
-          </Popover.Trigger>
-          <Popover.Portal>
-            <Popover.Positioner className="site-action-positioner" side="top" sideOffset={12}>
-              <Popover.Popup className="site-action-popup" initialFocus={(type) => (type === "touch" ? true : emailRef.current)}>
-                <div className="subscribe-header">
-                  <span className="subscribe-icon" aria-hidden="true">{mailIcon}</span>
-                  <Popover.Title className="subscribe-title">邮件订阅</Popover.Title>
-                  <Popover.Close className="subscribe-close" aria-label="关闭">
-                    <X size={18} strokeWidth={1.75} aria-hidden="true" />
-                  </Popover.Close>
-                </div>
-                <SubscribeForm apiUrl={apiUrl} types={subscribeTypes} siteName={siteName} emailRef={emailRef} />
-              </Popover.Popup>
-            </Popover.Positioner>
-          </Popover.Portal>
-        </Popover.Root>
+        <SubscribePopover apiUrl={apiUrl} siteName={siteName} types={subscribeTypes} mailIcon={mailIcon} triggerClassName="site-action is-subscribe">
+          订阅
+          <Bell size={16} aria-hidden="true" />
+        </SubscribePopover>
       )}
     </div>
   );

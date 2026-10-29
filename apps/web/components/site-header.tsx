@@ -1,6 +1,6 @@
 "use client";
 
-import { FilePen, Info, NotebookPen, RefreshCw, Trash2 } from "lucide-react";
+import { FilePen, Info, Link2, NotebookPen, RefreshCw, Trash2 } from "lucide-react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -49,6 +49,7 @@ function NavigateListener({ onNavigate }: { onNavigate: () => void }) {
 }
 
 const activityIcons: Record<IslandActivityIcon, ReactNode> = {
+  link: <Link2 size={18} strokeWidth={1.75} />,
   post: <FilePen size={18} strokeWidth={1.75} />,
   note: <NotebookPen size={18} strokeWidth={1.75} />,
   update: <RefreshCw size={18} strokeWidth={1.75} />,
@@ -223,7 +224,11 @@ export default function SiteHeader({ brand, nav }: { brand: ReactNode; nav: Reac
               >
                 <span className="island-section">{reading.kind}</span>
                 <span className="island-title">{reading.title}</span>
-                <ProgressRing progress={reading.progress} />
+                {reading.date && <time className="island-date">{reading.date.slice(5)}</time>}
+                <span className="island-progress">
+                  <ProgressRing progress={reading.progress} />
+                  <span className="island-percent">{Math.round(reading.progress * 100)}%</span>
+                </span>
               </motion.button>
             )}
             {activity && (
