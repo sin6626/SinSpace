@@ -975,6 +975,9 @@ importers:
       '@haklex/rich-kit-shiro':
         specifier: 0.0.85
         version: 0.0.85(@babel/core@7.29.7(supports-color@7.2.0))(@babel/template@7.29.7)(@base-ui/react@1.9.0(@types/react@19.3.0)(date-fns@4.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@lexical/extension@0.41.0)(@lexical/link@0.41.0)(@lexical/list@0.41.0)(@lexical/react@0.41.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(yjs@13.6.29))(@lexical/rich-text@0.41.0)(@lexical/selection@0.41.0)(@lexical/table@0.41.0)(@lexical/utils@0.41.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(lexical@0.41.0)(prop-types@15.8.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@iconify-json/logos':
+        specifier: ^1.2.18
+        version: 1.2.18
       '@iconify-json/mingcute':
         specifier: ^1.2.8
         version: 1.2.8
@@ -3025,6 +3028,9 @@ packages:
     peerDependenciesMeta:
       '@vue/compiler-sfc':
         optional: true
+
+  '@iconify-json/logos@1.2.18':
+    resolution: {integrity: sha512-Qehd7RmUbYM4LSXNHFqulgvmdmqldOxQ3VDbCmzos5IGlo40+cChVdX7GnG9VODBU0H3+Bb8npYOkplooJZvtQ==}
 
   '@iconify-json/material-icon-theme@1.2.54':
     resolution: {integrity: sha512-m5GpLcWICmtaLntgaSbQBWYzzScp2wQIBj0I/9ak2xUFXWxQUws42mZGWRA5W5e1Nn7DsyyMYVBgisnnCQSlhA==}
@@ -15591,6 +15597,10 @@ snapshots:
       '@vue/compiler-sfc': 3.5.44
     transitivePeerDependencies:
       - supports-color
+
+  '@iconify-json/logos@1.2.18':
+    dependencies:
+      '@iconify/types': 2.0.0
 
   '@iconify-json/material-icon-theme@1.2.54':
     dependencies:

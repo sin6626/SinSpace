@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation";
 import { useId, useState, type FormEvent } from "react";
 import { useIsland } from "../lib/island-store";
 import { refreshAfterWrite } from "./cache-actions";
-import { providerNames, signIn, signOut, useLoginError, useReaderSession, type LoginProvider } from "./reader-session";
+import { LogIn } from "lucide-react";
+import { openLoginDialog } from "./account-menu";
+import { signOut, useLoginError, useReaderSession, type LoginProvider } from "./reader-session";
 
 export type CommentRefType = "Post" | "Note" | "Page" | "Recently";
 
@@ -51,19 +53,19 @@ export default function CommentForm({ apiUrl, allowGuest, providers, refId, refT
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
-        // 读者评论要带上 Core 的登录 Cookie；游客不带，避免博主在同一浏览器登录后台时被当成博主发言。
+        // 读者评论要带上 Core 的登录 Cookie；游客不带，避免站长在同一浏览器登录后台时被当成站长发言。
         credentials: reader ? "include" : "omit",
       });
       if (!response.ok) return setStatus({ type: "error", message: await readError(response) });
       form.reset();
       if (chat) {
-        push({ icon: "comment", title: body.isWhispers ? "悄悄话已发送" : "评论已发送", detail: body.isWhispers ? "只有博主能看到" : "博主开启审核时，通过后才会显示", duration: 3200 });
+        push({ icon: "comment", title: body.isWhispers ? "悄悄话已发送" : "评论已发送", detail: body.isWhispers ? "只有站长能看到" : "站长开启审核时，通过后才会显示", duration: 3200 });
         setStatus({ type: "idle" });
       } else setStatus({
         type: "done",
         message: body.isWhispers
-          ? "悄悄话已发送，只有博主能看到。"
-          : "评论已发送。博主开启审核时，通过后才会显示。",
+          ? "悄悄话已发送，只有站长能看到。"
+          : "评论已发送。站长开启审核时，通过后才会显示。",
       });
       // 列表有缓存，发完让评论与思考列表的缓存立即失效并刷新，否则看起来像没发出去（再点会被 Core 的 20 秒防重拦成 409）。
       await refreshAfterWrite(["comments", "recently"]);
@@ -74,15 +76,8 @@ export default function CommentForm({ apiUrl, allowGuest, providers, refId, refT
     }
   }
 
-  // 文末评论区登录后回到评论区；悬浮窗里登录回到原来读到的位置（失败时由夜航岛播报）
-  async function login(provider: LoginProvider) {
-    setStatus({ type: "sending" });
-    try {
-      await signIn(apiUrl, provider, chat ? undefined : "comments");
-    } catch (error) {
-      setStatus({ type: "error", message: error instanceof Error ? error.message : "登录跳转失败" });
-    }
-  }
+  // 打开全站共用的登录弹窗（account-menu.tsx）：文末评论区登录后回到评论区，悬浮窗里登录回到原来读到的位置
+  const login = () => openLoginDialog(chat ? undefined : "comments");
 
   if (replyTo && !open) {
     return <button className="btn btn-ghost btn-sm comment-reply-button" type="button" onClick={() => setOpen(true)}>回复</button>;
@@ -92,9 +87,7 @@ export default function CommentForm({ apiUrl, allowGuest, providers, refId, refT
     if (session.status === "loading" || !providers.length) return null;
     return (
       <div className="comment-identity">
-        {providers.map((provider) => (
-          <button key={provider} className="btn" type="button" onClick={() => void login(provider)} disabled={status.type === "sending"}>用 {providerNames[provider]} 登录后评论</button>
-        ))}
+        <button className="btn" type="button" onClick={login}><LogIn size={16} strokeWidth={1.75} aria-hidden="true" />登录后评论</button>
         {status.type === "error" && <p className="post-meta" role="alert">{status.message}</p>}
         {!replyTo && loginError && <p className="post-meta" role="alert">{loginError}</p>}
       </div>
@@ -111,9 +104,7 @@ export default function CommentForm({ apiUrl, allowGuest, providers, refId, refT
         </div>
       ) : !replyTo && providers.length > 0 && session.status === "guest" && (
         <div className="comment-identity">
-          {providers.map((provider) => (
-            <button key={provider} className="btn" type="button" onClick={() => void login(provider)} disabled={status.type === "sending"}>用 {providerNames[provider]} 登录</button>
-          ))}
+          <button className="btn" type="button" onClick={login}><LogIn size={16} strokeWidth={1.75} aria-hidden="true" />登录</button>
           <span className="post-meta">或以游客身份填写下方信息</span>
         </div>
       )}
@@ -129,7 +120,7 @@ export default function CommentForm({ apiUrl, allowGuest, providers, refId, refT
       <label htmlFor={`${id}-text`}>{replyTo ? `回复 @${replyTo.author}` : "评论内容"}</label>
       <textarea className="field" id={`${id}-text`} name="text" required maxLength={500} rows={chat ? 2 : replyTo ? 3 : 4} placeholder={chat ? "说点什么…（支持 Markdown）" : "支持 Markdown，最多 500 字"} />
       <div className="comment-actions">
-        <label><input type="checkbox" name="whisper" /> 悄悄话（仅博主可见）</label>
+        <label><input type="checkbox" name="whisper" /> 悄悄话（仅站长可见）</label>
         {replyTo && !chat && <button className="btn btn-ghost" type="button" onClick={() => { setOpen(false); setStatus({ type: "idle" }); }}>取消</button>}
         <button className={chat ? "btn btn-primary btn-sm" : "btn btn-primary"} type="submit" disabled={status.type === "sending"}>{status.type === "sending" ? "发送中…" : "发送"}</button>
       </div>

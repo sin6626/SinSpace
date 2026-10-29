@@ -50,7 +50,7 @@ export function ChatStream({ messages, canReply, truncated }: { messages: ChatMe
             <div className="chat-body">
               <p className="chat-meta">
                 <strong>{site ? <a href={site} target="_blank" rel="noopener noreferrer nofollow ugc">{message.author}</a> : message.author}</strong>
-                {message.owner && <span className="chat-badge">博主</span>}
+                {message.owner && <span className="chat-badge">站长</span>}
                 {message.pinned && <span className="chat-badge">置顶</span>}
                 <time dateTime={message.created} title={message.location ? `来自 ${message.location}` : undefined}>{formatTime(message.created)}</time>
               </p>

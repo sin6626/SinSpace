@@ -1,112 +1,171 @@
 "use client";
 
-import { Popover } from "@base-ui/react/popover";
-import { CircleUserRound, LogOut } from "lucide-react";
+import { Dialog } from "@base-ui/react/dialog";
+import { Menu } from "@base-ui/react/menu";
+import { CircleUserRound, LoaderCircle, LogOut, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
+import { create } from "zustand";
 import { useIsland } from "../lib/island-store";
-import { providerNames, signIn, signOut, useLoginError, useReaderSession, type LoginProvider } from "./reader-session";
+import { providerNames, signIn, signOut, useLoginError, useReaderSession, type LoginProvider, type Reader } from "./reader-session";
 import "./account-menu.css";
 
-// 页头（以及手机菜单底部）的读者登录入口，和评论区共用同一份登录状态（reader-session.ts）。
-// 没登录：一个人像图标，点开是各登录方式的按钮；登录后：显示头像，点开是名字、身份和“退出登录”。
-// 只在后台启用了至少一种登录方式时出现。从页头登录失败回来时，由夜航岛播报，详情在浮层里。
-export default function AccountMenu({ apiUrl, providers, side = "bottom" }: {
+type Provider = { id: LoginProvider; icon: ReactNode };
+type Site = { name: string; avatar?: string };
+
+// 全站只有一个登录弹窗（由页头那份 AccountMenu 挂载），页头和评论区都从这里打开；
+// hash 记下登录后回到哪里（评论区传 "comments"，回到文末评论区）。
+const useLoginDialog = create<{ open: boolean; hash?: string; show: (hash?: string) => void; hide: () => void }>()((set) => ({
+  open: false,
+  show: (hash) => set({ open: true, hash }),
+  hide: () => set({ open: false }),
+}));
+export const openLoginDialog = (hash?: string) => useLoginDialog.getState().show(hash);
+
+// 页头（和手机菜单底部）的读者登录入口，与评论区共用同一份登录状态（reader-session.ts）。
+// 没登录：人像图标，点开居中的登录弹窗；登录后：头像右下角一枚登录来源角标，点开是账号菜单（名字、@用户名、来源、退出）。
+// host：页头那份负责挂载登录弹窗、播报从页头发起的登录失败；手机菜单里那份只放按钮。
+export default function AccountMenu({ apiUrl, providers, site, host = false, side = "bottom" }: {
   apiUrl: string;
-  providers: { id: LoginProvider; icon: ReactNode }[];
+  providers: Provider[];
+  site: Site;
+  host?: boolean;
   side?: "bottom" | "top";
 }) {
-  const router = useRouter();
   const session = useReaderSession(apiUrl);
   const loginError = useLoginError("header");
-  const setNavOpen = useIsland((state) => state.setNavOpen);
   const push = useIsland((state) => state.push);
-  const [pending, setPending] = useState<LoginProvider | "out" | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const shown = error ?? loginError;
-  // 只让页头那一份播报（手机菜单里的同一组件 side="top"），避免播两遍
-  const announce = side === "bottom";
 
   useEffect(() => {
-    if (announce && loginError) push({ icon: "info", title: "登录没有成功", detail: loginError, duration: 6000 });
-  }, [announce, loginError, push]);
+    if (host && loginError) push({ icon: "info", title: "登录没有成功", detail: loginError, duration: 6000 });
+  }, [host, loginError, push]);
+
+  const reader = session.status === "reader" ? session.reader : null;
+  const dialog = host && <LoginDialog apiUrl={apiUrl} providers={providers} site={site} error={loginError} />;
+  if (session.status === "loading") return <><span className="account-trigger" aria-hidden="true" />{dialog}</>;
+  if (!reader) {
+    if (!providers.length) return dialog;
+    return (
+      <>
+        <button type="button" className="icon-button account-trigger" onClick={() => openLoginDialog()} aria-label="登录" title="登录">
+          <CircleUserRound size={19} strokeWidth={1.75} aria-hidden="true" />
+        </button>
+        {dialog}
+      </>
+    );
+  }
+  return <>{<AccountDropdown apiUrl={apiUrl} reader={reader} providers={providers} host={host} side={side} />}{dialog}</>;
+}
+
+// 头像：图片或名字首字；右下角一枚圆形角标显示这次用哪种第三方登录
+function Avatar({ reader, providers, large = false }: { reader: Reader; providers: Provider[]; large?: boolean }) {
+  const source = providers.find((provider) => provider.id === reader.provider);
+  return (
+    <span className="account-avatar" data-large={large ? "" : undefined}>
+      {reader.image
+        // eslint-disable-next-line @next/next/no-img-element -- GitHub / Google 头像，不走 next/image 白名单
+        ? <img src={reader.image} alt="" width={large ? 40 : 30} height={large ? 40 : 30} />
+        : <span className="account-initial" aria-hidden="true">{reader.name.slice(0, 1)}</span>}
+      {source && <span className="account-badge" aria-hidden="true">{source.icon}</span>}
+    </span>
+  );
+}
+
+function AccountDropdown({ apiUrl, reader, providers, host, side }: { apiUrl: string; reader: Reader; providers: Provider[]; host: boolean; side: "bottom" | "top" }) {
+  const router = useRouter();
+  const setNavOpen = useIsland((state) => state.setNavOpen);
+  const source = reader.provider === "github" || reader.provider === "google" ? providerNames[reader.provider] : null;
+  const sourceIcon = providers.find((provider) => provider.id === reader.provider)?.icon;
+
+  async function logout() {
+    await signOut(apiUrl).catch(() => {});
+    router.refresh();
+  }
+
+  return (
+    // 菜单开着时页头夜航岛保持展开，否则鼠标移进菜单时岛会收起、菜单失去依附
+    <Menu.Root onOpenChange={(open) => { if (host) setNavOpen(open); }}>
+      <Menu.Trigger className="account-trigger account-trigger-avatar" aria-label={`账号：${reader.name}`} title={reader.name}>
+        <Avatar reader={reader} providers={providers} />
+      </Menu.Trigger>
+      <Menu.Portal>
+        <Menu.Positioner className="account-positioner" side={side} align="end" sideOffset={10} collisionPadding={12}>
+          <Menu.Popup className="account-menu">
+            <Menu.Group>
+              <Menu.GroupLabel className="account-label">账号</Menu.GroupLabel>
+              <div className="account-profile">
+                <Avatar reader={reader} providers={providers} large />
+                <div className="account-names">
+                  <strong>{reader.name}</strong>
+                  <span>{reader.handle ? `@${reader.handle}` : reader.email}</span>
+                </div>
+              </div>
+              <p className="account-meta">
+                {sourceIcon && <span className="account-meta-icon" aria-hidden="true">{sourceIcon}</span>}
+                {source ? `通过 ${source} 登录` : "已登录"}
+                <span className="account-role">{reader.isOwner ? "站长" : "读者"}</span>
+              </p>
+            </Menu.Group>
+            <Menu.Separator className="account-separator" />
+            <Menu.Item className="account-item" onClick={() => void logout()}>
+              <LogOut size={16} strokeWidth={1.75} aria-hidden="true" />
+              退出登录
+            </Menu.Item>
+            {reader.isOwner && <p className="account-note">同一浏览器里的后台也会一起退出</p>}
+          </Menu.Popup>
+        </Menu.Positioner>
+      </Menu.Portal>
+    </Menu.Root>
+  );
+}
+
+// 居中的登录弹窗：站长头像带一圈月光，下面“登录到 站名”，一排圆形的彩色品牌按钮（点了显示转圈，等待跳去授权页）
+function LoginDialog({ apiUrl, providers, site, error }: { apiUrl: string; providers: Provider[]; site: Site; error: string | null }) {
+  const { open, hash, hide } = useLoginDialog();
+  const [pending, setPending] = useState<LoginProvider | null>(null);
+  const [failure, setFailure] = useState<string | null>(null);
+  const message = failure ?? error;
 
   async function login(provider: LoginProvider) {
     setPending(provider);
-    setError(null);
+    setFailure(null);
     try {
-      await signIn(apiUrl, provider);
+      await signIn(apiUrl, provider, hash);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "登录跳转失败");
+      setFailure(reason instanceof Error ? reason.message : "登录跳转失败");
       setPending(null);
     }
   }
 
-  async function logout() {
-    setPending("out");
-    await signOut(apiUrl).catch(() => {});
-    setPending(null);
-    router.refresh();
-  }
-
-  if (session.status === "loading") return <span className="account-trigger" aria-hidden="true" />;
-  const reader = session.status === "reader" ? session.reader : null;
-  if (!reader && !providers.length) return null;
-
   return (
-    // 浮层开着时页头夜航岛保持展开，否则鼠标移进浮层时岛会收起、浮层失去依附
-    <Popover.Root onOpenChange={(open) => { if (announce) setNavOpen(open); }}>
-      <Popover.Trigger className="icon-button account-trigger" aria-label={reader ? `已登录：${reader.name}` : "登录"} title={reader ? reader.name : "登录"}>
-        {reader ? (
-          reader.image
-            // eslint-disable-next-line @next/next/no-img-element -- GitHub / Google 头像，不走 next/image 白名单
-            ? <img className="account-avatar" src={reader.image} alt="" width={28} height={28} />
-            : <span className="account-avatar" aria-hidden="true">{reader.name.slice(0, 1)}</span>
-        ) : (
-          <CircleUserRound size={19} strokeWidth={1.75} aria-hidden="true" />
-        )}
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Positioner className="account-positioner" side={side} align="end" sideOffset={10} collisionPadding={12}>
-          <Popover.Popup className="account-popup">
-            {reader ? (
-              <>
-                <div className="account-profile">
-                  {reader.image
-                    // eslint-disable-next-line @next/next/no-img-element -- 同上
-                    ? <img className="account-avatar is-large" src={reader.image} alt="" width={44} height={44} />
-                    : <span className="account-avatar is-large" aria-hidden="true">{reader.name.slice(0, 1)}</span>}
-                  <div>
-                    <Popover.Title className="account-name">{reader.name}</Popover.Title>
-                    <span className="account-role">{reader.isOwner ? "博主" : "读者"}</span>
-                  </div>
-                </div>
-                <Popover.Description className="account-hint">
-                  {reader.isOwner ? "评论会以博主身份显示。退出后，同一浏览器里的后台也会一起退出。" : "评论会署上你的名字和头像。"}
-                </Popover.Description>
-                <button type="button" className="btn btn-ghost account-logout" onClick={() => void logout()} disabled={pending === "out"}>
-                  <LogOut size={16} strokeWidth={1.75} aria-hidden="true" />
-                  {pending === "out" ? "正在退出…" : "退出登录"}
+    <Dialog.Root open={open} onOpenChange={(next) => { if (!next) hide(); }}>
+      <Dialog.Portal>
+        <Dialog.Backdrop className="login-backdrop" />
+        <Dialog.Popup className="login-dialog">
+          {site.avatar && (
+            // eslint-disable-next-line @next/next/no-img-element -- 站长头像来自后台任意地址
+            <img className="login-avatar" src={site.avatar} alt="" width={64} height={64} />
+          )}
+          <Dialog.Title className="login-title">登录到 <strong>{site.name}</strong></Dialog.Title>
+          <Dialog.Description className="login-hint">评论时会署上你的名字和头像</Dialog.Description>
+          <ul className="login-providers">
+            {providers.map(({ id, icon }) => (
+              <li key={id}>
+                <button type="button" className="login-provider" onClick={() => void login(id)} disabled={pending !== null} aria-label={`使用 ${providerNames[id]} 登录`}>
+                  <span className="login-provider-icon">
+                    {pending === id ? <LoaderCircle className="login-spinner" size={20} strokeWidth={2} aria-hidden="true" /> : icon}
+                  </span>
+                  <span className="login-provider-name">{providerNames[id]}</span>
                 </button>
-              </>
-            ) : (
-              <>
-                <Popover.Title className="account-title">登录</Popover.Title>
-                <Popover.Description className="account-hint">登录后评论会署上你的名字和头像。只读取公开资料和邮箱。</Popover.Description>
-                <div className="account-providers">
-                  {providers.map(({ id, icon }) => (
-                    <button key={id} type="button" className="btn account-provider" onClick={() => void login(id)} disabled={pending !== null}>
-                      {icon}
-                      {pending === id ? "正在跳转…" : `使用 ${providerNames[id]} 登录`}
-                    </button>
-                  ))}
-                </div>
-                {shown && <p className="account-error" role="alert">{shown}</p>}
-              </>
-            )}
-          </Popover.Popup>
-        </Popover.Positioner>
-      </Popover.Portal>
-    </Popover.Root>
+              </li>
+            ))}
+          </ul>
+          {message && <p className="login-error" role="alert">{message}</p>}
+          <Dialog.Close className="login-close" aria-label="关闭">
+            <X size={18} strokeWidth={1.75} aria-hidden="true" />
+          </Dialog.Close>
+        </Dialog.Popup>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

@@ -4,7 +4,8 @@ import { useSyncExternalStore } from "react";
 
 // 读者登录状态（Core 的 Better Auth 会话）。每个访客各不相同，只能在浏览器里读，不能进服务端缓存。
 // 登录 Cookie 由 Core 下发且 HttpOnly，所有请求都要 credentials: "include" 才会带上。
-export type Reader = { name: string; image?: string; isOwner: boolean };
+// provider：这次是用哪种第三方登录的（Core 在登录回调里写进会话），页头头像角标用；handle 是 GitHub 用户名。
+export type Reader = { name: string; image?: string; isOwner: boolean; handle?: string; email?: string; provider?: string };
 type State = { status: "loading" } | { status: "guest" } | { status: "reader"; reader: Reader };
 
 const loadingState: State = { status: "loading" };
@@ -20,9 +21,21 @@ function set(next: State) {
 async function load(apiUrl: string) {
   try {
     const response = await fetch(`${apiUrl}/auth/get-session`, { credentials: "include" });
-    const session = response.ok ? await response.json() as { user?: { name?: string; image?: string | null; role?: string } } | null : null;
+    const session = response.ok
+      ? await response.json() as { session?: { provider?: string | null }; user?: { name?: string; image?: string | null; role?: string; handle?: string | null; email?: string | null } } | null
+      : null;
     const user = session?.user;
-    set(user ? { status: "reader", reader: { name: user.name || "读者", image: user.image ?? undefined, isOwner: user.role === "owner" } } : { status: "guest" });
+    set(user ? {
+      status: "reader",
+      reader: {
+        name: user.name || "读者",
+        image: user.image ?? undefined,
+        isOwner: user.role === "owner",
+        handle: user.handle || undefined,
+        email: user.email || undefined,
+        provider: session?.session?.provider || undefined,
+      },
+    } : { status: "guest" });
   } catch {
     set({ status: "guest" });
   }
@@ -55,11 +68,11 @@ const loginParams = ["login", "login_provider", "error", "error_description"];
 // 登录失败时 Core（Better Auth）默认跳到它自己的英文错误页，页上的“返回首页”会把人带到 Core 根地址。
 // 这里让失败也回到发起登录的页面：地址带 login=failed&login_provider=…，Better Auth 再追加 error=错误码。
 const loginErrorMessages: Record<string, (name: string) => string> = {
-  state_mismatch: () => "登录校验没通过：浏览器没有带上登录用的 Cookie。请确认博客和 Core 用同一个主机打开（本地统一用 127.0.0.1，不要用 localhost），并且浏览器没有拦截本站 Cookie。",
+  state_mismatch: () => "这次登录已经失效（登录页被重复打开，或浏览器没带上登录用的 Cookie），请重新登录一次。反复出现时，确认博客和 Core 都用 127.0.0.1 打开、浏览器没有拦截本站 Cookie。",
   access_denied: (name) => `你取消了 ${name} 授权。`,
   invalid_code: (name) => `${name} 授权码无效或已过期，请重新登录。`,
   account_not_linked: (name) => `这个 ${name} 账号的邮箱已被其他账号使用，没能自动关联。`,
-  unable_to_get_user_info: (name) => `没能从 ${name} 读取到你的资料，请确认授权时允许读取邮箱。`,
+  unable_to_get_user_info: (name) => `没能从 ${name} 读取到你的资料：服务器连 ${name} 超时，或授权时没允许读取邮箱。请稍后再试一次。`,
 };
 // source：从评论区发起（回跳地址带 #comments）的错误显示在评论表单里，从页头发起的由夜航岛播报
 type LoginError = { message: string; source: "comments" | "header" };

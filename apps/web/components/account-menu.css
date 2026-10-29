@@ -1,4 +1,6 @@
-/* 读者登录入口（account-menu.tsx）：按钮沿用 .icon-button（theme-switcher.css），这里只管头像和浮层 */
+/* 读者登录（account-menu.tsx）：页头的头像/登录按钮、账号菜单、全站共用的登录弹窗。
+   没登录时按钮沿用 .icon-button（theme-switcher.css）；颜色、圆角、阴影全部取 globals.css 的变量。 */
+
 .account-trigger {
   display: inline-flex;
   flex: none;
@@ -6,107 +8,411 @@
   height: 2.25rem;
 }
 
+/* 登录后的触发按钮就是头像本身，不要按钮底色 */
+.account-trigger-avatar {
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  cursor: pointer;
+}
+
+.account-trigger-avatar:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* 头像：一圈淡月光；右下角是登录来源角标 */
 .account-avatar {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 1.875rem;
+  height: 1.875rem;
+}
+
+.account-avatar[data-large] {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.account-avatar > img,
+.account-initial {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--moonlight) 40%, transparent), 0 0 12px -3px color-mix(in srgb, var(--moonlight) 50%, transparent);
+  transition: box-shadow var(--duration-base);
+}
+
+.account-initial {
   display: grid;
   place-items: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: var(--radius-full);
   background: var(--primary-soft);
   color: var(--primary);
   font-size: var(--text-sm);
   font-weight: 600;
-  object-fit: cover;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--moonlight) 40%, transparent), 0 0 12px -3px color-mix(in srgb, var(--moonlight) 50%, transparent);
 }
 
-.account-avatar.is-large {
-  width: 2.75rem;
-  height: 2.75rem;
-  font-size: var(--text-lg);
+@media (hover: hover) {
+  .account-trigger-avatar:hover .account-avatar > :is(img, .account-initial) {
+    box-shadow: 0 0 0 1px var(--moonlight), 0 0 16px 0 color-mix(in srgb, var(--moonlight) 55%, transparent);
+  }
 }
 
+/* 角标底色和页头胶囊/浮层一致，外面一圈同色描边把它从头像上“抠”出来 */
+.account-badge {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  display: grid;
+  place-items: center;
+  width: 0.9375rem;
+  height: 0.9375rem;
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  color: var(--foreground);
+  box-shadow: 0 0 0 1.5px var(--surface);
+}
+
+.account-badge svg {
+  width: 0.625rem;
+  height: 0.625rem;
+}
+
+.account-avatar[data-large] .account-badge {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.account-avatar[data-large] .account-badge svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* ---------- 账号菜单 ---------- */
 .account-positioner {
   z-index: var(--z-popup);
 }
 
-.account-popup {
-  display: grid;
-  gap: var(--space-3);
-  width: min(17rem, calc(100vw - 1.5rem));
-  padding: var(--space-4);
+.account-menu {
+  width: min(16rem, calc(100vw - 1.5rem));
+  padding: var(--space-1);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
-  background:
-    radial-gradient(120% 60% at 100% 0%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 70%),
-    var(--surface);
+  background: var(--surface);
   box-shadow: var(--shadow-popup);
   outline: 0;
   transform-origin: var(--transform-origin);
   transition: opacity var(--duration-base) var(--ease-out), scale var(--duration-base) var(--ease-out);
 }
 
-.account-popup[data-starting-style],
-.account-popup[data-ending-style] {
+.account-menu[data-starting-style],
+.account-menu[data-ending-style] {
   opacity: 0;
   scale: 0.96;
 }
 
-.account-title,
-.account-name {
-  margin: 0;
-  font-size: var(--text-base);
-  font-weight: 600;
-}
-
-.account-hint {
-  margin: 0;
+.account-label {
+  padding: var(--space-2) var(--space-3) 0;
   color: var(--muted-foreground);
   font-size: var(--text-xs);
-  line-height: var(--leading-relaxed);
-}
-
-.account-providers {
-  display: grid;
-  gap: var(--space-2);
-}
-
-.account-provider {
-  justify-content: flex-start;
-  gap: var(--space-3);
-  width: 100%;
 }
 
 .account-profile {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+}
+
+.account-names {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  line-height: var(--leading-tight);
+}
+
+.account-names strong {
+  overflow: hidden;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-names span {
+  overflow: hidden;
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3) var(--space-2);
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+}
+
+.account-meta-icon {
+  display: inline-grid;
+  color: var(--foreground);
+}
+
+.account-meta-icon svg {
+  width: 0.75rem;
+  height: 0.75rem;
 }
 
 .account-role {
-  display: inline-block;
-  margin-top: 2px;
+  margin-left: auto;
   padding: 0 var(--space-2);
   border-radius: var(--radius-full);
   background: var(--primary-soft);
   color: var(--primary);
+}
+
+.account-separator {
+  height: 1px;
+  margin: var(--space-1) var(--space-2);
+  background: var(--border);
+}
+
+.account-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  outline: 0;
+}
+
+.account-item[data-highlighted] {
+  background: var(--accent);
+}
+
+.account-item svg {
+  color: var(--muted-foreground);
+}
+
+.account-note {
+  padding: 0 var(--space-3) var(--space-2);
+  color: var(--muted-foreground);
+  font-size: 0.6875rem;
+}
+
+/* ---------- 登录弹窗 ---------- */
+.login-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-popup);
+  background: color-mix(in srgb, var(--background) 55%, transparent);
+  backdrop-filter: blur(6px);
+  transition: opacity var(--duration-base) var(--ease-out);
+}
+
+.login-backdrop[data-starting-style],
+.login-backdrop[data-ending-style] {
+  opacity: 0;
+}
+
+.login-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: var(--z-popup);
+  display: grid;
+  justify-items: center;
+  width: min(22rem, calc(100vw - 2rem));
+  padding: var(--space-8) var(--space-6) var(--space-6);
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  background:
+    radial-gradient(90% 55% at 50% 0%, color-mix(in srgb, var(--moonlight) 12%, transparent), transparent 70%),
+    var(--surface);
+  box-shadow: var(--shadow-popup);
+  text-align: center;
+  outline: 0;
+  translate: -50% -50%;
+  transition: opacity var(--duration-slow) var(--ease-out), translate var(--duration-slow) var(--ease-out), scale var(--duration-slow) var(--ease-out);
+}
+
+.login-dialog[data-starting-style],
+.login-dialog[data-ending-style] {
+  opacity: 0;
+  translate: -50% calc(-50% + 12px);
+  scale: 0.97;
+}
+
+/* 站长头像浮在弹窗上沿，一圈月光 */
+.login-avatar {
+  width: 4rem;
+  height: 4rem;
+  margin-top: calc(-1 * var(--space-8) - 2rem);
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  box-shadow:
+    0 0 0 3px var(--surface),
+    0 0 0 4px color-mix(in srgb, var(--moonlight) 45%, transparent),
+    0 0 28px -4px color-mix(in srgb, var(--moonlight) 60%, transparent);
+}
+
+.login-title {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 400;
+}
+
+.login-title strong {
+  font-weight: 600;
+}
+
+.login-hint {
+  margin: var(--space-1) 0 0;
+  color: var(--muted-foreground);
   font-size: var(--text-xs);
 }
 
-.account-logout {
+.login-providers {
+  display: flex;
   justify-content: center;
-  gap: var(--space-2);
-  width: 100%;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
 }
 
-.account-error {
+.login-provider {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  font: inherit;
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.login-provider:disabled {
+  cursor: progress;
+}
+
+/* 圆形按钮：彩色品牌标志（GitHub 本身是单色，跟随文字颜色） */
+.login-provider-icon {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--foreground) 4%, var(--surface));
+  color: var(--foreground);
+  transition: translate var(--duration-base) var(--ease-out), border-color var(--duration-base), box-shadow var(--duration-base);
+}
+
+.login-provider-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+@media (hover: hover) {
+  .login-provider:not(:disabled):hover .login-provider-icon {
+    border-color: var(--border-strong);
+    box-shadow: 0 6px 18px -8px var(--star-glow);
+    translate: 0 -2px;
+  }
+
+  .login-provider:not(:disabled):hover {
+    color: var(--foreground);
+  }
+}
+
+.login-provider:focus-visible {
+  outline: 0;
+}
+
+.login-provider:focus-visible .login-provider-icon {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.login-spinner {
+  animation: login-spin 0.9s linear infinite;
+}
+
+@keyframes login-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+.login-error {
+  margin-top: var(--space-4);
   color: var(--danger);
   font-size: var(--text-xs);
   line-height: var(--leading-relaxed);
+  text-align: left;
+}
+
+.login-close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .login-close:hover {
+    background: var(--accent);
+    color: var(--foreground);
+  }
+}
+
+.login-close:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .account-popup {
+  .account-menu,
+  .login-backdrop,
+  .login-dialog,
+  .login-provider-icon {
     transition: none;
   }
+
+  .login-spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+/* 页头里的角标底色跟着页头：顶部铺开时是页面底色，收成深色胶囊时是胶囊底色 */
+.site-header[data-mode="bar"] .account-badge {
+  background: var(--background);
+  box-shadow: 0 0 0 1.5px var(--background);
+}
+
+.site-header:not([data-mode="bar"]) .account-badge {
+  background: var(--island-bg);
+  box-shadow: 0 0 0 1.5px var(--island-bg);
 }

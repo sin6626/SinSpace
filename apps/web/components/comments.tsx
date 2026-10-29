@@ -49,7 +49,7 @@ export async function loadComments(refId: string, allowComment: boolean) {
   const [result, { comments: settings }, providers] = await Promise.all([getComments(refId, 1), getSiteSettings(), getLoginProviders().catch((): LoginProvider[] => [])]);
   const form: FormOptions = { apiUrl: getApiUrl(), allowGuest: settings.allowGuest, providers };
   // 关闭游客评论但启用了第三方登录时，表单里只给登录按钮；两者都没有才算无法评论。
-  const closedReason = settings.disabled || !allowComment ? "评论已关闭。" : !settings.allowGuest && !providers.length ? "博主暂未开放游客评论。" : null;
+  const closedReason = settings.disabled || !allowComment ? "评论已关闭。" : !settings.allowGuest && !providers.length ? "站长暂未开放游客评论。" : null;
   return { ...result, form, closedReason };
 }
 

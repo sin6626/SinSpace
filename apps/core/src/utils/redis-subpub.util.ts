@@ -5,6 +5,7 @@ import IORedis from 'ioredis'
 import { REDIS } from '~/app.config'
 
 import { isTest } from '../global/env.global'
+import { redactJson } from './log-url.util'
 
 class RedisSubPub {
   private readonly logger = new Logger(RedisSubPub.name)
@@ -67,7 +68,7 @@ class RedisSubPub {
     const channel = this.channelPrefix + event
     const _data = JSON.stringify(data)
     if (event !== 'log') {
-      this.logger.debug(`发布事件：${channel} <- ${_data}`)
+      this.logger.debug(`发布事件：${channel} <- ${redactJson(_data)}`)
     }
     await this.pubClient.publish(channel, _data)
   }
@@ -81,7 +82,7 @@ class RedisSubPub {
     const cb = (channel, message) => {
       if (channel === myChannel) {
         if (event !== 'log') {
-          this.logger.debug(`接收事件：${channel} -> ${message}`)
+          this.logger.debug(`接收事件：${channel} -> ${redactJson(message)}`)
         }
         callback(JSON.parse(message))
       }

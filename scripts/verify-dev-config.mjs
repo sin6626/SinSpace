@@ -21,6 +21,16 @@ try {
   assert.equal(normal.coreEnv.MX_DATA_DIR, join(fileURLToPath(new URL('../', import.meta.url)), '.local/media'))
   assert.deepEqual(normal.ports, { mongo: 27018, redis: 6380, core: 2333, web: 2323, admin: 9528 })
   assert.equal('JWT_SECRET' in normal.coreEnv, false)
+  // 2026-10-29：Node 的 fetch 默认不走 HTTPS_PROXY，Core 直连 GitHub 取读者资料时断开（fetch failed），登录失败。
+  // 本机设了代理时让 Core 的 fetch 走代理（NO_PROXY 里的 127.0.0.1 等本地地址仍直连），没设时不加。
+  // 终端里没有代理变量时读 macOS 系统代理（Clash 等只开“系统代理”），测试用 SIN_SYSTEM_PROXY 代替 scutil 的结果。
+  const noEnvProxy = { HTTPS_PROXY: '', HTTP_PROXY: '', https_proxy: '', http_proxy: '', NO_PROXY: '' }
+  const viaEnv = config([], { ...noEnvProxy, HTTPS_PROXY: 'http://127.0.0.1:7897', SIN_SYSTEM_PROXY: '' }).coreEnv
+  assert.equal(viaEnv.NODE_USE_ENV_PROXY, '1')
+  const viaSystem = config([], { ...noEnvProxy, SIN_SYSTEM_PROXY: 'http://127.0.0.1:7897' }).coreEnv
+  assert.deepEqual([viaSystem.NODE_USE_ENV_PROXY, viaSystem.HTTPS_PROXY, viaSystem.HTTP_PROXY], ['1', 'http://127.0.0.1:7897', 'http://127.0.0.1:7897'])
+  assert.match(viaSystem.NO_PROXY, /127\.0\.0\.1/, '本地地址（Webhook 等）必须直连')
+  assert.equal('NODE_USE_ENV_PROXY' in config([], { ...noEnvProxy, SIN_SYSTEM_PROXY: '' }).coreEnv, false)
   const test = config(['--test'], { SIN_VERIFY: '1', SIN_MAX_RSS_MIB: '2560' })
   assert.equal(test.database, 'sinpersonalspace-verify')
   assert.notEqual(test.dataRoot, directory)

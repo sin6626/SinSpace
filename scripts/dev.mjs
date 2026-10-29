@@ -48,6 +48,28 @@ const resourceBudget = agentVerification ? validateResourceBudget({
   minFreePercent: Number(process.env.SIN_MIN_FREE_PERCENT || 20),
 }) : null
 if (resourceBudget && (resourceBudget.maxRssMiB > 2560 || resourceBudget.minFreePercent < 20)) throw new Error('Agent 验证预算只能收紧。')
+// 让 Core 的 fetch 走本机代理：Node 默认不读代理设置，直连 GitHub 取读者资料常断开（fetch failed），读者登录失败。
+// 终端里有 HTTPS_PROXY 等变量就用它；没有时读 macOS 系统代理（Clash 等通常只开“系统代理”）；都没有就直连。
+// NO_PROXY 保证本地地址（Webhook 发给 127.0.0.1:2323、Mongo、Redis 等）仍直连。SIN_SYSTEM_PROXY 供测试替代 scutil 的结果。
+function systemProxy() {
+  if ('SIN_SYSTEM_PROXY' in process.env) return process.env.SIN_SYSTEM_PROXY || null
+  if (process.platform !== 'darwin') return null
+  try {
+    const out = execFileSync('scutil', ['--proxy'], { encoding: 'utf8' })
+    const host = out.match(/HTTPSProxy : (\S+)/)?.[1]
+    const port = out.match(/HTTPSPort : (\d+)/)?.[1]
+    return /HTTPSEnable : 1/.test(out) && host && port ? `http://${host}:${port}` : null
+  } catch {
+    return null
+  }
+}
+function coreProxy() {
+  const fromEnv = ['HTTPS_PROXY', 'https_proxy', 'HTTP_PROXY', 'http_proxy'].map((key) => process.env[key]).find(Boolean)
+  if (fromEnv) return { NODE_USE_ENV_PROXY: '1' }
+  const proxy = systemProxy()
+  if (!proxy) return {}
+  return { NODE_USE_ENV_PROXY: '1', HTTPS_PROXY: proxy, HTTP_PROXY: proxy, NO_PROXY: process.env.NO_PROXY || 'localhost,127.0.0.1,::1' }
+}
 const coreEnv = {
   NODE_ENV: 'development',
   DB_HOST: host, DB_PORT: String(ports.mongo), REDIS_HOST: host, REDIS_PORT: String(ports.redis),
@@ -57,6 +79,7 @@ const coreEnv = {
   MX_DEV_API_URL: api, MX_DEV_WEB_URL: web, MX_DEV_ADMIN_URL: admin,
   ALLOWED_ORIGINS: `${host}:${ports.web},localhost:${ports.web},${host}:${ports.admin}`,
   MX_DATA_DIR: mediaRoot, DOTENV_CONFIG_PATH: '/dev/null', DOTENV_CONFIG_OVERRIDE: 'false',
+  ...coreProxy(),
 }
 if (process.argv.includes('--print-config')) {
   console.log(JSON.stringify({ root, dataRoot, mediaRoot, logs, ports, database, redisDir, coreEnv, coreOnly, webOnly, adminOnly, withAdmin, resourceBudget }))

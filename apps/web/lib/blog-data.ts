@@ -63,7 +63,7 @@ export async function getSiteSettings() {
   };
 }
 
-// 后台“设置 → 账户 → OAuth”里启用的第三方登录（目前前端只接 GitHub）。改动没有 Webhook 事件，缓存短一些。
+// 后台“设置 → 账户 → OAuth”里启用的第三方登录（前端接了 GitHub 和 Google）。改动没有 Webhook 事件，缓存短一些。
 export async function getLoginProviders() {
   "use cache";
   cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
@@ -391,7 +391,7 @@ export async function getComments(refId: string, page: number) {
       pinned: Boolean(comment.pin),
       deleted: Boolean(comment.isDeleted),
       parentId: comment.parentCommentId ?? null,
-      // 博主在后台或以博主身份登录发的评论，评论悬浮窗里放在右侧
+      // 站长在后台或以站长身份登录发的评论，评论悬浮窗里放在右侧
       owner: reader?.role === "owner",
     };
   };

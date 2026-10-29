@@ -1,5 +1,5 @@
 /* 文章侧栏的评论悬浮窗（comment-chat.tsx 消息流 + comment-chat-panel.tsx 外壳）。
-   像聊天软件：顶部标题栏，中间按时间排的消息流（每天一条日期分隔，博主在右侧、强调色气泡），底部固定输入框。 */
+   像聊天软件：顶部标题栏，中间按时间排的消息流（每天一条日期分隔，站长在右侧、强调色气泡），底部固定输入框。 */
 
 .chat-positioner {
   z-index: var(--z-popup);
@@ -248,7 +248,7 @@
   font-style: italic;
 }
 
-/* 博主：放到右边，强调色淡底气泡 */
+/* 站长：放到右边，强调色淡底气泡 */
 .chat-message[data-owner] {
   flex-direction: row-reverse;
 }

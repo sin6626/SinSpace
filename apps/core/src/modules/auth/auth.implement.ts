@@ -11,6 +11,8 @@ import { mongodbAdapter } from 'better-auth/adapters/mongodb'
 import { APIError, createAuthMiddleware } from 'better-auth/api'
 import { hashPassword, verifyPassword } from 'better-auth/crypto'
 import { toNodeHandler } from 'better-auth/node'
+
+import { guardUserInfo } from './guard-user-info.util'
 import { username } from 'better-auth/plugins'
 import { MongoClient, ObjectId } from 'mongodb'
 
@@ -36,9 +38,13 @@ const isBcryptHash = (value?: string | null) =>
 export async function CreateAuth(
   providers: BetterAuthOptions['socialProviders'],
   passkeyOptions?: PasskeyOptions,
+  // 登录出错且没有前端失败地址时（如登录状态已用掉 state_mismatch）跳去哪里。
+  // 不设时 Better Auth 跳到自带的 /auth/error 英文页，页上“回首页”是 Core 根地址，读者会看到一页 JSON。
+  errorURL?: string,
 ) {
   const auth = betterAuth({
     telemetry: { enabled: false },
+    ...(errorURL ? { onAPIError: { errorURL } } : {}),
     database: mongodbAdapter(db),
     socialProviders: providers,
     basePath: isDev ? '/auth' : `/api/v${API_VERSION}/auth`,
@@ -254,6 +260,9 @@ export async function CreateAuth(
       },
     },
   })
+
+  const context = await auth.$context
+  guardUserInfo(context.socialProviders, (message, error) => context.logger.error(message, error))
 
   const handler = async (req: IncomingMessage, res: ServerResponse) => {
     try {

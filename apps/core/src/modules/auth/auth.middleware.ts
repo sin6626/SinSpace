@@ -87,7 +87,10 @@ export class AuthMiddleware implements NestMiddleware, OnModuleInit {
           : parsedAdminUrl.origin,
       }
 
-      const { handler, auth } = await CreateAuth(providers, passkeyOptions)
+      // 登录出错的兜底去处：博客首页（后台“网站地址”），带 login=failed，前端据此说明原因
+      const errorURL = new URL('/', urls.webUrl)
+      errorURL.searchParams.set('login', 'failed')
+      const { handler, auth } = await CreateAuth(providers, passkeyOptions, errorURL.href)
       this.authHandler = handler
 
       this.authInstance.set(auth)

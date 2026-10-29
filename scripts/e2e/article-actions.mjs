@@ -124,7 +124,7 @@ try {
   await sleep(1500);
   assert.ok(await browser.evaluate("scrollY") < 5, "点回到顶部后应当回到页面顶端");
 
-  // 调试页的示例消息流：按时间排、博主在右侧、打开时停在最新一条；点“回复”出现回复对象并亮起那条，× 取消
+  // 调试页的示例消息流：按时间排、站长在右侧、打开时停在最新一条；点“回复”出现回复对象并亮起那条，× 取消
   await browser.goto(`${base}/debug`);
   await browser.evaluate(`document.querySelector(".debug-chat .article-action").scrollIntoView({ block: "center" })`);
   await sleep(400);
@@ -140,7 +140,7 @@ try {
     };
   })()`);
   assert.deepEqual(stream.ids, ["c1", "c2", "c3", "c4", "c5"], `消息应当按时间排成一条流：${stream.ids}`);
-  assert.ok(stream.ownerRight, "博主的消息应当在右侧");
+  assert.ok(stream.ownerRight, "站长的消息应当在右侧");
   assert.ok(stream.atBottom, "打开时应当停在最新一条");
   await browser.evaluate(`document.querySelector('.chat-message[data-id="c1"]').scrollIntoView({ block: "center" })`);
   await sleep(200);
