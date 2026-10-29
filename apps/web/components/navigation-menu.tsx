@@ -177,7 +177,8 @@ function GroupPanel({ className, label, groups, fallback, pathname, footer }: {
   );
 }
 
-export default function BlogNavigation({ state }: { state: NavigationState }) {
+// account：手机菜单底部的读者登录入口（header-account.tsx）
+export default function BlogNavigation({ state, account }: { state: NavigationState; account?: ReactNode }) {
   const pathname = usePathname();
   // 当前展开的面板。点击一级链接跳转时弹层是“点击打开”的，不会因鼠标离开而关闭，
   // 所以路由变化时主动收起（渲染期间比较上一次路径，不用 effect）。
@@ -232,6 +233,7 @@ export default function BlogNavigation({ state }: { state: NavigationState }) {
     <MobileMenu
       corners={[{ label: "首页", href: "/" }, { label: "文章", href: "/posts" }, { label: "手记", href: "/notes" }, { label: "时间线", href: "/timeline" }, { label: "碎碎念", href: "/thinking" }]}
       more={[...pages, ...moreLinks, ...devLinks]}
+      account={account}
     />
     <NavigationMenu.Root
       className="navigation-Root"

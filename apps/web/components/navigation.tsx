@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 import { unstable_rethrow } from "next/navigation";
 import { getNavigationData, getNavigationPanels, getOwner } from "../lib/blog-data";
 import { SocialIcon } from "./iconify-icon";
@@ -22,7 +22,7 @@ function links(value: unknown, labelKey: "name" | "title", prefix: string) {
   });
 }
 
-async function NavigationData() {
+async function NavigationData({ account }: { account?: ReactNode }) {
   let state: NavigationState;
   try {
     // 悬停面板的数据和站长社交账号读不到时不影响导航本身，面板退回简单列表
@@ -41,13 +41,13 @@ async function NavigationData() {
     unstable_rethrow(error);
     state = { status: "error" };
   }
-  return <NavigationMenu state={state} />;
+  return <NavigationMenu state={state} account={account} />;
 }
 
-export default function Navigation() {
+export default function Navigation({ account }: { account?: ReactNode }) {
   return (
     <Suspense fallback={<p className="navigation-message" role="status">正在读取导航…</p>}>
-      <NavigationData />
+      <NavigationData account={account} />
     </Suspense>
   );
 }

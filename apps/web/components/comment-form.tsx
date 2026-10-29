@@ -4,14 +4,14 @@ import { useRouter } from "next/navigation";
 import { useId, useState, type FormEvent } from "react";
 import { useIsland } from "../lib/island-store";
 import { refreshAfterWrite } from "./cache-actions";
-import { signInWithGitHub, signOut, useLoginError, useReaderSession } from "./reader-session";
+import { providerNames, signIn, signOut, useLoginError, useReaderSession, type LoginProvider } from "./reader-session";
 
 export type CommentRefType = "Post" | "Note" | "Page" | "Recently";
 
-// allowGuest：后台是否允许游客评论；github：后台是否启用了 GitHub 登录。
+// allowGuest：后台是否允许游客评论；providers：后台启用了哪些读者登录（GitHub / Google）。
 // variant="chat"：文章侧栏评论悬浮窗里的紧凑输入框（标签只给读屏、一行身份信息、发送结果由页头夜航岛播报），
 // 回复对象由悬浮窗管理，发出或取消后调用 onDone。
-type Props = { apiUrl: string; allowGuest: boolean; github: boolean; variant?: "chat"; onDone?: () => void } & ({ refId: string; refType: CommentRefType; replyTo?: never } | { replyTo: { id: string; author: string }; refId?: never; refType?: never });
+type Props = { apiUrl: string; allowGuest: boolean; providers: LoginProvider[]; variant?: "chat"; onDone?: () => void } & ({ refId: string; refType: CommentRefType; replyTo?: never } | { replyTo: { id: string; author: string }; refId?: never; refType?: never });
 
 // Core 的报错格式是 { message: string | string[] }，表单校验错误是数组。
 async function readError(response: Response) {
@@ -22,13 +22,13 @@ async function readError(response: Response) {
 
 // 评论直接从浏览器提交到 Core：Core 按访客 IP 做垃圾过滤、归属地和频率限制，经 Next 转发会全变成服务器 IP。
 // 游客填昵称、邮箱、网址（交给浏览器自动填充，不在本地另存）；GitHub 登录后的读者走读者接口，身份取自 Core 的登录 Cookie。
-export default function CommentForm({ apiUrl, allowGuest, github, refId, refType, replyTo, variant, onDone }: Props) {
+export default function CommentForm({ apiUrl, allowGuest, providers, refId, refType, replyTo, variant, onDone }: Props) {
   const chat = variant === "chat";
   const push = useIsland((state) => state.push);
   const id = useId();
   const router = useRouter();
   const session = useReaderSession(apiUrl);
-  const loginError = useLoginError();
+  const loginError = useLoginError("comments");
   const reader = session.status === "reader" ? session.reader : null;
   const [open, setOpen] = useState(!replyTo || chat);
   const [status, setStatus] = useState<{ type: "idle" | "sending" } | { type: "done" | "error"; message: string }>({ type: "idle" });
@@ -74,10 +74,11 @@ export default function CommentForm({ apiUrl, allowGuest, github, refId, refType
     }
   }
 
-  async function login() {
+  // 文末评论区登录后回到评论区；悬浮窗里登录回到原来读到的位置（失败时由夜航岛播报）
+  async function login(provider: LoginProvider) {
     setStatus({ type: "sending" });
     try {
-      await signInWithGitHub(apiUrl);
+      await signIn(apiUrl, provider, chat ? undefined : "comments");
     } catch (error) {
       setStatus({ type: "error", message: error instanceof Error ? error.message : "登录跳转失败" });
     }
@@ -88,10 +89,12 @@ export default function CommentForm({ apiUrl, allowGuest, github, refId, refType
   }
   // 不允许游客评论时，未登录的访客只能先登录。
   if (!reader && !allowGuest) {
-    if (session.status === "loading" || !github) return null;
+    if (session.status === "loading" || !providers.length) return null;
     return (
       <div className="comment-identity">
-        <button className="btn" type="button" onClick={login} disabled={status.type === "sending"}>用 GitHub 登录后评论</button>
+        {providers.map((provider) => (
+          <button key={provider} className="btn" type="button" onClick={() => void login(provider)} disabled={status.type === "sending"}>用 {providerNames[provider]} 登录后评论</button>
+        ))}
         {status.type === "error" && <p className="post-meta" role="alert">{status.message}</p>}
         {!replyTo && loginError && <p className="post-meta" role="alert">{loginError}</p>}
       </div>
@@ -101,14 +104,16 @@ export default function CommentForm({ apiUrl, allowGuest, github, refId, refType
     <form className="comment-form" data-variant={variant} onSubmit={submit} aria-label={replyTo ? `回复 ${replyTo.author}` : "发表评论"}>
       {reader ? (
         <div className="comment-identity">
-          {/* eslint-disable-next-line @next/next/no-img-element -- GitHub 头像，不走 next/image 白名单 */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- GitHub / Google 头像，不走 next/image 白名单 */}
           {reader.image && <img className="comment-avatar" src={reader.image} alt="" width={28} height={28} />}
           <span>以 <strong>{reader.name}</strong> 的身份评论</span>
           {!replyTo && <button className="btn btn-ghost btn-sm" type="button" onClick={() => void signOut(apiUrl)}>退出</button>}
         </div>
-      ) : !replyTo && github && session.status === "guest" && (
+      ) : !replyTo && providers.length > 0 && session.status === "guest" && (
         <div className="comment-identity">
-          <button className="btn" type="button" onClick={login} disabled={status.type === "sending"}>用 GitHub 登录</button>
+          {providers.map((provider) => (
+            <button key={provider} className="btn" type="button" onClick={() => void login(provider)} disabled={status.type === "sending"}>用 {providerNames[provider]} 登录</button>
+          ))}
           <span className="post-meta">或以游客身份填写下方信息</span>
         </div>
       )}

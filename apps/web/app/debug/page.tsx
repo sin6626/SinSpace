@@ -144,7 +144,7 @@ export default function DebugPage() {
             <h2>评论悬浮窗</h2>
             <p className="post-meta">comment-chat.tsx + comment-chat-panel.tsx（文章侧栏的评论按钮）。下面是示例消息：两天、博主回复在右侧、回复引用、已删除、Markdown；空状态见任意没有评论的文章。输入框是真实表单，目标 ID 全 0，Core 必然拒绝。</p>
             <div className="article-actions debug-chat">
-              <CommentChatPanel title="调试页示例文章" total={sampleChat.length} form={{ apiUrl: getApiUrl(), allowGuest: true, github: false }} closedReason={null} target={{ refId: "000000000000000000000000", refType: "Post" }}>
+              <CommentChatPanel title="调试页示例文章" total={sampleChat.length} form={{ apiUrl: getApiUrl(), allowGuest: true, providers: [] }} closedReason={null} target={{ refId: "000000000000000000000000", refType: "Post" }}>
                 <ChatStream messages={toMessages(sampleChat)} canReply truncated={false} />
               </CommentChatPanel>
             </div>

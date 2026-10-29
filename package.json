@@ -20,7 +20,7 @@
     "dev:admin": "node scripts/dev.mjs --admin-only",
     "dev:all": "pnpm build:sdk && node scripts/dev.mjs --with-admin",
     "verify:webhook:local": "pnpm build:sdk && pnpm --filter @mx-space/core exec nest build --path tsconfig.json && node scripts/verify-webhook-local.mjs",
-    "e2e": "node scripts/e2e/navigation-layout.mjs && node scripts/e2e/page-transition.mjs && node scripts/e2e/header-during-transition.mjs && node scripts/e2e/navigation-panels.mjs && node scripts/e2e/hero-mascot.mjs && node scripts/e2e/hero-emphasis-color.mjs && node scripts/e2e/dev-issues.mjs && node scripts/e2e/site-header-island.mjs && node scripts/e2e/article-actions.mjs"
+    "e2e": "node scripts/e2e/navigation-layout.mjs && node scripts/e2e/page-transition.mjs && node scripts/e2e/header-during-transition.mjs && node scripts/e2e/navigation-panels.mjs && node scripts/e2e/hero-mascot.mjs && node scripts/e2e/hero-emphasis-color.mjs && node scripts/e2e/dev-issues.mjs && node scripts/e2e/site-header-island.mjs && node scripts/e2e/article-actions.mjs && node scripts/e2e/account-menu.mjs && node scripts/e2e/reader-session-hydration.mjs"
   },
   "devDependencies": {
     "mongodb-memory-server": "11.0.1",

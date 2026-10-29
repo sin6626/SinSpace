@@ -4,7 +4,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { OnlineCount } from "./notifications";
 import ThemeToggle from "./theme-switcher";
 import "./mobile-menu.css";
@@ -12,7 +12,7 @@ import "./mobile-menu.css";
 type MenuLink = { label: string; href: string };
 
 // 手机上的导航：顶部只留站名和菜单按钮，点开后整屏变成夜空，四个角落竖排在中间，开灯/熄灯在底部。
-export default function MobileMenu({ corners, more }: { corners: MenuLink[]; more: MenuLink[] }) {
+export default function MobileMenu({ corners, more, account }: { corners: MenuLink[]; more: MenuLink[]; account?: ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   // 跳转后收起菜单（渲染期比较上一次路径，不用 effect）。
@@ -51,6 +51,7 @@ export default function MobileMenu({ corners, more }: { corners: MenuLink[]; mor
             </ul>
           </nav>
           <div className="mobile-menu-bottom">
+            {account}
             <ThemeToggle />
             <OnlineCount />
           </div>

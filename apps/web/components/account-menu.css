@@ -1,0 +1,112 @@
+/* 读者登录入口（account-menu.tsx）：按钮沿用 .icon-button（theme-switcher.css），这里只管头像和浮层 */
+.account-trigger {
+  display: inline-flex;
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.account-avatar {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--radius-full);
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--moonlight) 40%, transparent), 0 0 12px -3px color-mix(in srgb, var(--moonlight) 50%, transparent);
+}
+
+.account-avatar.is-large {
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: var(--text-lg);
+}
+
+.account-positioner {
+  z-index: var(--z-popup);
+}
+
+.account-popup {
+  display: grid;
+  gap: var(--space-3);
+  width: min(17rem, calc(100vw - 1.5rem));
+  padding: var(--space-4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(120% 60% at 100% 0%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 70%),
+    var(--surface);
+  box-shadow: var(--shadow-popup);
+  outline: 0;
+  transform-origin: var(--transform-origin);
+  transition: opacity var(--duration-base) var(--ease-out), scale var(--duration-base) var(--ease-out);
+}
+
+.account-popup[data-starting-style],
+.account-popup[data-ending-style] {
+  opacity: 0;
+  scale: 0.96;
+}
+
+.account-title,
+.account-name {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.account-hint {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  line-height: var(--leading-relaxed);
+}
+
+.account-providers {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.account-provider {
+  justify-content: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.account-profile {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.account-role {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: var(--text-xs);
+}
+
+.account-logout {
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.account-error {
+  color: var(--danger);
+  font-size: var(--text-xs);
+  line-height: var(--leading-relaxed);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-popup {
+    transition: none;
+  }
+}

@@ -89,7 +89,8 @@ function useScrolled() {
   return scrolled;
 }
 
-export default function SiteHeader({ brand, nav }: { brand: ReactNode; nav: ReactNode }) {
+// account：读者登录入口（header-account.tsx），放在主题按钮左边
+export default function SiteHeader({ brand, nav, account }: { brand: ReactNode; nav: ReactNode; account?: ReactNode }) {
   const scrolled = useScrolled();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -254,6 +255,7 @@ export default function SiteHeader({ brand, nav }: { brand: ReactNode; nav: Reac
           </AnimatePresence>
 
           <motion.div layout="position" transition={spring} className="site-header-tools island-tools">
+            {account}
             <ThemeToggle />
           </motion.div>
         </motion.div>

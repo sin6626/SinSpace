@@ -5,6 +5,7 @@ import { getApiUrl } from "../lib/config";
 import { formatDate } from "../lib/date";
 import { safeUrl } from "../lib/safe-url";
 import CommentForm, { type CommentRefType } from "./comment-form";
+import type { LoginProvider } from "./reader-session";
 import "./comments.css";
 
 export type Thread = Awaited<ReturnType<typeof getComments>>["data"][number];
@@ -13,7 +14,7 @@ type Comment = Omit<Thread, "replies" | "hiddenReplies">;
 // 评论正文按 Markdown 显示，只放行行内与段落级元素，不渲染图片和 HTML。
 export const allowedElements = ["p", "br", "a", "strong", "em", "del", "code", "pre", "blockquote", "ul", "ol", "li"];
 
-export type FormOptions = { apiUrl: string; allowGuest: boolean; github: boolean };
+export type FormOptions = { apiUrl: string; allowGuest: boolean; providers: LoginProvider[] };
 
 function CommentBody({ comment, replyTo, form, canReply }: { comment: Comment; replyTo?: string; form: FormOptions; canReply: boolean }) {
   const avatar = safeUrl(comment.avatar);
@@ -45,10 +46,10 @@ function CommentBody({ comment, replyTo, form, canReply }: { comment: Comment; r
 
 // 评论列表、表单参数和“为什么不能评论”：文末评论区与文章侧栏的评论悬浮窗（comment-chat.tsx）共用，数据走同一份缓存。
 export async function loadComments(refId: string, allowComment: boolean) {
-  const [result, { comments: settings }, providers] = await Promise.all([getComments(refId, 1), getSiteSettings(), getLoginProviders().catch((): string[] => [])]);
-  const form: FormOptions = { apiUrl: getApiUrl(), allowGuest: settings.allowGuest, github: providers.includes("github") };
-  // 关闭游客评论但启用了 GitHub 登录时，表单里只给登录按钮；两者都没有才算无法评论。
-  const closedReason = settings.disabled || !allowComment ? "评论已关闭。" : !settings.allowGuest && !form.github ? "博主暂未开放游客评论。" : null;
+  const [result, { comments: settings }, providers] = await Promise.all([getComments(refId, 1), getSiteSettings(), getLoginProviders().catch((): LoginProvider[] => [])]);
+  const form: FormOptions = { apiUrl: getApiUrl(), allowGuest: settings.allowGuest, providers };
+  // 关闭游客评论但启用了第三方登录时，表单里只给登录按钮；两者都没有才算无法评论。
+  const closedReason = settings.disabled || !allowComment ? "评论已关闭。" : !settings.allowGuest && !providers.length ? "博主暂未开放游客评论。" : null;
   return { ...result, form, closedReason };
 }
 

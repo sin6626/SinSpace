@@ -69,7 +69,8 @@ export async function getLoginProviders() {
   cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
   cacheTag("blog:navigation");
   const { data } = await getApiClient().proxy.auth.providers.get<{ data: string[] }>();
-  return Array.isArray(data) ? data.filter((provider) => provider === "github") : [];
+  // 前端目前支持 GitHub 和 Google 两种读者登录
+  return Array.isArray(data) ? data.filter((provider): provider is "github" | "google" => provider === "github" || provider === "google") : [];
 }
 
 // 邮件订阅：后台开启订阅且配置了邮件服务时才可用；只放行文章、手记两类（Core 的 allow_types）。
