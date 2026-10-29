@@ -70,7 +70,7 @@ try {
     assert.deepEqual(await tagsFor(`LINK_${action}`, JSON.stringify({ id })), ['blog:links'])
     assert.deepEqual(await tagsFor(`COMMENT_${action}`, JSON.stringify({ id })), ['blog:comments'])
   }
-  assert.deepEqual((await tagsFor('CONTENT_REFRESH', '"restore_done"')).sort(), ['blog:categories', 'blog:comments', 'blog:links', 'blog:navigation', 'blog:notes', 'blog:pages', 'blog:posts', 'blog:projects', 'blog:recently', 'blog:says'])
+  assert.deepEqual((await tagsFor('CONTENT_REFRESH', '"restore_done"')).sort(), ['blog:categories', 'blog:comments', 'blog:links', 'blog:navigation', 'blog:notes', 'blog:pages', 'blog:posts', 'blog:projects', 'blog:recently', 'blog:says', 'blog:theme'])
   for (const event of ['READER_CREATE', 'LINK_APPLY', 'VISITOR_ONLINE']) await expectStatus(event, JSON.stringify({ id }), 400)
   await expectStatus('NOTE_UPDATE', JSON.stringify({ id: 'bad' }), 400)
   failInvalidation = true

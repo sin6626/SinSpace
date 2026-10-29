@@ -12,7 +12,15 @@ import type { IconifyJSON } from "@iconify/types";
 // 通用图标仍然用 lucide-react；Lucide 没有的（品牌、需要更精致的）才用这里。
 const sets: Record<string, IconifyJSON> = { logos, mingcute, "simple-icons": simpleIcons, "skill-icons": skillIcons };
 
-export default function IconifyIcon({ icon, size = 18, className }: { icon: `${"logos" | "mingcute" | "simple-icons" | "skill-icons"}:${string}`; size?: number; className?: string }) {
+type IconName = `${"logos" | "mingcute" | "simple-icons" | "skill-icons"}:${string}`;
+
+// 后台配置里手写的图标名（如首页技术栈）要先用它确认已装的图标集里有这个图标。
+export function isIconName(icon: string): icon is IconName {
+  const [prefix, name] = icon.split(":");
+  return Boolean(sets[prefix] && name && getIconData(sets[prefix], name));
+}
+
+export default function IconifyIcon({ icon, size = 18, className }: { icon: IconName; size?: number; className?: string }) {
   const [prefix, name] = icon.split(":");
   const data = getIconData(sets[prefix], name);
   if (!data) return null;

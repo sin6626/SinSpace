@@ -25,8 +25,8 @@ const eventTags = new Map<string, readonly string[]>(
     ["CREATE", "UPDATE", "DELETE"].map((action) => [`${kind}_${action}`, tags] as const),
   ),
 );
-// 备份恢复后 Core 发出 CONTENT_REFRESH，载荷是字符串 "restore_done"，全部公开缓存失效（含站名、订阅开关等站点设置）。
-const allTags = Array.from(new Set([...Object.values(kindTags).flat(), "blog:navigation"]));
+// 备份恢复后 Core 发出 CONTENT_REFRESH，载荷是字符串 "restore_done"，全部公开缓存失效（含站名、订阅开关等站点设置和主题配置片段）。
+const allTags = Array.from(new Set([...Object.values(kindTags).flat(), "blog:navigation", "blog:theme"]));
 
 function revalidate(event: string, tags: readonly string[]) {
   try {

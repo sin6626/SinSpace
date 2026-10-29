@@ -1,11 +1,12 @@
-import IconifyIcon from "./iconify-icon";
+import { getThemeConfig } from "@/lib/blog-data";
+import { parseTechStack, type Tech } from "@/lib/theme-config";
+import IconifyIcon, { isIconName } from "./iconify-icon";
 
-// 首页底部的技术栈：两行只显示图标的横向无限滚动（一行向左、一行向右），鼠标停上去暂停并显示名字；
-// “减少动态效果”时不滚动，改成可以手动横向拖动。图标用 Iconify 的 skill-icons（统一的深色圆角方块），
-// 这套没有 uni-app、GSAP、Zod，暂时不列。内容先写死，以后再调整。
-type Tech = { name: string; icon: `skill-icons:${string}` };
-
-const rows: Tech[][] = [
+// 首页底部的技术栈：两行只显示图标的横向无限滚动（单数行向左、双数行向右），鼠标停上去暂停并显示名字；
+// “减少动态效果”时不滚动，改成可以手动横向拖动。内容在后台配置片段 theme/sin-space 的 techStack 里改（格式见 lib/theme-config.ts），
+// 片段没建、读取失败或格式不对时用下面写死的默认值。图标名是 Iconify 的“图标集:名字”，只认 iconify-icon.tsx 里装了的几套，
+// 填了没装的图标时显示名字首字。
+const defaultRows: Tech[][] = [
   [
     { name: "Vue", icon: "skill-icons:vuejs-dark" },
     { name: "React", icon: "skill-icons:react-dark" },
@@ -39,7 +40,7 @@ function Track({ items, reverse }: { items: Tech[]; reverse?: boolean }) {
         {/* 图标比文字窄，重复 4 份才够两个屏幕宽；滚动一半（2 份）正好无缝衔接。只有第一份给读屏读 */}
         {[...items, ...items, ...items, ...items].map((item, index) => (
           <li key={`${item.name}-${index}`} title={item.name} aria-label={index < items.length ? item.name : undefined} aria-hidden={index >= items.length || undefined}>
-            <IconifyIcon icon={item.icon} size={52} />
+            {isIconName(item.icon) ? <IconifyIcon icon={item.icon} size={52} /> : <span className="stack-letter" aria-hidden="true">{item.name.slice(0, 1)}</span>}
             <span className="stack-name">{item.name}</span>
           </li>
         ))}
@@ -48,14 +49,23 @@ function Track({ items, reverse }: { items: Tech[]; reverse?: boolean }) {
   );
 }
 
-export default function TechStack() {
+async function readTechStack() {
+  try {
+    return parseTechStack(await getThemeConfig());
+  } catch {
+    return null;
+  }
+}
+
+export default async function TechStack() {
+  const config = await readTechStack();
   return (
     <section className="home-section home-stack" aria-labelledby="home-stack-heading">
       <div className="home-section-heading">
-        <h2 id="home-stack-heading">技术栈</h2>
-        <p>平时在用、正在学的东西</p>
+        <h2 id="home-stack-heading">{config?.title ?? "技术栈"}</h2>
+        <p>{config?.description ?? "平时在用、正在学的东西"}</p>
       </div>
-      {rows.map((items, index) => <Track key={index} items={items} reverse={index % 2 === 1} />)}
+      {(config?.rows ?? defaultRows).map((items, index) => <Track key={index} items={items} reverse={index % 2 === 1} />)}
     </section>
   );
 }

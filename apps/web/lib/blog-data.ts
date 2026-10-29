@@ -263,6 +263,16 @@ export async function getProjects() {
   }));
 }
 
+// 站点主题配置（后台配置片段 theme/sin-space，格式见 lib/theme-config.ts）。Core 保存片段不发 Webhook 事件，缓存设短一些；
+// 片段还没建时返回 null，页面用写死的默认值。SDK 返回的对象带方法，缓存前转成普通 JSON。
+export async function getThemeConfig(): Promise<unknown> {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheTag("blog:theme");
+  const data = await orNotFound(getApiClient().snippet.getByReferenceAndName<unknown>("theme", "sin-space"));
+  return data === null ? null : JSON.parse(JSON.stringify(data));
+}
+
 // 时间线：全部已发布文章与公开手记，只取标题、日期和拼链接的字段，按发布时间倒序合并。
 export async function getTimeline() {
   "use cache";

@@ -821,6 +821,19 @@
   border-radius: 0.75rem;
 }
 
+/* 后台填了没装的图标时，用名字首字占位，大小与图标方块一致 */
+.stack-letter {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 0.75rem;
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: var(--text-xl);
+  font-weight: 600;
+}
+
 .stack-name {
   position: absolute;
   top: calc(100% + 0.375rem);
