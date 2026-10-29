@@ -141,7 +141,7 @@ void main() {
 
 // 两套配色（2026-10-29 对比用，<html data-palette> 由地址参数决定，见 layout.tsx）：
 // night = 原来的夜紫（紫黑天空、粉紫银河、偏粉的星）；ink = 墨黑，人眼看到的真实夜空：中性的黑，地平线附近一点冷灰的大气辉光，
-// 银河是很淡的灰白雾，星星几乎纯白（零星极淡的蓝白和暖白）、更多更亮，少数亮星带细十字星芒，月亮光晕不带颜色。
+// 银河是很淡的灰白雾，星星几乎纯白（零星极淡的蓝白和暖白），数量、亮度与夜紫相同（用户 10-29：加多加亮显得刻意），少数亮星带细十字星芒，月亮光晕不带颜色。
 type Vec3 = [number, number, number];
 const palettes: Record<"night" | "ink", Record<string, Vec3 | number>> = {
   night: {
@@ -157,7 +157,7 @@ const palettes: Record<"night" | "ink", Record<string, Vec3 | number>> = {
     uHorizonNight: [0.028, 0.03, 0.038], uHorizonDusk: [0.04, 0.04, 0.04],
     uNebulaA: [0.08, 0.08, 0.09], uNebulaB: [0.4, 0.4, 0.43], uNebula: 0.24,
     uTintA: [1.0, 1.0, 1.0], uTintB: [0.88, 0.92, 1.0], uTintC: [1.0, 0.96, 0.88],
-    uStars: 1.35, uStarGain: 1.2, uSpikes: 1,
+    uStars: 1, uStarGain: 1, uSpikes: 1,
     uMoonGlow: [0.9, 0.9, 0.92], uMoonDark: [0.05, 0.05, 0.06],
   },
 };
