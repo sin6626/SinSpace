@@ -9,7 +9,7 @@ import type { FormOptions } from "./comments";
 type ReplyTarget = { id: string; author: string };
 
 // 评论悬浮窗外壳：侧栏的评论按钮 + 浮在它左边的聊天窗（消息流由服务端渲染后作为 children 传进来）。
-// 不滚动页面，读者读到哪儿还在哪儿；点文章、滚动页面都不会关掉它（只有 Esc、× 或再点按钮），方便边读边聊。
+// 不滚动页面，读者读到哪儿还在哪儿；点框外、按 Esc、点 × 或再点按钮都会关掉（滚动页面不会关）。
 // 打开时滚到最新一条，光标放进输入框；点某条的“回复”，输入框上方出现“回复 @某人”，被回复的那条亮起。
 export default function CommentChatPanel({ title, total, form, closedReason, target, children }: {
   title: string;
@@ -51,8 +51,7 @@ export default function CommentChatPanel({ title, total, form, closedReason, tar
       open={open}
       modal={false}
       onOpenChangeComplete={(next) => next && toLatest()}
-      onOpenChange={(next, details) => {
-        if (!next && (details.reason === "outside-press" || details.reason === "focus-out")) return details.cancel();
+      onOpenChange={(next) => {
         setOpen(next);
         if (!next) setReplyTo(null);
       }}

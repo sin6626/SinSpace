@@ -1,6 +1,5 @@
 "use client";
 
-import { FilePen, Info, Link2, MessageCircle, NotebookPen, RefreshCw, Trash2 } from "lucide-react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -48,15 +47,6 @@ function NavigateListener({ onNavigate }: { onNavigate: () => void }) {
   return null;
 }
 
-const activityIcons: Record<IslandActivityIcon, ReactNode> = {
-  link: <Link2 size={18} strokeWidth={1.75} />,
-  comment: <MessageCircle size={18} strokeWidth={1.75} />,
-  post: <FilePen size={18} strokeWidth={1.75} />,
-  note: <NotebookPen size={18} strokeWidth={1.75} />,
-  update: <RefreshCw size={18} strokeWidth={1.75} />,
-  remove: <Trash2 size={18} strokeWidth={1.75} />,
-  info: <Info size={18} strokeWidth={1.75} />,
-};
 
 // 阅读进度环：一圈淡轨道，强调色按进度画满
 function ProgressRing({ progress }: { progress: number }) {
@@ -90,7 +80,8 @@ function useScrolled() {
 }
 
 // account：读者登录入口（header-account.tsx），放在主题按钮左边
-export default function SiteHeader({ brand, nav, account }: { brand: ReactNode; nav: ReactNode; account?: ReactNode }) {
+// activityIcons：播报用的图标（island-icons.tsx，服务端渲染好传进来）
+export default function SiteHeader({ brand, nav, account, activityIcons }: { brand: ReactNode; nav: ReactNode; account?: ReactNode; activityIcons: Record<IslandActivityIcon, ReactNode> }) {
   const scrolled = useScrolled();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -238,17 +229,32 @@ export default function SiteHeader({ brand, nav, account }: { brand: ReactNode; 
                 key={activity.id}
                 layout="position"
                 className="island-activity"
+                data-tone={activity.icon}
                 role="status"
-                initial={{ opacity: 0, scale: 0.85, filter: "blur(6px)" }}
-                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0, scale: 0.9, filter: "blur(6px)" }}
-                transition={{ duration: 0.25 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, filter: "blur(4px)" }}
+                transition={{ duration: 0.2 }}
               >
-                <span className="island-activity-icon" aria-hidden="true">{activityIcons[activity.icon]}</span>
-                <span className="island-activity-text">
+                {/* 岛变形到位后图标先弹出来，文字随后淡入 */}
+                <motion.span
+                  className="island-activity-icon"
+                  aria-hidden="true"
+                  initial={{ scale: 0.4, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 22, delay: 0.26 }}
+                >
+                  {activityIcons[activity.icon]}
+                </motion.span>
+                <motion.span
+                  className="island-activity-text"
+                  initial={{ opacity: 0, x: -6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1], delay: 0.32 }}
+                >
                   <strong>{activity.title}</strong>
                   {activity.detail && <span>{activity.detail}</span>}
-                </span>
+                </motion.span>
                 {activity.href && <Link className="island-activity-link" href={activity.href}>去看看</Link>}
               </motion.div>
             )}

@@ -92,7 +92,7 @@ try {
   assert.ok(landed.top > landed.island && landed.top < 140, `跳转后标题应当停在夜航岛下方（标题顶 ${landed.top}，岛底 ${landed.island}）`);
   assert.equal(landed.hash, target, "地址栏应当带上章节锚点");
 
-  // 评论悬浮窗：不滚动页面，光标进输入框；点文章不关、Esc 关
+  // 评论悬浮窗：不滚动页面，光标进输入框；点框外的文章就关（2026-10-29 用户要求，原来点外面不关），Esc 也能关
   await browser.evaluate("scrollTo(0, 1500)");
   await sleep(600);
   await click('.article-actions [aria-label^="评论"]');
@@ -102,8 +102,10 @@ try {
   assert.equal(chat.y, 1500, `打开评论悬浮窗不应滚动页面（scrollY ${chat.y}）`);
   assert.ok(!chat.guest || chat.focus === "TEXTAREA", `打开后光标应当在输入框里（现在在 ${chat.focus}）`);
   await click("article p");
-  await sleep(400);
-  assert.ok(await browser.evaluate(`!!document.querySelector(".chat-popup")?.checkVisibility()`), "点文章时悬浮窗不应关闭（边读边聊）");
+  await sleep(500);
+  assert.ok(await browser.evaluate(`!document.querySelector(".chat-popup")?.checkVisibility()`), "点框外的文章应当关闭悬浮窗");
+  await click('.article-actions [aria-label^="评论"]');
+  await sleep(600);
   await browser.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
   await browser.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
   await sleep(500);
@@ -154,7 +156,7 @@ try {
   await sleep(200);
   assert.ok(await browser.evaluate(`!document.querySelector(".chat-replying") && !document.querySelector("[data-replying]")`), "取消后回复对象和高亮都应当清掉");
 
-  console.log(`PASS 文章操作栏：按钮齐全、回到顶部随进度出现（剩余 ${reading.ring.toFixed(2)}）、胶囊显示 ${reading.date} 与 ${reading.percent}、系统分享与复制兜底、喜欢状态同步、目录平滑跳转不触发换页动画、评论悬浮窗（不滚页面、点文章不关、Esc 关；示例消息流、回复）、滚到底不被页脚挡住、回到顶部`);
+  console.log(`PASS 文章操作栏：按钮齐全、回到顶部随进度出现（剩余 ${reading.ring.toFixed(2)}）、胶囊显示 ${reading.date} 与 ${reading.percent}、系统分享与复制兜底、喜欢状态同步、目录平滑跳转不触发换页动画、评论悬浮窗（不滚页面、点框外或 Esc 关闭；示例消息流、回复）、滚到底不被页脚挡住、回到顶部`);
 } finally {
   browser.close();
 }

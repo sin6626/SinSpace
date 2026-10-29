@@ -101,6 +101,9 @@ try {
   const activity = await island();
   assert.equal(activity.mode, "activity", "播报活动时应当变形");
   assert.match(activity.text, /一条示例活动/);
+  // 播报左边是按类型着色的圆角方块 + 实心图标（2026-10-29 重做；曾因 globals.css 没重新编译而颜色变量缺失、图标变成白色）
+  const tile = await browser.evaluate(`(() => { const icon = document.querySelector(".island-activity-icon"); const style = getComputedStyle(icon); return { svg: !!icon.querySelector("svg"), color: style.color, background: style.backgroundColor, fg: getComputedStyle(document.querySelector(".island-activity-text strong")).color }; })()`);
+  assert.ok(tile.svg && tile.color !== tile.fg && !/rgba\(0, 0, 0, 0\)|transparent/.test(tile.background), `播报图标应当有类型颜色和底色：${JSON.stringify(tile)}`);
   await sleep(3500);
   assert.notEqual((await island()).mode, "activity", "活动播完应当缩回");
 

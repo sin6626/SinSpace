@@ -6,6 +6,7 @@ import { getApiUrl } from "../lib/config";
 import { getSiteSettings, siteName } from "../lib/blog-data";
 import { Suspense } from "react";
 import HeaderAccount from "@/components/header-account";
+import { islandIcons } from "@/components/island-icons";
 import Navigation from "@/components/navigation";
 import SiteFooter from "@/components/site-footer";
 import SiteHeader from "@/components/site-header";
@@ -95,6 +96,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               brand={<Suspense fallback={<span className="site-brand-name">{siteName}</span>}><SiteBrand /></Suspense>}
               nav={<Navigation account={<Suspense fallback={null}><HeaderAccount side="top" /></Suspense>} />}
               account={<Suspense fallback={<span className="account-trigger" aria-hidden="true" />}><HeaderAccount host /></Suspense>}
+              activityIcons={islandIcons}
             />
             {/* 视图过渡套在铺满整行的 .site-page 上，而不是宽度随页面变化的 main：
                 否则首页（全宽）和内页（48rem）之间切换时，过渡层会在两种宽度间变形，整页画面被压缩 */}

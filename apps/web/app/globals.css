@@ -34,6 +34,13 @@
   --island-muted: #a59fb8;
   --island-primary: #e0a6e8;
   --island-border: rgb(236 232 244 / 12%);
+  /*夜航岛播报按类型的颜色（岛在两种主题下都是深色，所以不随主题变）：新文章、新手记、修改、删除、完成（复制链接、评论已发送）、提示*/
+  --island-tone-post: #e0a6e8;
+  --island-tone-note: #f0d59a;
+  --island-tone-update: #93b8ff;
+  --island-tone-remove: #f4a3a8;
+  --island-tone-done: #86e0b0;
+  --island-tone-info: #b3adc6;
   --moonlight: light-dark(#0c524e, #f6ead0);
   --moonlight-glow: light-dark(rgb(255 255 255 / 60%), rgb(246 234 208 / 40%));
   --evening-star: light-dark(#ffffff, #f6ead0);       /*名字旁的小星：开灯时像黄昏最早亮起的长庚星，亮白*/
