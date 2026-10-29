@@ -18,6 +18,26 @@ const island = () => browser.evaluate(`(() => {
   return { mode: header.dataset.mode, x: rect.x, width: Math.round(rect.width), navVisible: document.querySelector(".island .navigation-List").checkVisibility(), text: document.querySelector(".island").innerText };
 })()`);
 const move = (x, y) => browser.send("Input.dispatchMouseEvent", { type: "mouseMoved", x, y });
+// 在页面里逐帧记录岛的状态（data-mode、是否在“先淡出”、是否裁切、导航的不透明度），用来检查变形过程
+const startSampling = () => browser.evaluate(`(() => {
+  window.__samples = [];
+  const t0 = performance.now();
+  const tick = () => {
+    const header = document.querySelector(".site-header");
+    const island = document.querySelector(".island");
+    const nav = document.querySelector(".island-nav");
+    window.__samples.push({
+      t: Math.round(performance.now() - t0),
+      mode: header.dataset.mode,
+      fading: header.hasAttribute("data-fading"),
+      clipped: getComputedStyle(island).overflow.includes("clip") || getComputedStyle(island).overflow.includes("hidden"),
+      navOpacity: nav.checkVisibility() ? Number(getComputedStyle(nav).opacity) : 0,
+    });
+    if (performance.now() - t0 < 700) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+})()`);
+const samples = () => browser.evaluate("window.__samples");
 
 try {
   await browser.setViewport(1920, 991);
@@ -55,14 +75,24 @@ try {
   const reading = await browser.evaluate(`({ text: document.querySelector(".island-context")?.innerText ?? "", ring: !!document.querySelector(".island-ring"), title: document.querySelector(".post-detail-title").textContent })`);
   assert.ok(reading.ring && reading.text.includes(reading.title.slice(0, 6)), `读文章时胶囊应显示标题和进度环：${reading.text}`);
 
+  // 变大：外框撑开时内容被裁切、还在淡入，不会露到胶囊外面
+  await startSampling();
   await move(compact.x + compact.width / 2, 30);
   await sleep(900);
+  const growing = (await samples()).filter((sample) => sample.mode === "expanded").slice(0, 4);
+  assert.ok(growing.length && growing.some((sample) => sample.clipped), `展开变形时应当裁切内容：${JSON.stringify(growing)}`);
+  assert.ok(growing[0].navOpacity < 0.6, `展开一开始导航应当还在淡入（不透明度 ${growing[0].navOpacity}）`);
   const expanded = await island();
   assert.equal(expanded.mode, "expanded", "鼠标移上胶囊应当展开");
   assert.ok(expanded.navVisible, "展开后导航应当可见");
 
+  // 变小：先在原来的大小里把导航淡出，再收拢，不会出现空着的长黑条
+  await startSampling();
   await move(960, 700);
   await sleep(900);
+  const shrinking = await samples();
+  const firstCompact = shrinking.findIndex((sample) => sample.mode === "compact");
+  assert.ok(firstCompact > 0 && shrinking.slice(0, firstCompact).some((sample) => sample.fading), `收拢前应当先淡出旧内容：${JSON.stringify(shrinking.slice(0, firstCompact + 1))}`);
   assert.equal((await island()).mode, "compact", "鼠标移开后应当收回");
 
   await browser.goto(`${base}/debug`);

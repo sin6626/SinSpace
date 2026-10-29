@@ -18,7 +18,27 @@ import "./site-header.css";
 // - activity：有实时活动（新文章发布、文章修改删除……）时临时变形播报，几秒后缩回去。活动由 lib/island-store.ts 排队。
 // 导航（nav）始终渲染、只用 CSS 按状态显隐，避免面板和手机菜单反复卸载。
 
-const spring = { type: "spring", stiffness: 380, damping: 32, mass: 0.9 } as const;
+// 弹簧约 0.4 秒到位，带一点点回弹（阻尼比约 0.8），手感比硬切更软，接近灵动岛
+const spring = { type: "spring", stiffness: 260, damping: 26, mass: 1 } as const;
+// 从有导航的状态（bar / expanded）变成小胶囊时，先在原来的大小里把导航淡出这么久，再收拢
+const fadeOutMs = 90;
+const fullModes = new Set(["bar", "expanded"]);
+
+// 状态分两步换：目标状态变了以后，如果是“从有导航变成没有导航”（收拢、播报），先标记 fading 让旧内容淡出，
+// 过 fadeOutMs 再真正切换，外框才开始变形——不会先闪出一条空着的长黑条。其余方向立即切换，新内容在变形中淡入。
+function useStagedMode(target: string) {
+  const [shown, setShown] = useState(target);
+  const deferred = target !== shown && fullModes.has(shown) && !fullModes.has(target);
+  // 其余方向在渲染时直接跟上目标（渲染期调整状态，不用 effect）
+  if (target !== shown && !deferred) setShown(target);
+  useEffect(() => {
+    if (!deferred) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timer = setTimeout(() => setShown(target), reduce ? 0 : fadeOutMs);
+    return () => clearTimeout(timer);
+  }, [deferred, target]);
+  return [deferred ? shown : target, deferred] as const;
+}
 const scrollThreshold = 80;
 
 // 换页时调用 onNavigate（松开“钉住”的展开状态）
@@ -149,7 +169,8 @@ export default function SiteHeader({ brand, nav }: { brand: ReactNode; nav: Reac
 
   const unpin = useCallback(() => setPinned(false), []);
   const collapsible = reading !== null && !(hovered || focused || pinned || navOpen);
-  const mode = activity ? "activity" : !scrolled ? "bar" : collapsible ? "compact" : "expanded";
+  const target = activity ? "activity" : !scrolled ? "bar" : collapsible ? "compact" : "expanded";
+  const [mode, fading] = useStagedMode(target);
   // 岛变形（弹簧约 0.4 秒）结束后，按鼠标位置重新判断一次悬停
   useEffect(() => {
     const timer = setTimeout(recheckHover, 450);
@@ -161,7 +182,7 @@ export default function SiteHeader({ brand, nav }: { brand: ReactNode; nav: Reac
 
   return (
     <MotionConfig reducedMotion="user">
-      <header className="site-header" data-mode={mode}>
+      <header className="site-header" data-mode={mode} data-fading={fading ? "" : undefined}>
         <Suspense fallback={null}><NavigateListener onNavigate={unpin} /></Suspense>
         <motion.div
           layout
@@ -169,6 +190,9 @@ export default function SiteHeader({ brand, nav }: { brand: ReactNode; nav: Reac
           className="site-header-inner island"
           ref={islandRef}
           style={{ borderRadius: mode === "activity" ? 26 : 999 }}
+          // 变形期间裁掉露出胶囊的内容（平时不裁，免得切掉头像的光晕）
+          onLayoutAnimationStart={() => { if (islandRef.current) islandRef.current.dataset.animating = ""; }}
+          onLayoutAnimationComplete={() => { if (islandRef.current) delete islandRef.current.dataset.animating; }}
           // 只有用 Tab 键聚焦进来才展开：鼠标点过导航链接或主题按钮后焦点会留在页头，切走再切回时焦点也会回来，
           // 这两种都不算，否则往下读文章时岛会一直展开、不收成标题 + 进度环（回归测试 site-header-island.mjs）
           onFocus={(event) => {
@@ -186,13 +210,15 @@ export default function SiteHeader({ brand, nav }: { brand: ReactNode; nav: Reac
             {mode === "compact" && reading && (
               <motion.button
                 key="context"
+                // layout：外框靠缩放变形时给内容做反向校正，标题不会被跟着拉伸
+                layout="position"
                 type="button"
                 className="island-context"
                 onClick={() => setPinned(true)}
                 initial={{ opacity: 0, scale: 0.9, filter: "blur(4px)" }}
                 animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                 exit={{ opacity: 0, scale: 0.9, filter: "blur(4px)" }}
-                transition={{ duration: 0.2 }}
+                transition={{ duration: 0.22, delay: 0.06 }}
                 aria-label={`正在读${reading.kind}：${reading.title}，已读 ${Math.round(reading.progress * 100)}%，展开导航`}
               >
                 <span className="island-section">{reading.kind}</span>
@@ -203,6 +229,7 @@ export default function SiteHeader({ brand, nav }: { brand: ReactNode; nav: Reac
             {activity && (
               <motion.div
                 key={activity.id}
+                layout="position"
                 className="island-activity"
                 role="status"
                 initial={{ opacity: 0, scale: 0.85, filter: "blur(6px)" }}

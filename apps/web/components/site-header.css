@@ -18,6 +18,42 @@
 .island {
   pointer-events: auto;
   box-sizing: border-box;
+  /* 底色、描边、阴影、毛玻璃跟着外框一起渐变（外框的大小和位置由 Motion 的弹簧负责），不再瞬间切换 */
+  transition:
+    background-color 360ms var(--ease-out),
+    border-color 360ms var(--ease-out),
+    box-shadow 360ms var(--ease-out),
+    backdrop-filter 360ms var(--ease-out);
+}
+
+/* 变形期间（Motion 的 onLayoutAnimationStart/Complete 打上 data-animating）裁掉露出胶囊的内容；平时不裁，留住头像光晕 */
+.island[data-animating] {
+  overflow: clip;
+}
+
+/* 内容交接：有导航的状态（铺开、展开）里的站名、导航、主题按钮，出现时稍晚一点带模糊淡入；
+   要收拢或播报时，先在原来的大小里淡出（data-fading，约 0.09 秒），之后外框才变形 */
+@keyframes island-content-in {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+  }
+}
+
+.site-header:is([data-mode="bar"], [data-mode="expanded"]) :is(.site-brand-name, .island-nav, .island-tools) {
+  animation: island-content-in 280ms var(--ease-out) 110ms both;
+}
+
+/* 淡出用单独的动画接手（不能直接 animation: none，浏览器不会从淡入动画的结果开始过渡，会一下子消失） */
+@keyframes island-content-out {
+  to {
+    opacity: 0;
+    filter: blur(4px);
+  }
+}
+
+.site-header[data-fading] :is(.site-brand-name, .island-nav, .island-tools) {
+  animation: island-content-out 90ms ease-in both;
 }
 
 /* ---------- 顶部铺开：站点标识 | 星座导航 | 工具，所有页面都和正文同宽（首页也一样，换页时页头不动） ---------- */
@@ -31,6 +67,9 @@
   min-height: var(--header-height);
   padding: 0 var(--space-6);
   border: 1px solid transparent;
+  background-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .island-brand {
@@ -106,7 +145,7 @@
   max-width: calc(100vw - 2rem);
   padding: 0.3125rem;
   border: 1px solid var(--island-border);
-  background: var(--island-bg);
+  background-color: var(--island-bg);
   color: var(--foreground);
   box-shadow:
     0 12px 32px -14px color-mix(in srgb, var(--island-bg) 90%, transparent),
@@ -287,6 +326,14 @@
 .island-activity-link:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .island,
+  .site-header :is(.site-brand-name, .island-nav, .island-tools) {
+    transition: none;
+    animation: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
