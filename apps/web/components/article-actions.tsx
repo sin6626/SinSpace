@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUp, Bell, Heart, Share2 } from "lucide-react";
+import { ArrowUp, Bell, Heart, MessagesSquare, Share2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useIsland } from "../lib/island-store";
 import { useArticleLike } from "../lib/use-article-like";
@@ -21,6 +21,7 @@ export default function ArticleActions({ title, like, subscribe }: {
   return (
     <div className="article-actions" role="group" aria-label="文章操作">
       {like && <LikeButton like={like} />}
+      <CommentButton />
       <ShareButton title={title} />
       {subscribe && (
         <SubscribePopover {...subscribe} side="left" triggerClassName="article-action" triggerLabel="订阅更新">
@@ -45,6 +46,23 @@ function LikeButton({ like }: { like: Like }) {
     >
       <Heart size={18} strokeWidth={1.75} aria-hidden="true" />
       {likes > 0 && <span className="article-action-count">{likes}</span>}
+    </button>
+  );
+}
+
+// 读到一半想说两句：平滑滚到文末评论区，并把光标放进评论框（评论关闭时只滚过去）。
+// 站内跳转后上一页还藏在 DOM 里，可能有两个 #comments，取看得见的那个。
+function CommentButton() {
+  function toComments() {
+    const section = [...document.querySelectorAll<HTMLElement>("#comments")].find((element) => element.checkVisibility());
+    if (!section) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    section.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    section.querySelector("textarea")?.focus({ preventScroll: true });
+  }
+  return (
+    <button type="button" className="article-action" onClick={toComments} aria-label="去评论" title="去评论">
+      <MessagesSquare size={18} strokeWidth={1.75} aria-hidden="true" />
     </button>
   );
 }

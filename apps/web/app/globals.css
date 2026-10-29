@@ -407,14 +407,14 @@ a:focus-visible,
     max-height: calc(100dvh - var(--header-height) - var(--space-16));
     overflow-y: auto;
     padding: 0;
+    /* 浮在页脚上面：目录很长时滚到页面最底下会和页脚重叠，以前页脚盖住悬浮栏，下半截点不了也不能悬停（回归测试 e2e article-actions.mjs） */
+    z-index: 1;
   }
 }
 
-/* 页脚盖在悬浮的目录上面：滚到底时目录像滑到页脚下面。
-   居中三行，不放站名：月亮加那句话、几个小链接、细字英文落款和在线人数。 */
+/* 页脚居中三行，不放站名：月亮加那句话、几个小链接、细字英文落款和在线人数。 */
 .site-footer {
   position: relative;
-  z-index: 1;
   margin-top: var(--space-16);
   background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--primary) 5%, var(--background)));
 }

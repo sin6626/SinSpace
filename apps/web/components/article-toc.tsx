@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useRef, useSyncExternalStore, type MouseEvent, type ReactNode } from "react";
 import "./article-toc.css";
 
 // 文章目录：读取正文里实际渲染出来的标题。
@@ -57,6 +57,17 @@ function getActiveId() {
   return active;
 }
 
+// 点目录平滑滚到该章节（开了“减少动态效果”时直接跳），地址栏换成章节锚点但不新增历史记录；
+// 标题停的位置由 globals.css 里 html 的 scroll-padding-top 让开页头夜航岛。按住修饰键（新标签打开等）时交给浏览器。
+function jump(event: MouseEvent<HTMLAnchorElement>, id: string) {
+  const heading = document.getElementById(id);
+  if (!heading || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+  heading.scrollIntoView({ behavior, block: "start" });
+  history.replaceState(null, "", `#${encodeURIComponent(id)}`);
+}
+
 // children 是没有标题时显示的默认右栏内容。
 export default function ArticleToc({ children = null }: { children?: ReactNode }) {
   // 服务端拿不到正文 DOM，先不渲染，避免先闪默认内容再变成目录。
@@ -80,7 +91,7 @@ export default function ArticleToc({ children = null }: { children?: ReactNode }
       <ol>
         {entries.map((entry) => (
           <li key={entry.id} data-depth={Math.min(entry.level - minLevel, 3)}>
-            <a href={`#${encodeURIComponent(entry.id)}`} aria-current={entry.id === activeId ? "location" : undefined}>
+            <a href={`#${encodeURIComponent(entry.id)}`} onClick={(event) => jump(event, entry.id)} aria-current={entry.id === activeId ? "location" : undefined}>
               {entry.text}
             </a>
           </li>

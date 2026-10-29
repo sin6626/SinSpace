@@ -1,7 +1,7 @@
 // 浏览器回归测试：文章目录下的操作栏（components/article-actions.tsx）与阅读胶囊里的日期、进度。
-// ① 有喜欢、分享、回到顶部（后台开了订阅时还有订阅）；② 回到顶部在页面顶部时隐藏，往下读后出现，进度环跟着读的进度走；
+// ① 有喜欢、评论、分享、回到顶部（后台开了订阅时还有订阅）；② 回到顶部在页面顶部时隐藏，往下读后出现，进度环跟着读的进度走；
 // ③ 夜航岛阅读胶囊显示发布日期和百分比；④ 分享在电脑上复制链接并由夜航岛播报“链接已复制”；
-// ⑤ 目录比屏幕长时目录自己滚动，操作栏仍在屏幕内；⑥ 侧栏的心和文末“喜欢这篇”共用状态（点赞请求在页面里用替身拦截，不写日常库）；⑦ 点回到顶部会回到页面顶端。
+// ⑤ 目录比屏幕长时目录自己滚动，操作栏仍在屏幕内；⑥ 侧栏的心和文末“喜欢这篇”共用状态（点赞请求在页面里用替身拦截，不写日常库）；⑦ 点目录平滑滚动、标题停在夜航岛下方；⑧ 滚到页面最底下时悬浮栏不被页脚挡住；⑨ 点回到顶部会回到页面顶端。
 // 需要先运行 pnpm dev（默认 http://127.0.0.1:2323，可用 WEB_URL 覆盖）。用法：pnpm e2e
 import assert from "node:assert/strict";
 import { openBrowser, sleep } from "../headless-browser.mjs";
@@ -25,9 +25,10 @@ try {
   const top = await browser.evaluate(`({
     like: !!document.querySelector(".article-actions .is-like"),
     share: !!document.querySelector('.article-actions [aria-label^="分享"]'),
+    comment: !!document.querySelector('.article-actions [aria-label="去评论"]'),
     topVisible: document.querySelector(".article-actions .is-top").hasAttribute("data-visible"),
   })`);
-  assert.ok(top.like && top.share, `操作栏缺少按钮：${JSON.stringify(top)}`);
+  assert.ok(top.like && top.share && top.comment, `操作栏缺少按钮：${JSON.stringify(top)}`);
   assert.equal(top.topVisible, false, "在页面顶部时“回到顶部”应当隐藏");
 
   await browser.evaluate(`(() => { const a = document.querySelector("article"); const r = a.getBoundingClientRect(); scrollTo(0, scrollY + r.top + (r.height - innerHeight) * 0.5); })()`);
@@ -66,12 +67,46 @@ try {
   assert.match(liked.end, /谢谢你的喜欢/, `文末按钮应当同步变成已喜欢：${liked.end}`);
   await browser.evaluate(`Object.keys(localStorage).filter((key) => key.startsWith("liked:")).forEach((key) => localStorage.removeItem(key))`);
 
+  // 2026-10-29 的 bug：点目录是瞬移过去的。现在平滑滚动：点下后 150ms 应当还在半路，结束时标题停在夜航岛下方（不被挡住）
+  await browser.evaluate("scrollTo(0, 0)");
+  await sleep(600);
+  const target = await browser.evaluate(`(() => { const links = document.querySelectorAll(".article-toc a"); return links[Math.floor(links.length / 2)].getAttribute("href"); })()`);
+  await browser.evaluate(`document.querySelector('.article-toc a[href="${target}"]').scrollIntoView({ block: "nearest" })`);
+  await click(`.article-toc a[href="${target}"]`);
+  await sleep(150);
+  const midway = await browser.evaluate("scrollY");
+  await sleep(1500);
+  const landed = await browser.evaluate(`({ y: scrollY, top: document.getElementById(decodeURIComponent(${JSON.stringify(target)}.slice(1))).getBoundingClientRect().top, island: document.querySelector(".island").getBoundingClientRect().bottom, hash: location.hash })`);
+  assert.ok(midway > 50 && midway < landed.y - 50, `点目录应当平滑滚动（150ms 时 ${midway}，终点 ${landed.y}）`);
+  assert.ok(landed.top > landed.island && landed.top < 140, `跳转后标题应当停在夜航岛下方（标题顶 ${landed.top}，岛底 ${landed.island}）`);
+  assert.equal(landed.hash, target, "地址栏应当带上章节锚点");
+
+  // 评论按钮：滚到文末评论区，开放评论时光标进评论框
+  await browser.evaluate("scrollTo(0, 0)");
+  await sleep(600);
+  await click('.article-actions [aria-label="去评论"]');
+  await sleep(1800);
+  const comment = await browser.evaluate(`({ bottom: innerHeight + scrollY >= document.documentElement.scrollHeight - 2, top: document.getElementById("comments").getBoundingClientRect().top, textarea: !!document.querySelector("#comments textarea"), focused: document.activeElement?.closest("#comments") !== null && document.activeElement?.tagName === "TEXTAREA" })`);
+  // 评论区离页尾近时滚到底就停了，此时只要求评论区顶部在页头下方的屏幕上半部
+  assert.ok(comment.bottom ? comment.top > 60 && comment.top < 495 : Math.abs(comment.top - 84) < 4, `点评论按钮应当滚到评论区（评论区顶 ${comment.top}）`);
+  assert.ok(!comment.textarea || comment.focused, "开放评论时光标应当在评论框里");
+
+  // 2026-10-29 的 bug：滚到页面最底下时页脚（z-index 1）盖住悬浮栏下半截，喜欢/分享/回顶点不了、目录末尾几项不能悬停
+  await browser.evaluate("scrollTo(0, document.documentElement.scrollHeight)");
+  await sleep(1200);
+  const covered = await browser.evaluate(`[".article-actions .is-like", ".article-actions .is-top", ".article-toc li:last-child a"].filter((selector) => {
+    const el = document.querySelector(selector);
+    const r = el.getBoundingClientRect();
+    return !el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2));
+  })`);
+  assert.deepEqual(covered, [], `滚到底时这些元素被挡住了：${covered.join("、")}`);
+
   await sleep(2500);
   await click(".article-actions .is-top");
   await sleep(1500);
   assert.ok(await browser.evaluate("scrollY") < 5, "点回到顶部后应当回到页面顶端");
 
-  console.log(`PASS 文章操作栏：按钮齐全、回到顶部随进度出现（剩余 ${reading.ring.toFixed(2)}）、胶囊显示 ${reading.date} 与 ${reading.percent}、分享复制并播报、喜欢状态同步、回到顶部`);
+  console.log(`PASS 文章操作栏：按钮齐全、回到顶部随进度出现（剩余 ${reading.ring.toFixed(2)}）、胶囊显示 ${reading.date} 与 ${reading.percent}、分享复制并播报、喜欢状态同步、目录平滑跳转、评论按钮直达评论框、滚到底不被页脚挡住、回到顶部`);
 } finally {
   browser.close();
 }
