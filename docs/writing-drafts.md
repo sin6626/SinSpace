@@ -73,7 +73,14 @@ gallery: grid         # 多图相册的布局：grid / masonry / carousel
 | GFM 表格（第一行是表头） | table |
 | `![说明](./图.png "图片标题")` 单独一段 | image（标题作为图片说明） |
 | 一段里连着放多张图 | gallery |
+| `++下划线++`、`==高亮==`（可以和粗斜体叠用，如 `++*文字*++`） | 文字格式 underline / highlight |
+| `\|\|剧透\|\|` | spoiler（点开才显示） |
+| `::: note` … `:::`（还有 tip、important、warning、caution） | banner 横幅 |
+| `::: details 标题` … `:::`，加 `open` 默认展开（也认 `::: details{summary="标题" open}`） | details 折叠块，里面可以嵌套别的块 |
+| `[^1]` 引用 + 文末 `[^1]: 说明` | footnote + 文末 footnote-section |
+| 单独一行的裸网址 `<https://…>` | link-card，脚本自动抓网页标题与描述 |
 
+这些扩展写法是 Haklex 自己的 Markdown 方言（Core 生成纯文本字段用的也是它），高亮除外。落单的 `++`、`==`、`||` 按原文字保留。
 不认识的块会直接报错并给出行号，不会生成坏数据。
 
 ## 图片

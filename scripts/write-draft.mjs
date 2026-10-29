@@ -8,7 +8,7 @@ import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import yaml from "js-yaml";
 import sharp from "sharp";
 import { rgbaToThumbHash } from "thumbhash";
-import { collectImageUrls, lexicalToMarkdown, markdownToLexical } from "./lib/markdown-to-lexical.mjs";
+import { collectImageUrls, collectLinkCardUrls, lexicalToMarkdown, markdownToLexical } from "./lib/markdown-to-lexical.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 const configPath = join(root, ".local/publish.json");
@@ -140,9 +140,35 @@ async function prepareImage(url) {
 const images = new Map();
 for (const url of collectImageUrls(body)) images.set(url, await prepareImage(url));
 
+// 链接卡片的标题与描述：取网页的 og:title / <title> 和 og:description / description；抓不到就只显示网址
+const decodeHtml = (value) => value.replace(/&(amp|lt|gt|quot|#39);/g, (_, name) => ({ amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'" })[name]);
+function metaContent(html, ...names) {
+  for (const name of names) {
+    const tag = html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${name}["'][^>]*>`, "i"))?.[0];
+    const content = tag?.match(/content=["']([^"']*)["']/i)?.[1];
+    if (content) return decodeHtml(content.trim());
+  }
+}
+async function prepareLink(url) {
+  const key = `link:${url}`;
+  if (cache[key]) return cache[key];
+  try {
+    const html = await (await fetch(url, { signal: AbortSignal.timeout(8000), headers: { "user-agent": "Mozilla/5.0 (pnpm draft link card)" } })).text();
+    const title = metaContent(html, "og:title", "twitter:title") ?? decodeHtml(html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1]?.trim() ?? "");
+    const description = metaContent(html, "og:description", "description");
+    return (fresh[key] = { ...(title ? { title } : {}), ...(description ? { description } : {}) });
+  } catch {
+    console.error(`! 抓不到链接卡片信息，只显示网址：${url}`);
+    return {};
+  }
+}
+
+const links = new Map();
+for (const url of collectLinkCardUrls(body)) links.set(url, await prepareLink(url));
+
 const galleryLayout = front.gallery ?? "grid";
 if (!["grid", "masonry", "carousel"].includes(galleryLayout)) fail("gallery 只能是 grid / masonry / carousel");
-const state = markdownToLexical(body, { images, galleryLayout });
+const state = markdownToLexical(body, { images, links, galleryLayout });
 const text = lexicalToMarkdown(state);
 
 if (dryRun) {
