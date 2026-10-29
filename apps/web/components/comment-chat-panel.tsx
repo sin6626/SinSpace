@@ -2,7 +2,7 @@
 
 import { Popover } from "@base-ui/react/popover";
 import { MessagesSquare, X } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import CommentForm, { type CommentRefType } from "./comment-form";
 import type { FormOptions } from "./comments";
 
@@ -10,7 +10,7 @@ type ReplyTarget = { id: string; author: string };
 
 // 评论悬浮窗外壳：侧栏的评论按钮 + 浮在它左边的聊天窗（消息流由服务端渲染后作为 children 传进来）。
 // 不滚动页面，读者读到哪儿还在哪儿；点框外、按 Esc、点 × 或再点按钮都会关掉（滚动页面不会关）。
-// 打开时滚到最新一条，光标放进输入框；点某条的“回复”，输入框上方出现“回复 @某人”，被回复的那条亮起。
+// 消息区天然停在最新一条（comment-chat.css 的 column-reverse，不用脚本滚），打开时光标放进输入框；点某条的“回复”，输入框上方出现“回复 @某人”，被回复的那条亮起。
 export default function CommentChatPanel({ title, total, form, closedReason, target, children }: {
   title: string;
   total: number;
@@ -24,12 +24,6 @@ export default function CommentChatPanel({ title, total, form, closedReason, tar
   const scroller = useRef<HTMLDivElement>(null);
   const composer = useRef<HTMLDivElement>(null);
   const textarea = () => composer.current?.querySelector("textarea") ?? null;
-
-  // 滚到最新一条：打开动画结束时（刚挂载时浮层高度还没定）和发出新评论刷新后
-  const toLatest = () => {
-    if (scroller.current) scroller.current.scrollTop = scroller.current.scrollHeight;
-  };
-  useLayoutEffect(toLatest, [children]);
 
   // 被回复的那条消息亮起；换了回复对象就把光标送回输入框
   useEffect(() => {
@@ -50,7 +44,6 @@ export default function CommentChatPanel({ title, total, form, closedReason, tar
     <Popover.Root
       open={open}
       modal={false}
-      onOpenChangeComplete={(next) => next && toLatest()}
       onOpenChange={(next) => {
         setOpen(next);
         if (!next) setReplyTo(null);

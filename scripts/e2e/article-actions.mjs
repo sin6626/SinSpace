@@ -130,15 +130,35 @@ try {
   await browser.goto(`${base}/debug`);
   await browser.evaluate(`document.querySelector(".debug-chat .article-action").scrollIntoView({ block: "center" })`);
   await sleep(400);
+  // 2026-10-29 的 bug：打开时消息流先停在最上面，打开动画结束后才跳到最新一条，内容“弹一下”。
+  // 逐帧记录最新一条在消息区里的相对位置（按比例算，不受浮层缩放入场影响），从出现起就该停在底部、不再变化。
+  await browser.evaluate(`(() => {
+    window.__chat = [];
+    const t0 = performance.now();
+    const tick = () => {
+      const scroller = document.querySelector(".chat-scroller");
+      const last = document.querySelector(".chat-message:last-of-type");
+      if (scroller && last && scroller.checkVisibility()) {
+        const box = scroller.getBoundingClientRect();
+        window.__chat.push(Math.round(((last.getBoundingClientRect().bottom - box.top) / box.height) * 100) / 100);
+      }
+      if (performance.now() - t0 < 900) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  })()`);
   await click(".debug-chat .article-action");
-  await sleep(900);
+  await sleep(1000);
+  const positions = await browser.evaluate("window.__chat");
+  assert.ok(positions.length > 3, "没采到浮层打开过程");
+  assert.ok(Math.max(...positions) - Math.min(...positions) < 0.03 && positions[0] <= 1, `打开时消息流不应跳动（最新一条的相对位置逐帧：${positions.join(" ")}）`);
   const stream = await browser.evaluate(`(() => {
     const scroller = document.querySelector(".chat-scroller");
     const owner = document.querySelector(".chat-message[data-owner]");
     return {
       ids: [...document.querySelectorAll(".chat-message")].map((li) => li.dataset.id),
       ownerRight: owner.querySelector(".chat-avatar").getBoundingClientRect().x > owner.querySelector(".chat-bubble").getBoundingClientRect().x,
-      atBottom: scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 2,
+      // 消息区是 column-reverse（底部 scrollTop 为 0），直接看最新一条是否落在可视区内
+      atBottom: (() => { const box = scroller.getBoundingClientRect(); const last = document.querySelector(".chat-message:last-of-type").getBoundingClientRect(); return last.bottom <= box.bottom && last.bottom > box.bottom - 80; })(),
     };
   })()`);
   assert.deepEqual(stream.ids, ["c1", "c2", "c3", "c4", "c5"], `消息应当按时间排成一条流：${stream.ids}`);
@@ -156,7 +176,7 @@ try {
   await sleep(200);
   assert.ok(await browser.evaluate(`!document.querySelector(".chat-replying") && !document.querySelector("[data-replying]")`), "取消后回复对象和高亮都应当清掉");
 
-  console.log(`PASS 文章操作栏：按钮齐全、回到顶部随进度出现（剩余 ${reading.ring.toFixed(2)}）、胶囊显示 ${reading.date} 与 ${reading.percent}、系统分享与复制兜底、喜欢状态同步、目录平滑跳转不触发换页动画、评论悬浮窗（不滚页面、点框外或 Esc 关闭；示例消息流、回复）、滚到底不被页脚挡住、回到顶部`);
+  console.log(`PASS 文章操作栏：按钮齐全、回到顶部随进度出现（剩余 ${reading.ring.toFixed(2)}）、胶囊显示 ${reading.date} 与 ${reading.percent}、系统分享与复制兜底、喜欢状态同步、目录平滑跳转不触发换页动画、评论悬浮窗（不滚页面、点框外或 Esc 关闭；示例消息流打开时不跳、回复）、滚到底不被页脚挡住、回到顶部`);
 } finally {
   browser.close();
 }

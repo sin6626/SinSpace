@@ -96,8 +96,12 @@
   outline-offset: 2px;
 }
 
-/* 消息流：上下边缘渐隐，滚动不连带页面 */
+/* 消息流：上下边缘渐隐，滚动不连带页面。
+   column-reverse 让滚动区默认停在底部（最新一条），打开浮层、发出新评论后都不用脚本去滚，
+   原来打开动画结束后才用脚本滚到底，内容会“弹一下”（e2e article-actions.mjs 逐帧检查）。里面只有一个子元素，顺序不受影响 */
 .chat-scroller {
+  display: flex;
+  flex-direction: column-reverse;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
@@ -309,7 +313,7 @@
   place-content: center;
   justify-items: center;
   gap: var(--space-1);
-  height: 100%;
+  flex: 1;
   min-height: 12rem;
   color: var(--muted-foreground);
   font-size: var(--text-sm);
