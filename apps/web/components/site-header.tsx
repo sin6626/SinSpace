@@ -11,30 +11,15 @@ import "./site-header.css";
 
 // 页头“夜航岛”：同一个元素在四种状态之间用弹簧变形（Motion 的 layout 动画），像 iPhone 的灵动岛。
 // - bar：页面顶部，铺开成整条页头（站点标识 | 星座导航 | 工具），透明；
-// - compact：往下滚以后，收拢成正上方一枚深色胶囊，只显示头像和“现在在哪”（在读文章时是标题 + 阅读进度环）；
-// - expanded：鼠标移上胶囊、键盘聚焦或导航面板开着时，胶囊展开，导航和工具回到胶囊里；
+// - expanded：往下滚以后，列表等普通页面一直是这枚深色导航条（导航随时可点）；阅读页在鼠标移上胶囊、
+//   键盘聚焦或导航面板开着时也展开成它；
+// - compact：只在阅读页（文章/手记/页面详情，由 IslandReading 登记）往下读时，收成“头像 + 标题 + 阅读进度环”的小胶囊，
+//   少挡正文；（2026-10-29 用户定：普通页面不收拢，收拢只属于“正在读”）
 // - activity：有实时活动（新文章发布、文章修改删除……）时临时变形播报，几秒后缩回去。活动由 lib/island-store.ts 排队。
 // 导航（nav）始终渲染、只用 CSS 按状态显隐，避免面板和手机菜单反复卸载。
 
 const spring = { type: "spring", stiffness: 380, damping: 32, mass: 0.9 } as const;
 const scrollThreshold = 80;
-
-const sections: [string, string][] = [
-  ["/posts", "文章"],
-  ["/categories", "文章"],
-  ["/notes", "手记"],
-  ["/timeline", "时间线"],
-  ["/thinking", "碎碎念"],
-  ["/projects", "作品"],
-  ["/friends", "友链"],
-  ["/says", "一言"],
-  ["/debug", "调试"],
-];
-// 读当前地址（usePathname）的部分单独成小组件并包在 Suspense 里：页头本身在预渲染外壳里，
-// 直接在页头读地址会让动态路由报 “usePathname() outside of <Suspense>”。
-function SectionLabel() {
-  return <>{sectionOf(usePathname())}</>;
-}
 
 // 换页时调用 onNavigate（松开“钉住”的展开状态）
 function NavigateListener({ onNavigate }: { onNavigate: () => void }) {
@@ -42,8 +27,6 @@ function NavigateListener({ onNavigate }: { onNavigate: () => void }) {
   useEffect(() => onNavigate(), [pathname, onNavigate]);
   return null;
 }
-
-const sectionOf = (pathname: string) => pathname === "/" ? "首页" : sections.find(([prefix]) => pathname === prefix || pathname.startsWith(`${prefix}/`))?.[1] ?? "页面";
 
 const activityIcons: Record<IslandActivityIcon, ReactNode> = {
   post: <FilePen size={18} strokeWidth={1.75} />,
@@ -165,7 +148,8 @@ export default function SiteHeader({ brand, nav }: { brand: ReactNode; nav: Reac
   }, [activity, shift]);
 
   const unpin = useCallback(() => setPinned(false), []);
-  const mode = activity ? "activity" : !scrolled ? "bar" : hovered || focused || pinned || navOpen ? "expanded" : "compact";
+  const collapsible = reading !== null && !(hovered || focused || pinned || navOpen);
+  const mode = activity ? "activity" : !scrolled ? "bar" : collapsible ? "compact" : "expanded";
   // 岛变形（弹簧约 0.4 秒）结束后，按鼠标位置重新判断一次悬停
   useEffect(() => {
     const timer = setTimeout(recheckHover, 450);
@@ -199,7 +183,7 @@ export default function SiteHeader({ brand, nav }: { brand: ReactNode; nav: Reac
           <motion.div layout="position" transition={spring} className="island-nav">{nav}</motion.div>
 
           <AnimatePresence initial={false} mode="popLayout">
-            {mode === "compact" && (
+            {mode === "compact" && reading && (
               <motion.button
                 key="context"
                 type="button"
@@ -209,15 +193,11 @@ export default function SiteHeader({ brand, nav }: { brand: ReactNode; nav: Reac
                 animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                 exit={{ opacity: 0, scale: 0.9, filter: "blur(4px)" }}
                 transition={{ duration: 0.2 }}
-                aria-label={reading ? `正在读${reading.kind}：${reading.title}，已读 ${Math.round(reading.progress * 100)}%，展开导航` : undefined}
+                aria-label={`正在读${reading.kind}：${reading.title}，已读 ${Math.round(reading.progress * 100)}%，展开导航`}
               >
-                <span className="island-section">{reading?.kind ?? <Suspense fallback={null}><SectionLabel /></Suspense>}</span>
-                {reading && (
-                  <>
-                    <span className="island-title">{reading.title}</span>
-                    <ProgressRing progress={reading.progress} />
-                  </>
-                )}
+                <span className="island-section">{reading.kind}</span>
+                <span className="island-title">{reading.title}</span>
+                <ProgressRing progress={reading.progress} />
               </motion.button>
             )}
             {activity && (
