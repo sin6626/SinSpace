@@ -52,6 +52,7 @@ export interface RecentActivities {
   like: RecentLike[]
   comment: RecentComment[]
   recent: RecentRecent[]
+  murmur: RecentMurmur[]
   post: RecentPost[]
   note: RecentNote[]
 }
@@ -99,6 +100,12 @@ export interface RecentRecent {
   content: string
   up: number
   down: number
+  created: string
+}
+
+export interface RecentMurmur {
+  id: string
+  content: string
   created: string
 }
 

@@ -5,6 +5,7 @@ import { AIController } from './ai'
 import { CategoryController } from './category'
 import { CommentController } from './comment'
 import { LinkController } from './link'
+import { MurmurController } from './murmur'
 import type {
   NoteMiddleListOptions,
   NoteTimelineItem,
@@ -37,6 +38,7 @@ export const allControllers = [
   CategoryController,
   CommentController,
   LinkController,
+  MurmurController,
   NoteController,
   PageController,
   PostController,
@@ -59,6 +61,7 @@ export const allControllerNames = [
   'category',
   'comment',
   'link',
+  'murmur',
   'note',
   'page',
   'post',
@@ -85,6 +88,7 @@ export {
   CategoryController,
   CommentController,
   LinkController,
+  MurmurController,
   NoteController,
   PageController,
   PostController,
