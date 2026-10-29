@@ -22,6 +22,13 @@ uniform float uLight;   // 0 夜里，1 黄昏
 uniform float uPhase;   // 月相：0 新月，0.5 满月
 uniform vec3 uMoon;     // 月亮圆心（像素）和半径（像素）
 uniform float uSpin;    // 星空绕北天极转过的角度（弧度）
+// 配色（下面的 palettes，夜紫 / 墨黑）：天空渐变、地平线的光、银河、星星的色温与多少、月亮的光晕与暗面
+uniform vec3 uNightTop, uNightLow, uDuskTop, uDuskLow, uHorizonNight, uHorizonDusk;
+uniform vec3 uNebulaA, uNebulaB;
+uniform float uNebula;
+uniform vec3 uTintA, uTintB, uTintC;
+uniform float uStars, uStarGain, uSpikes;
+uniform vec3 uMoonGlow, uMoonDark;
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 vec2 hash2(vec2 p) { return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453); }
@@ -39,20 +46,25 @@ float fbm(vec2 p) {
 }
 
 // 一层星星：把画面切成格子，每格最多一颗，位置、亮度、颜色、闪烁节奏都由格子编号决定。
-vec3 starLayer(vec2 p, float scale, float density, float size, float t) {
+// spikes > 0 时，少数落在格子中间的亮星带一道细十字星芒（只给格子中间的星，星芒才不会被格子边界截断）。
+vec3 starLayer(vec2 p, float scale, float density, float size, float t, float spikes) {
   vec2 g = p * scale;
   vec2 cell = floor(g);
   vec2 local = fract(g);
   float pick = hash(cell);
-  if (pick > density) return vec3(0.0);
+  if (pick > density * uStars) return vec3(0.0);
   vec2 pos = 0.15 + 0.7 * hash2(cell + 7.0);
   float d = length(local - pos);
   float twinkle = 0.55 + 0.45 * sin(t * (0.6 + 2.2 * hash(cell + 3.0)) + 6.2831 * hash(cell + 11.0));
   float core = smoothstep(size, 0.0, d);
   float halo = 0.25 * smoothstep(size * 5.0, 0.0, d);
   float tone = hash(cell + 19.0);
-  vec3 tint = tone < 0.6 ? vec3(1.0, 0.97, 1.0) : tone < 0.82 ? vec3(0.78, 0.84, 1.0) : vec3(1.0, 0.82, 0.95);
-  return tint * (core + halo) * twinkle * (0.5 + 0.5 * hash(cell + 5.0));
+  vec3 tint = tone < 0.6 ? uTintA : tone < 0.82 ? uTintB : uTintC;
+  vec2 dv = abs(local - pos);
+  float centered = step(abs(pos.x - 0.5), 0.15) * step(abs(pos.y - 0.5), 0.15);
+  float spike = spikes * centered * step(0.8, hash(cell + 23.0))
+    * (smoothstep(0.3, 0.0, dv.x) * smoothstep(size * 0.3, 0.0, dv.y) + smoothstep(0.3, 0.0, dv.y) * smoothstep(size * 0.3, 0.0, dv.x));
+  return tint * (core + halo + spike * 0.55) * twinkle * (0.5 + 0.5 * hash(cell + 5.0));
 }
 
 void main() {
@@ -61,11 +73,9 @@ void main() {
   vec2 p = frag / uResolution.y;   // 以高度为单位，星星在宽屏上不会被拉伸
   float t = uTime;
 
-  // 天空：夜里从紫黑到深紫，黄昏从淡紫到粉橘；地平线附近有一层暖光
-  vec3 nightTop = vec3(0.016, 0.012, 0.043), nightLow = vec3(0.082, 0.055, 0.16);
-  vec3 duskTop = vec3(0.62, 0.55, 0.82), duskLow = vec3(1.0, 0.8, 0.78);
-  vec3 sky = mix(mix(nightLow, nightTop, pow(uv.y, 0.8)), mix(duskLow, duskTop, pow(uv.y, 0.9)), uLight);
-  sky += mix(vec3(0.12, 0.05, 0.16), vec3(0.18, 0.08, 0.04), uLight) * pow(1.0 - uv.y, 3.0);
+  // 天空：从天顶到地平线的渐变（夜里 / 开灯时的天色），地平线附近再加一层光
+  vec3 sky = mix(mix(uNightLow, uNightTop, pow(uv.y, 0.8)), mix(uDuskLow, uDuskTop, pow(uv.y, 0.9)), uLight);
+  sky += mix(uHorizonNight, uHorizonDusk, uLight) * pow(1.0 - uv.y, 3.0);
 
   // 周日运动：星星和银河一起绕画面左上方外面的北天极逆时针转（地球自转），离天极越远走得越快；
   // 天空渐变、地平线的光、流星和月亮不跟着转。下面的星云、星星都在转过的坐标 sp 里取样。
@@ -78,15 +88,15 @@ void main() {
   vec2 q = sp * 1.6;
   float band = exp(-pow((suv.y - 0.45 - (suv.x - 0.5) * 0.55) * 3.2, 2.0));
   float cloud = fbm(q * 2.0 + fbm(q * 1.3));
-  vec3 nebula = mix(vec3(0.36, 0.22, 0.58), vec3(0.8, 0.46, 0.76), cloud) * band * pow(cloud, 2.4) * 0.4;
+  vec3 nebula = mix(uNebulaA, uNebulaB, cloud) * band * pow(cloud, 2.4) * uNebula;
   sky += nebula * (1.0 - uLight * 0.8);
 
   // 三层星星：远处的小而密，近处的大而疏；银河里星星更多
   float starAmount = 1.0 - uLight * 0.85;
-  vec3 stars = starLayer(sp, 140.0, 0.10 + band * 0.22, 0.06, t) * 0.8
-             + starLayer(sp + 3.1, 70.0, 0.08 + band * 0.12, 0.07, t * 0.8)
-             + starLayer(sp + 7.7, 26.0, 0.07, 0.06, t * 0.6) * 1.5;
-  sky += stars * starAmount;
+  vec3 stars = starLayer(sp, 140.0, 0.10 + band * 0.22, 0.06, t, 0.0) * 0.8
+             + starLayer(sp + 3.1, 70.0, 0.08 + band * 0.12, 0.07, t * 0.8, 0.0)
+             + starLayer(sp + 7.7, 26.0, 0.07, 0.06, t * 0.6, uSpikes) * 1.5;
+  sky += stars * starAmount * uStarGain;
 
   // 流星：每 23 秒一颗，划过约 1 秒，起点和方向每次不同
   float period = 23.0;
@@ -110,7 +120,7 @@ void main() {
   float lit = (1.0 - cos(6.2831 * uPhase)) * 0.5;
   // 光晕从月面中心一直延伸出去，月亮边缘和光晕之间不会出现一圈暗缝
   float glow = exp(-max(r - 0.9, 0.0) * 2.4) * (0.18 + 0.5 * lit) * (1.0 - smoothstep(0.0, 1.0, max(r - 1.0, 0.0) / 6.0));
-  sky += mix(vec3(0.95, 0.85, 1.0), vec3(1.0, 0.95, 0.9), uLight) * glow * mix(0.55, 0.35, uLight);
+  sky += mix(uMoonGlow, vec3(1.0, 0.95, 0.9), uLight) * glow * mix(0.55, 0.35, uLight);
   if (r < 1.02) {
     float edge = smoothstep(1.0, 1.0 - 2.0 / uMoon.z, r);
     float s = sqrt(max(1.0 - m.y * m.y, 0.0));
@@ -119,7 +129,7 @@ void main() {
     float bright = smoothstep(-0.04, 0.04, side);
     float maria = 0.82 + 0.18 * fbm(m * 2.6 + 4.0);
     vec3 moonLit = vec3(1.0, 0.96, 0.88) * maria;
-    vec3 moonDark = mix(sky, vec3(0.14, 0.12, 0.2), 0.6);
+    vec3 moonDark = mix(sky, uMoonDark, 0.6);
     sky = mix(sky, mix(moonDark, moonLit, bright), edge);
   }
 
@@ -128,6 +138,29 @@ void main() {
   gl_FragColor = vec4(sky, 1.0);
 }
 `;
+
+// 两套配色（2026-10-29 对比用，<html data-palette> 由地址参数决定，见 layout.tsx）：
+// night = 原来的夜紫（紫黑天空、粉紫银河、偏粉的星）；ink = 墨黑，人眼看到的真实夜空：中性的黑，地平线附近一点冷灰的大气辉光，
+// 银河是很淡的灰白雾，星星几乎纯白（零星极淡的蓝白和暖白）、更多更亮，少数亮星带细十字星芒，月亮光晕不带颜色。
+type Vec3 = [number, number, number];
+const palettes: Record<"night" | "ink", Record<string, Vec3 | number>> = {
+  night: {
+    uNightTop: [0.016, 0.012, 0.043], uNightLow: [0.082, 0.055, 0.16], uDuskTop: [0.62, 0.55, 0.82], uDuskLow: [1.0, 0.8, 0.78],
+    uHorizonNight: [0.12, 0.05, 0.16], uHorizonDusk: [0.18, 0.08, 0.04],
+    uNebulaA: [0.36, 0.22, 0.58], uNebulaB: [0.8, 0.46, 0.76], uNebula: 0.4,
+    uTintA: [1.0, 0.97, 1.0], uTintB: [0.78, 0.84, 1.0], uTintC: [1.0, 0.82, 0.95],
+    uStars: 1, uStarGain: 1, uSpikes: 0,
+    uMoonGlow: [0.95, 0.85, 1.0], uMoonDark: [0.14, 0.12, 0.2],
+  },
+  ink: {
+    uNightTop: [0.003, 0.003, 0.004], uNightLow: [0.02, 0.022, 0.028], uDuskTop: [0.8, 0.82, 0.86], uDuskLow: [0.94, 0.94, 0.95],
+    uHorizonNight: [0.028, 0.03, 0.038], uHorizonDusk: [0.04, 0.04, 0.04],
+    uNebulaA: [0.08, 0.08, 0.09], uNebulaB: [0.4, 0.4, 0.43], uNebula: 0.24,
+    uTintA: [1.0, 1.0, 1.0], uTintB: [0.88, 0.92, 1.0], uTintC: [1.0, 0.96, 0.88],
+    uStars: 1.35, uStarGain: 1.2, uSpikes: 1,
+    uMoonGlow: [0.9, 0.9, 0.92], uMoonDark: [0.05, 0.05, 0.06],
+  },
+};
 
 // 星空转一圈的时间。真实的地球自转一圈约 24 小时，肉眼看不出在动，这里加快到 10 分钟一圈；
 // 角度按真实时钟算，刷新页面后星空接着上次的位置，不会跳回起点。
@@ -192,6 +225,13 @@ export default function Starfield() {
       spin: gl.getUniformLocation(program, "uSpin"),
     };
     gl.uniform1f(uniforms.phase, moonPhase(Date.now()));
+    // 配色在页面打开时由地址参数定下（layout.tsx 的 themeScript），这里读一次
+    const palette = palettes[document.documentElement.dataset.palette === "ink" ? "ink" : "night"];
+    for (const [name, value] of Object.entries(palette)) {
+      const location = gl.getUniformLocation(program, name);
+      if (typeof value === "number") gl.uniform1f(location, value);
+      else gl.uniform3f(location, ...value);
+    }
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let light = lightTarget.current;

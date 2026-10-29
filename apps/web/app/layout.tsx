@@ -44,7 +44,9 @@ const notoSerif = Noto_Serif_SC({
 });
 
 // 服务端默认输出 data-theme="dark"（熄灯）；保存过“开灯”时在绘制前改掉。
-const themeScript = `try{var t=localStorage.getItem("theme"),d=document.documentElement;if(t==="light")d.dataset.theme="light"}catch(e){}`;
+// 配色对比（2026-10-29，夜紫与墨黑二选一之前临时用）：地址带 ?palette=ink 或 ?palette=night 时记在这个标签页的 sessionStorage，
+// 之后在站内怎么跳都保持；两个标签页各开一种互不影响，方便并排对比。默认夜紫，墨黑在 <html data-palette="ink"> 上覆盖颜色变量。
+const themeScript = `try{var t=localStorage.getItem("theme"),d=document.documentElement;if(t==="light")d.dataset.theme="light";var q=new URLSearchParams(location.search).get("palette");if(q==="ink"||q==="night")sessionStorage.setItem("palette",q);if(sessionStorage.getItem("palette")==="ink")d.dataset.palette="ink"}catch(e){}`;
 
 // 子页面的标题会套用模板，例如“文章 - Sin’s Space”。站名、描述取后台 SEO 设置；
 // metadataBase 取后台“网站地址”，让分享链接、RSS 自动发现等相对地址变成完整网址；读取失败时省略。

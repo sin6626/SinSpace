@@ -46,6 +46,13 @@
   --evening-star: light-dark(#ffffff, #f6ead0);       /*名字旁的小星：开灯时像黄昏最早亮起的长庚星，亮白*/
   --band-sky: light-dark(#f1d9ea, #1d1533);           /*内页顶部夜空带（开灯时是淡晚霞）*/
   --band-star: light-dark(rgb(255 255 255 / 90%), rgb(253 246 255 / 85%));
+  --sky-fallback-top: light-dark(#9e8cd1, #040310);  /*首屏星空画不出来（不支持 WebGL）时的 CSS 渐变*/
+  --sky-fallback-low: light-dark(#ffcdc6, #150e29);
+  --love: light-dark(#e1617b, #f08aa0);               /*“喜欢本站”的心和飘出的爱心*/
+  --love-foreground: light-dark(#ffffff, #2b0f18);    /*压在 --love 底上的字*/
+  --badge-from: light-dark(#c06bb8, #f0b4ec);         /*订阅浮层信封图标的渐变底*/
+  --badge-to: light-dark(#8f4a9e, #b97ee0);
+  --badge-foreground: light-dark(#ffffff, #2a1630);
 
   /* 柔光：代替硬投影，熄灯时是淡淡的粉紫光晕 */
   --shadow-soft: 0 1px 2px light-dark(rgb(35 29 51 / 6%), rgb(0 0 0 / 30%)), 0 8px 24px -12px light-dark(rgb(155 79 150 / 22%), rgb(224 166 232 / 18%));
@@ -92,6 +99,54 @@
   --z-popup: 3;
   --z-toast: 4;
   --z-skip-link: 5;
+}
+
+/* 墨黑配色（2026-10-29，与上面的夜紫对比用，地址带 ?palette=ink 切换，见 layout.tsx 的 themeScript）：
+   人眼看到的真实夜空——中性的黑，不带紫；层次只靠深浅不同的灰；整站唯一的强调是“星光白”（开灯时反过来是墨黑）。
+   只覆盖颜色，字号、间距、圆角等沿用上面。首页星空的颜色在 starfield.tsx 的 palettes.ink。 */
+:root[data-palette="ink"] {
+  --background: light-dark(#f6f6f7, #050506);
+  --surface: light-dark(#ffffff, #0e0e10);
+  --foreground: light-dark(#111113, #ececef);
+  --muted: light-dark(#efeff1, #0a0a0c);
+  --muted-foreground: light-dark(#5e5e66, #8a8a93);
+  --border: light-dark(rgb(17 17 19 / 10%), rgb(255 255 255 / 8%));
+  --border-strong: light-dark(rgb(17 17 19 / 20%), rgb(255 255 255 / 16%));
+  --accent: light-dark(#ececef, #151517);
+  --accent-active: light-dark(#e2e2e6, #1e1e21);
+  --primary: light-dark(#111113, #f7f7f9);
+  --primary-foreground: light-dark(#ffffff, #09090a);
+  --glass-popup: light-dark(rgb(255 255 255 / 94%), rgb(13 13 15 / 94%));
+  --glass-border: light-dark(rgb(17 17 19 / 10%), rgb(255 255 255 / 9%));
+  --constellation-line: light-dark(rgb(17 17 19 / 14%), rgb(255 255 255 / 12%));
+  --star-glow: light-dark(rgb(17 17 19 / 22%), rgb(255 255 255 / 55%));
+  --island-bg: rgb(6 6 7 / 92%);
+  --island-fg: #ececef;
+  --island-muted: #8a8a93;
+  --island-primary: #f7f7f9;
+  --island-border: rgb(255 255 255 / 10%);
+  /*播报仍按类型区分，但把饱和度压低，像远处不同色温的星，不像霓虹灯*/
+  --island-tone-post: #d4c8de;
+  --island-tone-note: #e4d7b9;
+  --island-tone-update: #b3c2de;
+  --island-tone-remove: #deb0b4;
+  --island-tone-done: #b2d6c2;
+  --island-tone-info: #9a9aa3;
+  --moonlight: light-dark(#111113, #ffffff);
+  --moonlight-glow: light-dark(rgb(17 17 19 / 16%), rgb(255 255 255 / 32%));
+  --evening-star: light-dark(#111113, #ffffff);
+  --band-sky: light-dark(#e8e8eb, #0a0a0c);
+  --band-star: light-dark(rgb(17 17 19 / 45%), rgb(255 255 255 / 90%));
+  --sky-fallback-top: light-dark(#c8ccd4, #000000);
+  --sky-fallback-low: light-dark(#eeeff1, #08090b);
+  --love: light-dark(#111113, #f7f7f9);
+  --love-foreground: light-dark(#ffffff, #09090a);
+  --badge-from: light-dark(#2a2a2e, #ffffff);
+  --badge-to: light-dark(#0b0b0c, #b9b9c0);
+  --badge-foreground: light-dark(#ffffff, #0b0b0c);
+  /* 柔光换成中性的暗影，不再带粉紫 */
+  --shadow-soft: 0 1px 2px light-dark(rgb(0 0 0 / 6%), rgb(0 0 0 / 50%)), 0 8px 24px -12px light-dark(rgb(0 0 0 / 14%), rgb(0 0 0 / 70%));
+  --shadow-popup: 0 2px 6px light-dark(rgb(0 0 0 / 8%), rgb(0 0 0 / 55%)), 0 16px 40px -12px light-dark(rgb(0 0 0 / 22%), rgb(0 0 0 / 80%));
 }
 
 :root[data-theme="light"] {

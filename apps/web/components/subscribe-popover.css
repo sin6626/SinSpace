@@ -41,9 +41,9 @@
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, light-dark(#c06bb8, #f0b4ec), light-dark(#8f4a9e, #b97ee0));
+  background: linear-gradient(135deg, var(--badge-from), var(--badge-to));
   box-shadow: 0 0.5rem 1.25rem -0.5rem color-mix(in srgb, var(--primary) 70%, transparent), inset 0 1px 0 rgb(255 255 255 / 25%);
-  color: light-dark(#fff, #2a1630);
+  color: var(--badge-foreground);
 }
 
 .subscribe-title {
