@@ -2,7 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { getApiClient } from "./api";
 import { safeUrl } from "./safe-url";
-import { excerpt } from "./excerpt";
+import { excerpt, readingMinutes } from "./excerpt";
 
 // 站名和描述以后台 SEO 设置为准（getSiteSettings），这两个值只是读取失败时的兜底。
 export const siteName = "Sin’s Space";
@@ -133,26 +133,41 @@ export async function getCategories() {
   }));
 }
 
+// 列表里每条的摘要按这个顺序取，保证不冷清（用户 2026-10-29 定）：AI 摘要 → 自己写的摘要 → 正文开头。
+// AI 摘要只读后台已生成的（getArticleAi，1 小时缓存，与详情页共用），读不到就往下退。
+export type ListExcerpt = { text: string; source: "ai" | "summary" | "text" } | null;
+async function listExcerpt(id: string, summary: string | null | undefined, text: string | null | undefined): Promise<ListExcerpt> {
+  const ai = await getArticleAi(id).catch(() => null);
+  if (ai?.summary) return { text: ai.summary, source: "ai" };
+  if (summary?.trim()) return { text: summary.trim(), source: "summary" };
+  const body = excerpt(text, 120);
+  return body ? { text: body, source: "text" } : null;
+}
+
 export async function getPosts(page: number, categoryId?: string) {
   "use cache";
   cacheLife({ stale: 60, revalidate: 60, expire: 300 });
   cacheTag("blog:posts", "blog:categories");
   const { data, pagination } = await getApiClient().post.getList(page, 10, {
     categoryIds: categoryId ? [categoryId] : undefined,
-    select: ["title", "summary", "created", "categoryId", "slug", "pin"],
+    // text 只在服务端用来算摘录和阅读时长，不返回给页面
+    select: ["title", "summary", "text", "created", "categoryId", "slug", "pin", "tags", "count"],
   });
   return {
-    data: data.map((post) => ({
+    data: await Promise.all(data.map(async (post) => ({
       id: post.id,
       title: post.title,
       slug: post.slug,
       summary: post.summary,
+      excerpt: await listExcerpt(post.id, post.summary, post.text),
+      stats: { minutes: readingMinutes(post.text), reads: post.count?.read ?? 0, likes: post.count?.like ?? 0 },
+      tags: (post.tags ?? []).slice(0, 3),
       created: post.created,
       categoryId: post.categoryId,
       // Core 把置顶文章排在最前，页面需要标出来，否则看起来像排序错了。
       pinned: Boolean(post.pin),
       category: post.category ? { name: post.category.name, slug: post.category.slug } : null,
-    })),
+    }))),
     pagination: { ...pagination },
   };
 }
@@ -184,7 +199,8 @@ export async function getNotes(page: number) {
   cacheTag("blog:notes");
   const { data, pagination } = await getApiClient().note.getList(page, 10);
   return {
-    data: data.map((note) => ({
+    // 手记没有手写摘要字段：AI 摘要 → 正文开头
+    data: await Promise.all(data.map(async (note) => ({
       id: note.id,
       nid: note.nid,
       title: note.title,
@@ -192,8 +208,9 @@ export async function getNotes(page: number) {
       mood: note.mood,
       weather: note.weather,
       topic: note.topic?.name ?? null,
-      excerpt: excerpt(note.text),
-    })),
+      excerpt: await listExcerpt(note.id, null, note.text),
+      stats: { minutes: readingMinutes(note.text), reads: note.count?.read ?? 0, likes: note.count?.like ?? 0 },
+    }))),
     pagination: { ...pagination },
   };
 }

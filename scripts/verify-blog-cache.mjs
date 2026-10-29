@@ -49,7 +49,7 @@ const api = {
 const module = { exports: {} }
 vm.runInNewContext(code, {
   module, exports: module.exports,
-  require: (id) => id === 'server-only' ? {} : id === './excerpt' ? { excerpt: (value) => value ?? '' } : id === './safe-url' ? { safeUrl: (value) => value && /^https?:\/\//i.test(value) ? value : undefined } : id === './api' ? { getApiClient: () => api } : id === 'next/cache' ? { cacheLife: (value) => lifetimes.push(value), cacheTag: (...value) => tags.push(...value) } : require(id),
+  require: (id) => id === 'server-only' ? {} : id === './excerpt' ? { excerpt: (value) => value ?? '', readingMinutes: () => 1 } : id === './safe-url' ? { safeUrl: (value) => value && /^https?:\/\//i.test(value) ? value : undefined } : id === './api' ? { getApiClient: () => api } : id === 'next/cache' ? { cacheLife: (value) => lifetimes.push(value), cacheTag: (...value) => tags.push(...value) } : require(id),
 })
 const cache = module.exports
 assert.equal('user' in await cache.getNavigationData(), false)
@@ -58,13 +58,15 @@ const list = await cache.getPosts(2, 'category-id')
 assert.equal(calls[0][0], 2)
 assert.equal(calls[0][2].categoryIds[0], 'category-id')
 assert.equal('liked' in list.data[0], false)
+assert.equal('text' in list.data[0], false, '列表只返回摘录，不把正文带给页面')
 const detail = await cache.getPost('technology', 'test')
 assert.equal('liked' in detail, false)
 assert.equal(JSON.stringify(detail.count), JSON.stringify({ read: 0, like: 0 }), '缺少计数时补 0')
 assert.equal('content' in detail, false, 'Markdown 文章不缓存 content')
 assert.equal(detail.text, 'body')
 assert.ok(tags.includes('blog:post:post-id'))
-assert.equal(lifetimes.length, 4)
+// 5 次：导航、分类、文章列表、列表里读 AI 摘要（getArticleAi，2026-10-29 起列表摘要优先用 AI 摘要）、文章详情
+assert.equal(lifetimes.length, 5)
 assert.ok(lifetimes.every(p => p.revalidate > 0 && p.expire > p.revalidate))
 const notes = await cache.getNotes(3)
 assert.equal(calls[1][0], 3)
@@ -101,7 +103,8 @@ const tagged = await cache.getPostsByTag(' 前端')
 assert.equal(calls.at(-1)[1], ' 前端')
 assert.equal('text' in tagged[0], false)
 assert.equal((await cache.getPostsByTag('missing')).length, 0)
-assert.equal(lifetimes.length, 15)
+// 比原来多 2 次：文章列表、手记列表各读一次 AI 摘要
+assert.equal(lifetimes.length, 17)
 assert.ok(lifetimes.every(p => p.revalidate > 0 && p.expire > p.revalidate))
 post.contentFormat = 'lexical'
 assert.equal((await cache.getPost('technology', 'lexical')).content, 'unused JSON', 'Lexical 文章缓存 content 给富文本渲染器')

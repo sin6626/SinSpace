@@ -6,7 +6,8 @@ import { getCategories, getPosts } from "../lib/blog-data";
 import { readText } from "../lib/search-params";
 import { PostSearch, PostsByTag } from "./post-filter";
 import PostTagDrawer from "./post-sidebar";
-import Entry, { EntryTag } from "./entry";
+import type { ListExcerpt } from "../lib/blog-data";
+import Entry, { EntryTag, type EntryStats } from "./entry";
 import SidebarSearch from "./sidebar-search";
 import "./details-sidebar.css";
 import "./corners.css";
@@ -21,6 +22,9 @@ export type PostCardData = {
   href: string | null;
   title: string;
   summary?: string | null;
+  excerpt?: ListExcerpt;
+  stats?: EntryStats;
+  tags?: string[];
   created: string;
   pinned?: boolean;
   category: { name: string; slug: string } | null;
@@ -34,7 +38,9 @@ export function PostCard({ post, headingLevel = 2 }: { post: PostCardData; headi
       title={post.title}
       created={post.created}
       headingLevel={headingLevel}
-      excerpt={post.summary}
+      excerpt={post.excerpt ?? post.summary}
+      stats={post.stats}
+      hashtags={post.tags}
       tags={<>
         {post.category
           ? <EntryTag href={`/categories/${encodeURIComponent(post.category.slug)}`}>{post.category.name}</EntryTag>

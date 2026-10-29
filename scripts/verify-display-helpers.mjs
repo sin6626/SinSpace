@@ -14,7 +14,7 @@ function load(path) {
   return module.exports
 }
 const { moonPhase, moonLitPath, moonInfo } = load('../apps/web/lib/moon.ts')
-const { excerpt } = load('../apps/web/lib/excerpt.ts')
+const { excerpt, readingMinutes } = load('../apps/web/lib/excerpt.ts')
 
 const near = (phase, target) => Math.min(Math.abs(phase - target), 1 - Math.abs(phase - target))
 // 2024-01-11 11:57 UTC 新月，2024-01-25 17:54 UTC 满月，2024-01-18 03:53 UTC 上弦，2024-02-02 23:18 UTC 下弦
@@ -45,4 +45,9 @@ assert.equal(excerpt('|*&#32;两个月的暑假*\n\n## 刚进出租屋\n\n看[�
 assert.equal(excerpt('> 引用\n- 列表 `code`\n```js\nconst a = 1\n```\n结尾'), '引用 列表 code 结尾')
 assert.equal(excerpt('一二三四五', 3), '一二三…')
 assert.equal(excerpt(null), '')
+// 列表信息行的阅读时长：按纯文本约 400 字一分钟，至少 1 分钟（代码块、链接地址不算字数）
+assert.equal(readingMinutes('哈'), 1)
+assert.equal(readingMinutes(null), 1)
+assert.equal(readingMinutes('字'.repeat(2000)), 5)
+assert.equal(readingMinutes('字'.repeat(800) + '\n```js\n' + 'x'.repeat(4000) + '\n```'), 2)
 console.log('PASS moon phase dates, lit side, crescent/gibbous terminator, new and full moon, hover info; Markdown excerpt')

@@ -9,7 +9,7 @@
 }
 
 .entry .entry-tag,
-.entry .entry-meta a {
+.entry .entry-hashtag {
   position: relative;
   z-index: 1;
 }
@@ -125,9 +125,54 @@ a.entry-tag:focus-visible {
   outline-offset: 2px;
 }
 
-.entry-meta {
-  margin-top: 0;
+/* 摘要前的小星：表示这段是 AI 摘要 */
+.entry-ai {
+  display: inline-grid;
+  place-items: center;
+  margin-right: 0.375rem;
+  color: var(--primary);
+  vertical-align: -1px;
+}
+
+/* 最后一行信息：心情天气、阅读时长、阅读数、喜欢数、标签，统一小字淡色，用间距分开 */
+.entry-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-4);
+  margin-top: var(--space-1);
+  color: var(--muted-foreground);
   font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.entry-stats > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+}
+
+.entry-stats svg {
+  flex: none;
+  opacity: 0.8;
+}
+
+.entry-hashtag {
+  color: var(--muted-foreground);
+  text-decoration: none;
+  transition: color var(--duration-fast);
+}
+
+@media (hover: hover) {
+  .entry-hashtag:hover {
+    color: var(--primary);
+  }
+}
+
+.entry-hashtag:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }
 
 .entry-excerpt {

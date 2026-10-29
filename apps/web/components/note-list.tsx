@@ -23,6 +23,7 @@ export function NoteEntry({ note, headingLevel = 2 }: { note: NoteEntryData; hea
       headingLevel={headingLevel}
       serif
       excerpt={note.excerpt}
+      stats={note.stats}
       tags={note.topic ? <EntryTag>{note.topic}</EntryTag> : undefined}
       meta={note.mood || note.weather ? <>
         {note.mood && <span>心情 · {note.mood}</span>}

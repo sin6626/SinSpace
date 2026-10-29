@@ -16,7 +16,8 @@ const views = [
   { kind: "note", href: "/timeline/notes", label: "手记" },
 ] as const;
 
-// 归档：按年分组列出文章与手记（kind 指定时只列一种）。年份取自 formatDate（固定东八区），与站内其他日期一致。
+// 归档：按年、再按月分组列出文章与手记（kind 指定时只列一种）。年月取自 formatDate（固定东八区），与站内其他日期一致。
+// 宽屏时月份在左栏、读到哪个月就贴在页头下面；每条只写“日”。一条星座竖线串起当月各条，文章是紫色小星、手记是月光色小星。
 export default async function TimelineList({ kind }: { kind?: Item["kind"] }) {
   const view = views.find((item) => item.kind === kind) ?? views[0];
   let all: Item[];
@@ -28,11 +29,13 @@ export default async function TimelineList({ kind }: { kind?: Item["kind"] }) {
     return <p className="post-list-content" role="alert">时间线读取失败。<a href={view.href}>重试</a></p>;
   }
   const items = kind ? all.filter((item) => item.kind === kind) : all;
-  const years = new Map<string, { item: Item; date: string }[]>();
+  const years = new Map<string, { count: number; months: Map<string, { item: Item; day: string }[]> }>();
   for (const item of items) {
-    const date = formatDate(item.created);
-    const year = date.slice(0, 4);
-    years.set(year, [...(years.get(year) ?? []), { item, date }]);
+    const [year, month, day] = formatDate(item.created).split("/");
+    const group = years.get(year) ?? { count: 0, months: new Map() };
+    group.count++;
+    group.months.set(month, [...(group.months.get(month) ?? []), { item, day }]);
+    years.set(year, group);
   }
   const postCount = all.filter((item) => item.kind === "post").length;
   const counts = { post: postCount, note: all.length - postCount };
@@ -51,18 +54,27 @@ export default async function TimelineList({ kind }: { kind?: Item["kind"] }) {
             ))}
           </nav>
         </div>
-        {years.size ? [...years].map(([year, entries]) => (
+        {years.size ? [...years].map(([year, { count, months }]) => (
           <section key={year} className="timeline-year" aria-labelledby={`timeline-${year}`}>
-            <h2 id={`timeline-${year}`}>{year} <span className="timeline-count">{entries.length} 篇</span></h2>
-            <ol className="timeline-list">
-              {entries.map(({ item, date }) => (
-                <li key={`${item.kind}-${item.id}`}>
-                  <time dateTime={item.created}>{date.slice(5)}</time>
-                  <Link href={href(item)}>{item.title}</Link>
-                  <span className="post-meta">{item.kind === "post" ? item.category.name : "手记"}</span>
-                </li>
-              ))}
-            </ol>
+            <h2 id={`timeline-${year}`}>{year} <span className="timeline-count">{count} 篇</span></h2>
+            {[...months].map(([month, entries]) => (
+              <section key={month} className="timeline-month" aria-labelledby={`timeline-${year}-${month}`}>
+                <h3 id={`timeline-${year}-${month}`} className="timeline-month-label">
+                  <span className="timeline-month-number">{Number(month)}</span> 月
+                  <span className="timeline-count">{entries.length} 篇</span>
+                </h3>
+                <ol className="timeline-list">
+                  {entries.map(({ item, day }) => (
+                    <li key={`${item.kind}-${item.id}`} className="timeline-item" data-kind={item.kind}>
+                      <span className="timeline-node" aria-hidden="true" />
+                      <time dateTime={item.created}>{day} 日</time>
+                      <Link className="card-link" href={href(item)}>{item.title}</Link>
+                      <span className="post-meta">{item.kind === "post" ? item.category.name : "手记"}</span>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ))}
           </section>
         )) : <p className="post-empty">还没有内容。</p>}
       </div>

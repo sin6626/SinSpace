@@ -82,8 +82,8 @@ export default function StyleGuide() {
       </div>
 
       <h3 className="guide-heading">四个角落的卡片</h3>
-      <PostCard post={{ id: "a", href: "#post", title: "文章卡片：标题、摘要、日期和分类", summary: "整张卡片可点，悬停有淡底，标题变成强调色；分类链接还能单独点。", created, pinned: true, category: { name: "学习与感悟", slug: "study" } }} headingLevel={3} />
-      <NoteEntry note={{ id: "n", nid: 1, title: "手记：熄灯以后的阳台", created, mood: "平静", weather: "晴", topic: "近况", excerpt: "停下来的时候，去阳台看看外面的星星，月亮也在。" }} headingLevel={3} />
+      <PostCard post={{ id: "a", href: "#post", title: "文章卡片：标题、摘要、日期和分类", summary: "整张卡片可点，悬停有淡底，标题变成强调色；分类链接还能单独点。", excerpt: { text: "AI 摘要优先显示（前面一枚小星标记），没有就用自己写的摘要，再没有就截正文开头。", source: "ai" }, stats: { minutes: 5, reads: 21, likes: 2 }, tags: ["学习心得", "React"], created, pinned: true, category: { name: "学习与感悟", slug: "study" } }} headingLevel={3} />
+      <NoteEntry note={{ id: "n", nid: 1, title: "手记：熄灯以后的阳台", created, mood: "平静", weather: "晴", topic: "近况", excerpt: { text: "停下来的时候，去阳台看看外面的星星，月亮也在。", source: "text" }, stats: { minutes: 2, reads: 8, likes: 0 } }} headingLevel={3} />
       <ul className="project-grid guide-gap">
         <li><ProjectCard project={{ id: "p", name: "作品卡片", description: "没有图标时用名字的首字。", avatar: undefined, projectUrl: "https://example.com", previewUrl: undefined, docUrl: undefined }} headingLevel={3} /></li>
       </ul>
