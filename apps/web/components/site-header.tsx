@@ -4,7 +4,7 @@ import { FilePen, Info, NotebookPen, RefreshCw, Trash2 } from "lucide-react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Suspense, useCallback, useEffect, useState, type FocusEvent, type ReactNode } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState, type FocusEvent, type ReactNode } from "react";
 import { useIsland, type IslandActivityIcon } from "../lib/island-store";
 import ThemeToggle from "./theme-switcher";
 import "./site-header.css";
@@ -98,6 +98,60 @@ export default function SiteHeader({ brand, nav }: { brand: ReactNode; nav: Reac
     document.addEventListener("pointerdown", release);
     return () => document.removeEventListener("pointerdown", release);
   }, [pinned]);
+  // 鼠标悬停按“鼠标最后的位置是否在胶囊或下拉面板范围内”来算，而不是靠进入 / 离开事件：
+  // 岛会变形、面板会被移除、鼠标会移出窗口，这些时候浏览器不一定补发“离开”，悬停状态会卡住，岛就一直展开。
+  // 鼠标移动、页面滚动、岛变形结束时都重新判断一次；窗口失去焦点或鼠标移出窗口时清掉。
+  const islandRef = useRef<HTMLDivElement>(null);
+  const pointer = useRef<{ x: number; y: number } | null>(null);
+  const recheckHover = useCallback(() => {
+    const point = pointer.current;
+    const island = islandRef.current;
+    if (!point || !island) return setHovered(false);
+    const inside = (element: Element | null) => {
+      if (!element) return false;
+      const rect = element.getBoundingClientRect();
+      return point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom;
+    };
+    setHovered(inside(island) || inside(document.querySelector(".navigation-Positioner")));
+  }, []);
+  // 键盘聚焦只认 Tab 键：鼠标点过链接后切到别的软件再切回，浏览器会把焦点还给那个链接，
+  // 而且因为最后一次操作是键盘（⌘+Tab），这次聚焦也算 :focus-visible，不能因此展开
+  const lastTab = useRef(0);
+  useEffect(() => {
+    let frame = 0;
+    const onMove = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse") return;
+      pointer.current = { x: event.clientX, y: event.clientY };
+      recheckHover();
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(() => { frame = 0; recheckHover(); });
+    };
+    const onLeaveWindow = (event: MouseEvent) => {
+      if (event.relatedTarget) return;
+      pointer.current = null;
+      setHovered(false);
+    };
+    const onWindowBlur = () => {
+      pointer.current = null;
+      setHovered(false);
+      setFocused(false);
+    };
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Tab") lastTab.current = Date.now(); };
+    document.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("mouseout", onLeaveWindow);
+    window.addEventListener("blur", onWindowBlur);
+    document.addEventListener("keydown", onKey, true);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("pointermove", onMove);
+      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("mouseout", onLeaveWindow);
+      window.removeEventListener("blur", onWindowBlur);
+      document.removeEventListener("keydown", onKey, true);
+    };
+  }, [recheckHover]);
   const navOpen = useIsland((state) => state.navOpen);
   const reading = useIsland((state) => state.reading);
   const activity = useIsland((state) => state.activities[0]);
@@ -112,6 +166,11 @@ export default function SiteHeader({ brand, nav }: { brand: ReactNode; nav: Reac
 
   const unpin = useCallback(() => setPinned(false), []);
   const mode = activity ? "activity" : !scrolled ? "bar" : hovered || focused || pinned || navOpen ? "expanded" : "compact";
+  // 岛变形（弹簧约 0.4 秒）结束后，按鼠标位置重新判断一次悬停
+  useEffect(() => {
+    const timer = setTimeout(recheckHover, 450);
+    return () => clearTimeout(timer);
+  }, [mode, recheckHover]);
   const onBlur = (event: FocusEvent<HTMLDivElement>) => {
     if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(false);
   };
@@ -124,12 +183,13 @@ export default function SiteHeader({ brand, nav }: { brand: ReactNode; nav: Reac
           layout
           transition={spring}
           className="site-header-inner island"
+          ref={islandRef}
           style={{ borderRadius: mode === "activity" ? 26 : 999 }}
-          onPointerEnter={(event) => { if (event.pointerType === "mouse") setHovered(true); }}
-          onPointerLeave={(event) => { if (event.pointerType === "mouse") setHovered(false); }}
-          // 只有键盘聚焦（:focus-visible）才展开：鼠标点过导航链接或主题按钮后焦点会留在页头，
-          // 如果也算，往下读文章时岛会一直展开、不收成标题 + 进度环（回归测试 site-header-island.mjs）
-          onFocus={(event) => { if ((event.target as Element).matches(":focus-visible")) setFocused(true); }}
+          // 只有用 Tab 键聚焦进来才展开：鼠标点过导航链接或主题按钮后焦点会留在页头，切走再切回时焦点也会回来，
+          // 这两种都不算，否则往下读文章时岛会一直展开、不收成标题 + 进度环（回归测试 site-header-island.mjs）
+          onFocus={(event) => {
+            if ((event.target as Element).matches(":focus-visible") && Date.now() - lastTab.current < 1000) setFocused(true);
+          }}
           onBlur={onBlur}
         >
           <motion.div layout="position" transition={spring} className="island-brand">

@@ -3,6 +3,8 @@
 // 文章详情页往下读时胶囊显示标题与阅读进度；在 /debug 播报一条活动（activity），播完缩回。
 // 2026-10-28 的 bug：用鼠标点过页头里的东西（导航链接、主题按钮）后焦点留在页头，岛把“页头内有焦点”当成展开条件，
 // 之后往下读文章时一直是展开状态、不收成标题 + 进度环。现在只有键盘聚焦（:focus-visible）才展开。
+// 2026-10-29 的 bug：鼠标点过导航链接后，用键盘切到别的软件再切回（⌘+Tab、截图快捷键），浏览器把焦点还给那个链接，
+// 而且因为最后一次操作是键盘，这次聚焦算作 :focus-visible，岛又卡在展开。现在键盘聚焦只认 Tab 键，窗口失焦时清掉展开状态。
 // 需要先运行 pnpm dev（默认 http://127.0.0.1:2323，可用 WEB_URL 覆盖）。用法：pnpm e2e
 import assert from "node:assert/strict";
 import { openBrowser, sleep } from "../headless-browser.mjs";
@@ -39,6 +41,20 @@ try {
   await move(960, 700);
   await sleep(900);
   assert.equal((await island()).mode, "compact", "鼠标移开后应当收回");
+
+  // 鼠标点导航链接 → 按一下键盘（模拟切走）→ 焦点回到那个链接 → 往下读，岛应当收拢
+  await browser.goto(`${base}/notes`);
+  const [nx, ny] = await browser.evaluate(`(() => { const t = [...document.querySelectorAll(".navigation-Trigger")].find((e) => e.textContent.includes("文章")); const r = t.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; })()`);
+  await move(nx, ny);
+  for (const type of ["mousePressed", "mouseReleased"]) await browser.send("Input.dispatchMouseEvent", { type, x: nx, y: ny, button: "left", clickCount: 1 });
+  await sleep(2500);
+  await move(960, 700);
+  await browser.send("Input.dispatchKeyEvent", { type: "rawKeyDown", key: "Meta", code: "MetaLeft", windowsVirtualKeyCode: 91 });
+  await browser.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Meta", code: "MetaLeft", windowsVirtualKeyCode: 91 });
+  await browser.evaluate(`(() => { const el = document.activeElement; el.blur(); el.focus(); })()`);
+  await browser.evaluate("scrollTo(0, 1200)");
+  await sleep(1200);
+  assert.equal((await island()).mode, "compact", "鼠标点过导航、切走再切回后往下读，岛应当收拢");
 
   await browser.goto(`${base}/timeline/posts`, 3000);
   const post = await browser.evaluate(`document.querySelector(".timeline-list a").getAttribute("href")`);
