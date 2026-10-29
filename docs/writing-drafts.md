@@ -1,0 +1,87 @@
+# 在本地写文章、手记，直接存进后台草稿箱
+
+`pnpm draft` 把一个 Markdown 文件转成后台编辑器原生的富文本，本机图片先上传到图床，然后存进后台草稿箱。
+站长在后台打开草稿，确认后自己发布。脚本只建草稿、改草稿，不会发布。
+
+```bash
+pnpm draft .local/writing/某篇.md            # 写进本地后台
+pnpm draft .local/writing/某篇.md --dry-run  # 只转换和检查，打印结果，不上传、不写入
+pnpm draft .local/writing/某篇.md --prod     # 写进线上后台（需要先配好 prod）
+```
+
+成功后会打印后台编辑页链接（`后台地址/#/posts/edit?draftId=…` 或 `#/notes/edit?draftId=…`），点开就是编辑器。
+
+## 令牌配置
+
+脚本通过 Core 接口写入，用后台的 API Token 鉴权（请求头 `x-api-key`），本地和线上只是地址和令牌不同。
+配置放在 `.local/publish.json`（`.local/` 不进 git），文件权限 600：
+
+```json
+{
+  "local": { "api": "http://127.0.0.1:2333", "admin": "http://127.0.0.1:9528", "token": "txo…" },
+  "prod": { "api": "https://线上 Core 地址", "admin": "https://线上后台地址", "token": "txo…" }
+}
+```
+
+令牌在后台 **设置 → 账户 → API Token** 里创建，可以设过期时间，丢了就在那里作废。
+它等同于博主身份，能改后台的一切，不要贴进聊天或提交进 git。
+本地的“本地写草稿脚本”令牌是 2026-10-29 直接写进本地库创建的；线上令牌由站长自己创建并填写。
+
+## 文件格式
+
+开头用 `---` 包起来的 YAML 写元数据，后面是 Markdown 正文。文章稿件习惯放在 `.local/writing/`。
+
+```markdown
+---
+type: note            # post（文章）或 note（手记）
+title: 标题
+# 文章：slug、category 必填；tags、summary 可选
+slug: my-post
+category: 学习与感悟   # 分类名或 slug
+tags: [前端, 博客]
+summary: 一句话摘要
+# 手记：都可选
+topic: 生活           # 话题名或 slug
+mood: 开心
+weather: 晴
+location: 学校
+gallery: grid         # 多图相册的布局：grid / masonry / carousel
+---
+正文……
+```
+
+运行成功后脚本会在元数据里写回 `drafts: { local: 草稿ID }`（线上是 `prod`）。之后再运行就是更新同一份草稿，后台保留每次的历史版本。
+草稿在后台被删了，脚本会提示并新建一份。
+
+## 正文支持的写法
+
+| Markdown | 后台节点 |
+| --- | --- |
+| `## 标题`、段落、`**粗**`、`*斜*`、`~~删~~`、`` `码` ``、链接 | heading / paragraph / text / link |
+| 列表、嵌套列表、`- [x]` 复选列表 | list / listitem |
+| `> 引用` | quote |
+| `> [!NOTE]`（还有 TIP、IMPORTANT、WARNING、CAUTION） | alert-quote |
+| 代码块 | code-block |
+| `---` | horizontalrule |
+| GFM 表格（第一行是表头） | table |
+| `![说明](./图.png "图片标题")` 单独一段 | image（标题作为图片说明） |
+| 一段里连着放多张图 | gallery |
+
+不认识的块会直接报错并给出行号，不会生成坏数据。
+
+## 图片
+
+- 本机路径（相对路径以 Markdown 文件所在目录为准）会上传到后台配置的图床（Core 的 `POST /files/upload?type=image`），本地开发上传到图床的 `dev/年/月/` 下。
+- 网址图片原样引用，只下载下来算宽高。
+- 每张图都会算宽高和 thumbhash（加载前的模糊占位），算法与后台编辑器插图时一致；手机照片按 EXIF 方向转正。
+- 上传过的图按“目标 + 文件内容哈希”记在 `.local/publish/uploads.json`，重跑不重复上传；缓存的地址失效了会重新上传。
+- HEIC 浏览器显示不了，需要先导出成 JPG/PNG。
+- Core 每小时清理一次超过 60 分钟还没被任何内容引用的图片；草稿保存时会把正文里的图片标记为已引用，所以脚本总是“上传完立刻写草稿”。
+- 在聊天里发给 Agent 的图片是临时文件，要先复制到 `.local/writing/images/` 再引用，否则以后重跑会找不到。
+
+## 相关代码
+
+- `scripts/lib/markdown-to-lexical.mjs`：纯转换，Markdown 语法树按对照表生成节点，最后用 Core 同款 `allHeadlessNodes` 重新加载校验。
+- `scripts/write-draft.mjs`：命令行，负责元数据、图片上传、分类/话题换算和草稿接口。
+- `scripts/verify-markdown-to-lexical.mjs`：转换检查（`pnpm verify`）。
+- 以后 Core 升到 v13 以上，接口格式会变（V3、Snowflake ID），这个脚本要跟着改，或者改用上游的 `mxs`。

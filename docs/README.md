@@ -37,6 +37,7 @@
 | 实时通知 | `components/notifications.tsx` | 新文章、更新、删除 Toast |
 | 路由动画 | `app/layout.tsx` | React ViewTransition，只动中间栏 |
 | 调试页 | `/debug`（仅开发） | 集中展示平时看不到的加载、失败、空状态 |
+| 本地写草稿 | `pnpm draft`、`scripts/write-draft.mjs` | Markdown 转后台原生富文本，本机图片传图床，存进后台草稿箱（本地或线上），见 [本地写草稿](./writing-drafts.md) |
 
 
 ## 学习与实施顺序
