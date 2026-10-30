@@ -11,6 +11,7 @@ import { murmursApi } from '~/api/murmurs'
 import type { MurmurModel } from '~/models/murmur'
 
 import { MurmurComposer } from './composer'
+import { useImagePreview } from './image-preview'
 import styles from './index.module.css'
 import { MurmurBody } from './murmur-body'
 
@@ -57,6 +58,10 @@ const MurmurEntry = defineComponent({
       required: true,
     },
     onDelete: { type: Function as PropType<() => void>, required: true },
+    onZoom: {
+      type: Function as PropType<(srcs: string[], index: number) => void>,
+      required: true,
+    },
   },
   setup(props) {
     return () => (
@@ -86,7 +91,7 @@ const MurmurEntry = defineComponent({
           />
         ) : (
           <>
-            <MurmurBody content={props.item.content} />
+            <MurmurBody content={props.item.content} onZoom={props.onZoom} />
             <div class={styles.entryActions} role="group" aria-label="操作">
               <NTooltip placement="top">
                 {{
@@ -140,6 +145,7 @@ export default defineComponent({
     const hasMore = ref(false)
     const total = ref(0)
     const editingId = ref<string | null>(null)
+    const viewer = useImagePreview()
 
     const load = async () => {
       const next = page.value + 1
@@ -233,6 +239,7 @@ export default defineComponent({
                         onCancel={() => (editingId.value = null)}
                         onSave={(content) => save(item, content)}
                         onDelete={() => remove(item)}
+                        onZoom={viewer.open}
                       />
                     ))}
                   </div>
@@ -253,6 +260,7 @@ export default defineComponent({
             )}
           </div>
         )}
+        <viewer.ImagePreview />
       </div>
     )
   },

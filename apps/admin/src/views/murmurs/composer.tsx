@@ -4,16 +4,16 @@ import type { PropType } from 'vue'
 import { computed, defineComponent, onBeforeUnmount, onMounted, ref } from 'vue'
 import { toast } from 'vue-sonner'
 import { filesApi } from '~/api/files'
+import { useImagePreview } from './image-preview'
 import type { StageImage } from './image-stage'
-
 import { ImageStage } from './image-stage'
 import styles from './index.module.css'
-import { composeMurmur, parseMurmur } from './murmur-images'
+import { composeMurmur, defaultWidth, parseMurmur } from './murmur-images'
 
 let uploadSeed = 0
 
 // 写碎碎念的输入框：新建（页面顶部常驻）和编辑（就地替换那一条）共用。
-// 文本框只放文字；⌘V 粘贴或拖进来的图片传到图床后排在下面，可拖角缩放；⌘↵ 提交，编辑时 Esc 取消。
+// 文本框只放文字；⌘V 粘贴或拖进来的图片传到图床后排在下面，可拖角/边缩放（竖图贴进来先自动缩小）；⌘↵ 提交，编辑时 Esc 取消。
 export const MurmurComposer = defineComponent({
   props: {
     initialContent: { type: String, default: '' },
@@ -40,6 +40,7 @@ export const MurmurComposer = defineComponent({
     const textarea = ref<HTMLTextAreaElement>()
     const fileInput = ref<HTMLInputElement>()
     const previews = new Set<string>()
+    const viewer = useImagePreview()
 
     const uploading = computed(() =>
       images.value.some((image) => image.uploading),
@@ -72,6 +73,19 @@ export const MurmurComposer = defineComponent({
         preview,
         uploading: true,
       })
+      // 读出原图宽高：竖图（如全身照）默认缩小，用户已经拖过就不再改
+      const probe = new Image()
+      probe.src = preview
+      probe
+        .decode()
+        .then(() => {
+          const image = images.value.find((item) => item.key === key)
+          if (image && image.width === 100)
+            image.width = defaultWidth(probe.naturalWidth, probe.naturalHeight)
+        })
+        .catch(() => {
+          // 读不出尺寸（格式不支持解码）就保持 100%，不影响上传
+        })
       try {
         const { url } = await filesApi.upload(file, 'image')
         const image = images.value.find((item) => item.key === key)
@@ -158,6 +172,12 @@ export const MurmurComposer = defineComponent({
             images={images.value}
             onResize={(index, width) => (images.value[index].width = width)}
             onRemove={(index) => images.value.splice(index, 1)}
+            onZoom={(index) =>
+              viewer.open(
+                images.value.map((image) => image.preview || image.src),
+                index,
+              )
+            }
           />
         )}
         <div class={styles.composerFooter}>
@@ -210,6 +230,7 @@ export const MurmurComposer = defineComponent({
             </NButton>
           </div>
         </div>
+        <viewer.ImagePreview />
       </div>
     )
   },

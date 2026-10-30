@@ -127,7 +127,7 @@
   &[data-dragging] {
     .handle,
     .widthBadge,
-    .removeImage {
+    .imageButton {
       opacity: 1;
     }
   }
@@ -176,6 +176,43 @@
     bottom: -7px;
     cursor: nwse-resize;
   }
+
+  /* 四条边中点的手柄是细长条，和角上的方块区分开 */
+  &[data-corner='n'],
+  &[data-corner='s'] {
+    left: 50%;
+    width: 26px;
+    height: 10px;
+    margin-left: -13px;
+    border-radius: 5px;
+    cursor: ns-resize;
+  }
+
+  &[data-corner='n'] {
+    top: -5px;
+  }
+
+  &[data-corner='s'] {
+    bottom: -5px;
+  }
+
+  &[data-corner='e'],
+  &[data-corner='w'] {
+    top: 50%;
+    width: 10px;
+    height: 26px;
+    margin-top: -13px;
+    border-radius: 5px;
+    cursor: ew-resize;
+  }
+
+  &[data-corner='e'] {
+    right: -5px;
+  }
+
+  &[data-corner='w'] {
+    left: -5px;
+  }
 }
 
 .widthBadge {
@@ -185,8 +222,9 @@
   transition: opacity 120ms;
 }
 
-.removeImage {
-  @apply absolute top-2 right-2 flex size-6 items-center justify-center rounded-full text-white;
+/* 图片右上角的小圆按钮：放大、删掉 */
+.imageButton {
+  @apply absolute top-2 flex size-6 items-center justify-center rounded-full text-white;
   background: rgb(0 0 0 / 0.55);
   opacity: 0;
   transition:
@@ -194,7 +232,7 @@
     background 120ms;
 
   &:hover {
-    @apply bg-red-500;
+    background: rgb(0 0 0 / 0.75);
   }
 
   &:focus-visible {
@@ -204,6 +242,18 @@
 
   svg {
     @apply size-3.5;
+  }
+}
+
+.zoomImage {
+  @apply right-9;
+}
+
+.removeImage {
+  @apply right-2;
+
+  &:hover {
+    @apply bg-red-500;
   }
 }
 
@@ -320,8 +370,18 @@
 }
 
 .bodyImage {
-  @apply block max-w-full;
+  @apply block max-w-full cursor-zoom-in border-0 bg-transparent p-0;
   border-radius: 10px;
+
+  img {
+    @apply block w-full;
+    border-radius: inherit;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
 }
 
 .entryActions {

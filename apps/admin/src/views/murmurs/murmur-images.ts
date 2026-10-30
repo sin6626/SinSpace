@@ -10,6 +10,23 @@ export type Segment =
 const IMAGE = /!\[([^\]]*)\]\((\S+?)(?:\s+"([^"]*)")?\)/g
 export const MIN_WIDTH = 10
 
+// 刚贴进来的竖图（高明显大于宽，比如人物全身照）默认缩小：让前台显示高度约 360px。
+// 前台有图的气泡正文宽约 545px（murmurs.css 的 min(36rem,100%) 减去内边距），宽度百分比按它换算。
+const PORTRAIT_RATIO = 1.2
+const TARGET_HEIGHT = 360
+const REFERENCE_WIDTH = 545
+export function defaultWidth(naturalWidth: number, naturalHeight: number) {
+  if (
+    !naturalWidth ||
+    !naturalHeight ||
+    naturalHeight < naturalWidth * PORTRAIT_RATIO
+  )
+    return 100
+  return clampWidth(
+    (TARGET_HEIGHT / (REFERENCE_WIDTH * (naturalHeight / naturalWidth))) * 100,
+  )
+}
+
 export const clampWidth = (width: number) =>
   Math.min(100, Math.max(MIN_WIDTH, Math.round(width)))
 

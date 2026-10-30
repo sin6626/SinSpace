@@ -14,7 +14,7 @@ function load(path) {
   vm.runInNewContext(code, { module, exports: module.exports })
   return module.exports
 }
-const { splitContent, parseMurmur, composeMurmur, widthOf, imageMarkdown } = load('../apps/admin/src/views/murmurs/murmur-images.ts')
+const { splitContent, parseMurmur, composeMurmur, widthOf, imageMarkdown, defaultWidth } = load('../apps/admin/src/views/murmurs/murmur-images.ts')
 const web = load('../apps/web/lib/murmur.ts')
 const plain = (value) => JSON.parse(JSON.stringify(value))
 
@@ -41,6 +41,15 @@ assert.equal(composeMurmur(' 说一句 \n', [{ alt: '', src: a, width: 30 }, { a
 assert.equal(composeMurmur('', [{ alt: '', src: a, width: 100 }]), `![](${a})`, '只有图片也可以')
 assert.equal(composeMurmur('只有字', []), '只有字')
 assert.deepEqual(plain(parseMurmur(composeMurmur(parsed.text, parsed.images))), plain(parsed), '读出再保存不变')
+// 刚贴进来的图：横图、方图、略竖的图保持 100%；明显竖的图（全身照）缩到前台显示约 360px 高
+assert.equal(defaultWidth(1600, 900), 100)
+assert.equal(defaultWidth(1000, 1000), 100)
+assert.equal(defaultWidth(1000, 1150), 100)
+assert.equal(defaultWidth(1000, 2000), 33, '1:2 的全身照默认 33%（前台约 180×360）')
+assert.equal(defaultWidth(1000, 3000), 22)
+assert.equal(defaultWidth(100, 5000), 10, '再细长也不小于 10%')
+assert.equal(defaultWidth(0, 0), 100, '读不到尺寸时按 100%')
+
 // 前台读宽度与后台同一规则
 for (const title of [undefined, '', 'w=40%', 'w=5%', 'w=300%', 'w=40', '随便的标题']) assert.equal(web.murmurImageWidth(title), widthOf(title), `前后台对 ${title} 的宽度应当一致`)
 assert.deepEqual(plain(web.murmurImageSources(`字 ![](${a} "w=40%") ![](javascript:alert(1)) ![猫](${b})`)), [a, b], '首页缩略图只取 http(s) 图片')

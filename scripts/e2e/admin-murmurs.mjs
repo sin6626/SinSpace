@@ -1,4 +1,5 @@
-// 后台“碎碎念”：菜单在“说说”和“思考”之间；列表按天分组、分页加载；⌘V 粘贴图片 → 拖角缩放（吸附、方向键微调）→ ⌘↵ 提交，
+// 后台“碎碎念”：菜单在“说说”和“思考”之间；列表按天分组、分页加载；⌘V 粘贴图片 → 拖角/拖边缩放（吸附、方向键微调）→ ⌘↵ 提交，
+// 编辑区与列表都能点开放大，竖图贴进来默认缩小，
 // 提交的正文是“文字 + 图片 Markdown（宽度写在标题里）”。用后台本地 API 令牌（.local/publish.json）代替登录；
 // 上传和新建请求都在浏览器里拦截替换，不写日常库、不往图床传图。需先开 pnpm dev（后台 9528、Core 2333）。
 // 用法：node scripts/e2e/admin-murmurs.mjs（ADMIN_URL 可改后台地址）
@@ -110,20 +111,58 @@ try {
   for (const type of ['keyDown', 'keyUp']) await b.send('Input.dispatchKeyEvent', { type, key: 'ArrowLeft', code: 'ArrowLeft', windowsVirtualKeyCode: 37 })
   assert.match(await b.evaluate(`document.querySelector('[role=list][aria-label=图片] [tabindex="0"]').getAttribute('aria-label')`), /宽度 45%/)
 
+  // 四角四边共 8 个手柄；边也按原比例缩放：拖下边往下三分之一个图高，宽度 45% → 60%
+  const frameLabel = `document.querySelector('[role=list][aria-label=图片] [tabindex="0"]').getAttribute('aria-label')`
+  assert.equal(await b.evaluate(`document.querySelectorAll('[role=list][aria-label=图片] [data-corner]').length`), 8)
+  const bottom = await b.evaluate(`(() => { const f = document.querySelector('[role=list][aria-label=图片] [tabindex="0"]'); const r = f.querySelector('[data-corner=s]').getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, h: f.offsetHeight } })()`)
+  await mouse('mousePressed', bottom.x, bottom.y)
+  await mouse('mouseMoved', bottom.x, bottom.y + bottom.h / 3)
+  await mouse('mouseReleased', bottom.x, bottom.y + bottom.h / 3)
+  assert.match(await b.evaluate(frameLabel), /宽度 60%/, '拖下边按比例放大')
+
+  // 编辑区的放大按钮：用 Naive UI 的图片预览打开本地预览图，Esc 关闭
+  const preview = `document.querySelector('.n-image-preview')?.getAttribute('src') ?? null`
+  const esc = async () => { for (const type of ['keyDown', 'keyUp']) await b.send('Input.dispatchKeyEvent', { type, key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 }); await sleep(500) }
+  await b.evaluate(`document.querySelector('[aria-label="放大看第 1 张图"]').click()`)
+  await sleep(500)
+  assert.match(await b.evaluate(preview) ?? '', /^blob:/, '放大的是编辑区里的那张图')
+  await esc()
+  assert.equal(await b.evaluate(preview), null, 'Esc 关闭预览')
+
   // 写字，⌘↵ 提交：正文是文字 + 带宽度的图片 Markdown，地址就是图床返回的地址
   await b.evaluate(`document.querySelector('textarea').focus()`)
   await b.send('Input.insertText', { text: 'e2e 测试一句' })
   for (const type of ['keyDown', 'keyUp']) await b.send('Input.dispatchKeyEvent', { type, key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, modifiers: 4 })
   await sleep(800)
-  assert.deepEqual(posted, [`e2e 测试一句\n\n![](${fakeImage} "w=45%")`])
-  const top = await b.evaluate(`(() => { const a = document.querySelector('[role=feed] article'); return { text: a.querySelector('p')?.textContent, width: a.querySelector('img')?.style.width } })()`)
-  assert.deepEqual(top, { text: 'e2e 测试一句', width: '45%' }, '提交后新的一条出现在最上面，图片按 45% 显示')
+  assert.deepEqual(posted, [`e2e 测试一句\n\n![](${fakeImage} "w=60%")`])
+  const top = await b.evaluate(`(() => { const a = document.querySelector('[role=feed] article'); return { text: a.querySelector('p')?.textContent, width: a.querySelector('button[aria-label^="放大"]')?.style.width } })()`)
+  assert.deepEqual(top, { text: 'e2e 测试一句', width: '60%' }, '提交后新的一条出现在最上面，图片按 60% 显示')
   assert.equal(await b.evaluate(`document.querySelector('textarea').value`), '', '提交后输入框清空')
   assert.equal(await b.evaluate(`document.querySelector('[role=list][aria-label=图片]')`), null, '提交后图片区清空')
 
+  // 列表里点图片放大
+  await b.evaluate(`document.querySelector('[role=feed] article button[aria-label^="放大"]').click()`)
+  await sleep(500)
+  assert.equal(await b.evaluate(preview), fakeImage, '列表里点图片打开预览')
+  await esc()
+
+  // 竖图（1:3，比如全身照）贴进来默认缩到 22%，前台显示约 360px 高；删掉后图片区消失
+  await b.evaluate(`(async () => {
+    const canvas = Object.assign(document.createElement('canvas'), { width: 300, height: 900 })
+    canvas.getContext('2d').fillRect(0, 0, 300, 900)
+    const blob = await new Promise((r) => canvas.toBlob(r, 'image/png'))
+    const data = new DataTransfer()
+    data.items.add(new File([blob], 'tall.png', { type: 'image/png' }))
+    document.querySelector('textarea').dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }))
+  })()`)
+  await sleep(1000)
+  assert.match(await b.evaluate(frameLabel), /宽度 22%/, '竖图默认缩小')
+  await b.evaluate(`document.querySelector('[aria-label="删掉第 1 张图"]').click()`)
+  assert.equal(await b.evaluate(`document.querySelector('[role=list][aria-label=图片]')`), null)
+
   assert.deepEqual(leaked, [], '测试不应当有真正写入 Core 的请求')
   assert.deepEqual(b.errors, [], '页面不应当有报错')
-  console.log('PASS 后台碎碎念：菜单顺序、分页、粘贴上传、拖角缩放（吸附/方向键）、⌘↵ 提交的 Markdown')
+  console.log('PASS 后台碎碎念：菜单顺序、分页、粘贴上传、拖角/拖边按比例缩放（吸附/方向键）、竖图默认缩小、编辑区与列表点图放大、⌘↵ 提交的 Markdown')
 } finally {
   b.close()
 }
