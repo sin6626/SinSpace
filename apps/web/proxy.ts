@@ -21,6 +21,13 @@ export function proxy(request: NextRequest) {
     return request.headers.get(rewriteMark) ? NextResponse.next() : NextResponse.redirect(new URL(`${path}${search}`, request.url), 308);
   }
   if (locale) return NextResponse.next();
+  // 旧的文章翻译链接 ?lang=en / ?lang=ja（站点语言出来之前用的）跳到对应语言的地址
+  const legacy = request.nextUrl.searchParams.get("lang");
+  if (isLocale(legacy) && legacy !== defaultLocale) {
+    const target = new URL(`/${legacy}${pathname === "/" ? "" : pathname}`, request.url);
+    request.nextUrl.searchParams.forEach((value, key) => key !== "lang" && target.searchParams.append(key, value));
+    return NextResponse.redirect(target, 308);
+  }
 
   const chosen = request.cookies.get(localeCookie)?.value;
   const preferred = isLocale(chosen) ? chosen : pickLocale(request.headers.get("accept-language")) ?? defaultLocale;
