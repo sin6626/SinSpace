@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "./locale-provider";
 import { unstable_rethrow } from "next/navigation";
 import { getTimeline } from "../lib/blog-data";
 import { formatDate } from "../lib/date";

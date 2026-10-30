@@ -1,5 +1,5 @@
 import { Sparkles } from "lucide-react";
-import Link from "next/link";
+import Link from "./locale-provider";
 import { getArticleAi, getArticleTranslation, isTranslationLanguage, translationLanguages, type TranslationLanguage } from "../lib/blog-data";
 
 // 文章、手记详情的 AI 摘要与翻译。?lang=en / ?lang=ja 切换到后台已生成的翻译；没有对应翻译时退回原文。

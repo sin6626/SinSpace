@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "./locale-provider";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { getMurmurs, getOwner } from "../lib/blog-data";
 import { formatDate, formatTime } from "../lib/date";

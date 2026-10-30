@@ -1,5 +1,5 @@
 import { Feather, FileText, Heart, Lightbulb, MessageCircleMore, MessageSquare, type LucideIcon } from "lucide-react";
-import Link from "next/link";
+import Link from "./locale-provider";
 import { unstable_rethrow } from "next/navigation";
 import { getRecentActivity, type RecentActivity } from "../lib/blog-data";
 import { formatDate } from "../lib/date";

@@ -1,5 +1,5 @@
 import { ChevronDown, Hash } from "lucide-react";
-import Link from "next/link";
+import Link from "./locale-provider";
 import { unstable_rethrow } from "next/navigation";
 import { getTopics } from "../lib/blog-data";
 import "./details-sidebar.css";

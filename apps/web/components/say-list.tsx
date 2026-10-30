@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "./locale-provider";
 import "./corners.css";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { getSays } from "../lib/blog-data";

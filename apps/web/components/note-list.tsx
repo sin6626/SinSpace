@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "./locale-provider";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { Suspense } from "react";
 import { getNotes } from "../lib/blog-data";

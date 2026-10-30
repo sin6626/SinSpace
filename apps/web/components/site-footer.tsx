@@ -1,5 +1,5 @@
 import { Heart, Moon } from "lucide-react";
-import Link from "next/link";
+import Link from "./locale-provider";
 import { Suspense } from "react";
 import { getSiteSettings, siteDescription } from "../lib/blog-data";
 import { OnlineCount } from "./notifications";

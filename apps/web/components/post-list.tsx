@@ -1,5 +1,5 @@
 import type { CategoryModel } from "@mx-space/api-client";
-import Link from "next/link";
+import Link from "./locale-provider";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { Suspense } from "react";
 import { getCategories, getPosts } from "../lib/blog-data";

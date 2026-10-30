@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import Link from "next/link";
+import Link from "./locale-provider";
 import { unstable_rethrow } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 import { getMurmurs, getNotes, getPosts } from "../lib/blog-data";

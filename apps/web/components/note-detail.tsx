@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import Link from "next/link";
+import Link from "./locale-provider";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { getNote } from "../lib/blog-data";
 import { formatDate } from "../lib/date";

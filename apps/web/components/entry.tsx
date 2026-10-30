@@ -1,5 +1,5 @@
 import { Clock3, Eye, Heart, Sparkles } from "lucide-react";
-import Link from "next/link";
+import Link from "./locale-provider";
 import type { ReactNode } from "react";
 import type { ListExcerpt } from "../lib/blog-data";
 import { formatDate } from "../lib/date";

@@ -1,10 +1,11 @@
 "use client";
 
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
-import Link from "next/link";
+import Link from "./locale-provider";
 import { usePathname } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState, type FocusEvent, type ReactNode } from "react";
 import { useIsland, type IslandActivityIcon } from "../lib/island-store";
+import LanguageMenu from "./language-menu";
 import ThemeToggle from "./theme-switcher";
 import "./site-header.css";
 
@@ -262,6 +263,7 @@ export default function SiteHeader({ brand, nav, account, activityIcons }: { bra
 
           <motion.div layout="position" transition={spring} className="site-header-tools island-tools">
             {account}
+            <LanguageMenu host />
             <ThemeToggle />
           </motion.div>
         </motion.div>

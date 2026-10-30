@@ -3,8 +3,8 @@
 import { NavigationMenu } from "@base-ui/react/navigation-menu";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { LayoutGroup, MotionConfig, motion } from "motion/react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import Link, { useLocalePathname } from "./locale-provider";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useIsland } from "../lib/island-store";
 import type { NavigationEntry, getNavigationPanels } from "../lib/blog-data";
@@ -180,7 +180,8 @@ function GroupPanel({ className, label, groups, fallback, pathname, footer }: {
 
 // account：手机菜单底部的读者登录入口（header-account.tsx）
 export default function BlogNavigation({ state, account }: { state: NavigationState; account?: ReactNode }) {
-  const pathname = usePathname();
+  // 去掉语言前缀后的路径，判断当前页用（/en/posts 也算“文章”）
+  const pathname = useLocalePathname();
   // 当前展开的面板。点击一级链接跳转时弹层是“点击打开”的，不会因鼠标离开而关闭，
   // 所以路由变化时主动收起（渲染期间比较上一次路径，不用 effect）。
   const [openItem, setOpenItem] = useState<unknown>(null);
