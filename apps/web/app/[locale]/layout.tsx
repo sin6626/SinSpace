@@ -94,6 +94,9 @@ export default async function RootLayout({ children }: LayoutProps<"/[locale]">)
       suppressHydrationWarning
     >
       <head>
+        {/* 本站自带浅色/深色主题，请 Dark Reader 扩展不要接管：它会在水合前改写 SVG 图标的颜色属性，导致水合报错（e2e dark-reader.mjs）。
+            要写在 <head> 里直接输出，不能走 metadata（可能被流式放到 <body> 后面，扩展已经动手了）。 */}
+        <meta name="darkreader-lock" />
         {/* 绘制前读取已保存的主题，避免刷新时先闪一下系统主题。 */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
