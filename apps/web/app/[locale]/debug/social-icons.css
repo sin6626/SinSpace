@@ -1,0 +1,40 @@
+/* 调试页“社交图标”：首屏左栏的宽度，好看出图标多了以后怎么换行 */
+.debug-social-hero {
+  max-width: 42rem;
+  margin-block: var(--space-3) var(--space-6);
+}
+
+.debug-social-hero .home-hero-socials {
+  margin-top: 0;
+}
+
+/* 品牌色对比：只改图标颜色，底和悬停效果同首屏 */
+.debug-social-brand a {
+  color: var(--brand);
+}
+
+/* 面板平时在弹层里，这里直接摆在页面上 */
+.debug-social-panel {
+  margin-block: var(--space-3) var(--space-6);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: var(--glass-popup);
+}
+
+.debug-social-urls {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+}
+
+.debug-social-urls li {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  gap: var(--space-3);
+  color: var(--muted-foreground);
+}
+
+.debug-social-urls code {
+  overflow-wrap: anywhere;
+}

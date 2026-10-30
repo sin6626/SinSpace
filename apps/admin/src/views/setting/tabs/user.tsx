@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/vue-query'
 import { cloneDeep, isEmpty } from 'es-toolkit/compat'
 import {
   Calendar as CalendarIcon,
@@ -21,19 +22,16 @@ import {
   watch,
 } from 'vue'
 import { toast } from 'vue-sonner'
-import type { UserModel } from '~/models/user'
-
-import { useMutation } from '@tanstack/vue-query'
-
 import { userApi } from '~/api/user'
 import Avatar from '~/components/avatar'
 import { HeaderActionButton } from '~/components/button/header-action-button'
 import { IpInfoPopover } from '~/components/ip-info'
 import { RelativeTime } from '~/components/time/relative-time'
 import { UploadWrapper } from '~/components/upload'
-import { socialKeyMap } from '~/constants/social'
+import { socialPlatforms } from '~/constants/social'
 import { useLayout } from '~/layouts/content'
 import { SettingsRow, SettingsSection } from '~/layouts/settings-layout'
+import type { UserModel } from '~/models/user'
 import { deepDiff } from '~/utils'
 
 export const TabUser = defineComponent(() => {
@@ -103,10 +101,14 @@ export const TabUser = defineComponent(() => {
     },
   )
 
-  const socialOptions = Object.keys(socialKeyMap).map((key) => ({
-    label: key,
-    value: socialKeyMap[key],
+  const socialOptions = socialPlatforms.map(({ key, label }) => ({
+    label,
+    value: key,
   }))
+  // 输入框提示按平台变；旧数据里前台不认识的键名（如 twitter）也能看到原名
+  const socialHint = (key: string) =>
+    socialPlatforms.find((platform) => platform.key === key)?.hint ??
+    '输入链接或 ID…'
 
   const socialEntries = computed(() => {
     const ids = data.value.socialIds || {}
@@ -128,13 +130,14 @@ export const TabUser = defineComponent(() => {
     data.value.socialIds = { ...currentIds, [availableKey]: '' }
   }
 
+  // 换平台时保持这一行的位置不变（原来删掉再加，会跑到最后一行，前台图标顺序也跟着变）
   const updateSocialKey = (oldKey: string, newKey: string) => {
     if (oldKey === newKey) return
-    const ids = { ...data.value.socialIds }
-    const value = ids[oldKey]
-    delete ids[oldKey]
-    ids[newKey] = value
-    data.value.socialIds = ids
+    data.value.socialIds = Object.fromEntries(
+      Object.entries(data.value.socialIds || {}).map(([key, value]) =>
+        key === oldKey ? [newKey, value] : [key, value],
+      ),
+    )
   }
 
   const updateSocialValue = (key: string, value: string) => {
@@ -335,7 +338,8 @@ export const TabUser = defineComponent(() => {
                 {socialEntries.value.map(({ key, value }) => (
                   <div class="flex items-center gap-3 py-3" key={key}>
                     <NSelect
-                      class="w-36 shrink-0"
+                      class="w-40 shrink-0"
+                      filterable
                       value={key}
                       options={socialOptions.map((opt) => ({
                         ...opt,
@@ -349,7 +353,7 @@ export const TabUser = defineComponent(() => {
                       class="min-w-0 flex-1"
                       value={value}
                       onInput={(v) => updateSocialValue(key, v)}
-                      placeholder="输入链接或 ID…"
+                      placeholder={socialHint(key)}
                       inputProps={{ spellcheck: false }}
                     />
                     <button

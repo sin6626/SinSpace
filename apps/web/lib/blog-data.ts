@@ -3,6 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { getApiClient } from "./api";
 import { safeUrl } from "./safe-url";
 import { excerpt, readingMinutes } from "./excerpt";
+import { socialLinks } from "./social";
 
 // 站名和描述以后台 SEO 设置为准（getSiteSettings），这两个值只是读取失败时的兜底。
 export const siteName = "Sin’s Space";
@@ -81,25 +82,6 @@ export async function getSubscribeOptions() {
   const status = await getApiClient().subscribe.check();
   const types = (status.allowTypes ?? []).filter((type): type is "post_c" | "note_c" => type === "post_c" || type === "note_c");
   return { enabled: Boolean(status.enable) && types.length > 0, types };
-}
-
-// 后台“社交账号”里认识的几种，换成主页地址；不认识的忽略。账号里可能带着查询参数（如 B 站的 spm），只取问号前面。
-const socialSites: Record<string, { label: string; url: (id: string) => string }> = {
-  github: { label: "GitHub", url: (id) => `https://github.com/${id}` },
-  bilibili: { label: "Bilibili", url: (id) => `https://space.bilibili.com/${id}` },
-  twitter: { label: "X", url: (id) => `https://x.com/${id}` },
-  x: { label: "X", url: (id) => `https://x.com/${id}` },
-  zhihu: { label: "知乎", url: (id) => `https://www.zhihu.com/people/${id}` },
-  weibo: { label: "微博", url: (id) => `https://weibo.com/${id}` },
-};
-
-function socialLinks(ids: unknown) {
-  if (!ids || typeof ids !== "object") return [];
-  return Object.entries(ids as Record<string, unknown>).flatMap(([key, value]) => {
-    const site = socialSites[key.toLowerCase()];
-    const id = typeof value === "string" ? value.split("?")[0].trim() : "";
-    return site && /^[\w.-]+$/.test(id) ? [{ label: site.label, href: site.url(encodeURIComponent(id)) }] : [];
-  });
 }
 
 // 首页的自我介绍：后台“个人资料”的名字、头像、一句话介绍，以及“关于我”页面的地址（标题含“关于我”的页面，否则排第一的页面）。

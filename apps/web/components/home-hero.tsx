@@ -3,6 +3,7 @@ import { unstable_rethrow } from "next/navigation";
 import { Suspense } from "react";
 import { getOwner, getSiteLikes, getSiteSettings, getSubscribeOptions, siteDescription, siteName } from "../lib/blog-data";
 import { getApiUrl } from "../lib/config";
+import type { SocialLink } from "../lib/social";
 import { getT } from "../lib/i18n/server";
 import IconifyIcon, { SocialIcon } from "./iconify-icon";
 import ScrollHint from "./scroll-hint";
@@ -26,20 +27,24 @@ async function loadOwner() {
   }
 }
 
-async function Socials() {
-  const owner = await loadOwner();
-  if (!owner?.socials.length) return null;
+// 首屏的社交图标一排（多了会换行）；/debug 用同一个组件预览图标很多时的样子
+export function HeroSocialList({ socials }: { socials: SocialLink[] }) {
   return (
     <ul className="home-hero-socials">
-      {owner.socials.map((social) => (
+      {socials.map((social) => (
         <li key={social.href}>
           <a href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label} title={social.label}>
-            <SocialIcon label={social.label} />
+            <SocialIcon icon={social.icon} label={social.label} />
           </a>
         </li>
       ))}
     </ul>
   );
+}
+
+async function Socials() {
+  const owner = await loadOwner();
+  return owner?.socials.length ? <HeroSocialList socials={owner.socials} /> : null;
 }
 
 async function Portrait() {

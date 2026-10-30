@@ -39,13 +39,7 @@ export default function IconifyIcon({ icon, size = 18, className }: { icon: Icon
   );
 }
 
-// 社交账号的品牌标志（后台个人资料里的 socialIds，见 blog-data.ts 的 socialLinks）；没有对应图标时用名字首字。首屏和导航面板共用。
-const socialIconNames: Record<string, `simple-icons:${string}`> = {
-  GitHub: "simple-icons:github",
-  Bilibili: "simple-icons:bilibili",
-};
-
-export function SocialIcon({ label, size = 18 }: { label: string; size?: number }) {
-  const icon = socialIconNames[label];
-  return icon ? <IconifyIcon icon={icon} size={size} /> : <>{label.slice(0, 1)}</>;
+// 社交账号的品牌标志（平台与图标对照在 lib/social.ts）；图标集里没有时用名字首字。首屏、导航面板和调试页共用。
+export function SocialIcon({ icon, label, size = 18 }: { icon: string; label: string; size?: number }) {
+  return isIconName(icon) ? <IconifyIcon icon={icon} size={size} /> : <>{label.slice(0, 1)}</>;
 }

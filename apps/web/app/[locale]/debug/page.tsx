@@ -12,6 +12,7 @@ import NoteUnlock from "@/components/note-unlock";
 import RecentlyAttitude from "@/components/recently-attitude";
 import SubscribeForm from "@/components/subscribe-form";
 import { getApiUrl } from "@/lib/config";
+import SocialIconsPreview from "./social-icons";
 import StyleGuide from "./style-guide";
 import IslandButtons from "./island-buttons";
 import ToastButtons from "./toast-buttons";
@@ -137,6 +138,10 @@ export default function DebugPage() {
             <p className="post-empty">还没有一言。</p>
             <p className="post-empty">还没有思考。</p>
             <p className="post-meta">recently-attitude.tsx 的赞/踩（真实组件，点击会请求 Core）：<RecentlyAttitude apiUrl={getApiUrl()} id="000000000000000000000000" up={3} down={1} /></p>
+          </li>
+          <li id="debug-socials">
+            <h2>社交图标</h2>
+            <SocialIconsPreview />
           </li>
           <li id="debug-murmurs">
             <h2>碎碎念</h2>

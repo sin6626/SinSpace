@@ -36,7 +36,7 @@ async function NavigationData({ account }: { account?: ReactNode }) {
       status: "ready",
       pages: links(data.pageMeta, "title", "/"),
       panels,
-      socials: (owner?.socials ?? []).map((social) => ({ ...social, icon: <SocialIcon label={social.label} size={15} /> })),
+      socials: (owner?.socials ?? []).map((social) => ({ ...social, icon: <SocialIcon icon={social.icon} label={social.label} size={15} /> })),
     };
   } catch (error) {
     unstable_rethrow(error);
