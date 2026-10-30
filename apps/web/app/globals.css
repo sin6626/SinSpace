@@ -42,6 +42,9 @@
   --island-tone-done: #86e0b0;
   --island-tone-info: #b3adc6;
   --moonlight: light-dark(#0c524e, #f6ead0);
+  /*页脚星带的两类星：力扣刷题、GitHub 写代码（components/footer-sky.css）。夜紫里直接用月光色和强调色，别的配色里两者太像时单独给*/
+  --sky-leetcode: var(--moonlight);
+  --sky-github: var(--primary);
   --moonlight-glow: light-dark(rgb(255 255 255 / 60%), rgb(246 234 208 / 40%));
   --evening-star: light-dark(#ffffff, #f6ead0);       /*名字旁的小星：开灯时像黄昏最早亮起的长庚星，亮白*/
   --band-sky: light-dark(#f1d9ea, #1d1533);           /*内页顶部夜空带（开灯时是淡晚霞）*/
@@ -133,6 +136,9 @@
   --island-tone-done: #b2d6c2;
   --island-tone-info: #9a9aa3;
   --moonlight: light-dark(#111113, #ffffff);
+  /*墨黑里月光色和强调色都是白（开灯时都是墨黑），星带的两类星分不开：按真实恒星的色温，刷题是暖黄的星、写代码是蓝白的星*/
+  --sky-leetcode: light-dark(#8a5a12, #f3c98b);
+  --sky-github: light-dark(#2f5ea8, #a9c6ff);
   --moonlight-glow: light-dark(rgb(17 17 19 / 16%), rgb(255 255 255 / 32%));
   --evening-star: light-dark(#111113, #ffffff);
   --band-sky: light-dark(#e8e8eb, #0a0a0c);
@@ -172,6 +178,8 @@
   --island-primary: #c4b2ff;
   --island-border: rgb(233 235 255 / 12%);
   --moonlight: light-dark(#3b2f8f, #f1ecff);
+  /*银河开灯时月光色和强调色是两种相近的蓝紫，星带里刷题换成暖色*/
+  --sky-leetcode: light-dark(#a15c26, #f1ecff);
   --moonlight-glow: light-dark(rgb(255 255 255 / 60%), rgb(196 178 255 / 38%));
   --evening-star: light-dark(#ffffff, #f1ecff);
   --band-sky: light-dark(#e3e2f7, #131943);

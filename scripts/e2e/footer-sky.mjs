@@ -2,6 +2,7 @@
 // 星带：每列一周、每行一个星期几，格子数是周数 × 7，有力扣和 GitHub 两种颜色的星；图例可以点，关掉一类星星（只剩很淡的远星），
 // 两样都有的日子换成另一边的颜色，再点恢复；
 // 页脚：桌面上星带下面左右两栏（左边那句话和落款、右边链接和在线人数），手机上合成一栏居中。
+// 三套配色（夜紫、墨黑、银河）× 深浅两种主题下，两类星星的颜色要分得开（Lab 色差 ΔE ≥ 30；墨黑里原来两种都是近白，分不出来）。
 // 星带的数据来自力扣和 GitHub，离线时会取不到、整块隐藏，这时只检查页脚排版。
 // 需要先运行 pnpm dev（默认 http://127.0.0.1:2323，可用 WEB_URL 覆盖）。用法：pnpm e2e
 import assert from "node:assert/strict";
@@ -47,6 +48,32 @@ async function toggleCheck() {
   return `点图例关掉力扣：亮星透明度 ${before.lc.opacity} → ${hidden.lc.opacity}，再点恢复`;
 }
 
+// sRGB → Lab 色差（CIE76），判断两种星星颜色能不能一眼分开
+function lab(rgb) {
+  const [r, g, b] = rgb.match(/[\d.]+/g).slice(0, 3).map((v) => { v /= 255; return v > 0.04045 ? ((v + 0.055) / 1.055) ** 2.4 : v / 12.92; });
+  const f = (t) => (t > 216 / 24389 ? Math.cbrt(t) : (24389 / 27 * t + 16) / 116);
+  const [x, y, z] = [(r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047, r * 0.2126 + g * 0.7152 + b * 0.0722, (r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883].map(f);
+  return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+}
+const deltaE = (a, b) => Math.hypot(...lab(a).map((v, i) => v - lab(b)[i]));
+
+async function paletteCheck() {
+  const results = [];
+  for (const palette of ["night", "ink", "galaxy"]) {
+    await browser.goto(`${base}/posts?palette=${palette}`, 4500);
+    for (const theme of ["dark", "light"]) {
+      const [leetcode, github] = await browser.evaluate(`(() => {
+        document.documentElement.dataset.theme = "${theme}";
+        return [".is-leetcode", ".is-github"].map((selector) => getComputedStyle(document.querySelector(".footer-sky-band " + selector)).color);
+      })()`);
+      results.push({ name: `${palette}/${theme}`, delta: Math.round(deltaE(leetcode, github)), leetcode, github });
+    }
+  }
+  const close = results.filter((result) => result.delta < 30);
+  assert.deepEqual(close.map((result) => `${result.name} ΔE ${result.delta}（${result.leetcode} / ${result.github}）`), [], "两类星星颜色太接近");
+  return `两类星星色差 ${results.map((result) => `${result.name} ${result.delta}`).join("、")}`;
+}
+
 const browser = await openBrowser({ port: 9365 });
 try {
   const report = [];
@@ -59,7 +86,7 @@ try {
       assert.ok(footer.leetcode > 0 && footer.github > 0, "应有力扣和 GitHub 两种星");
       assert.ok(footer.titled, "悬停文字应是“日期 · 来源 次数”");
       assert.deepEqual(footer.legend, ["LeetCode:true", "GitHub:true"]);
-      if (width >= 640) report.push(await toggleCheck());
+      if (width >= 640) report.push(await toggleCheck(), await paletteCheck());
     }
     if (width >= 640) {
       assert.ok(footer.about.right < footer.side.left, "桌面上左右两栏并排");

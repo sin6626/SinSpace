@@ -1,8 +1,6 @@
 /* 页脚星带（footer-sky.tsx）：一列一周、一行一个星期几，铺满页脚宽度。每格中间一颗星，没有记录的日子是很淡的远星，
-   提交越多星越大越亮；最亮的那档会慢慢闪。力扣是月光色、GitHub 是星光紫。 */
+   提交越多星越大越亮；最亮的那档会慢慢闪。两类星的颜色 --sky-leetcode / --sky-github 定义在 globals.css 的各套配色里。 */
 .footer-sky {
-  --sky-leetcode: var(--moonlight);
-  --sky-github: var(--primary);
   --sky-both: color-mix(in oklab, var(--sky-leetcode), var(--sky-github));
   --on-leetcode: 1;
   --on-github: 1;
