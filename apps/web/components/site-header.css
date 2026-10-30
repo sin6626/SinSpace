@@ -59,12 +59,14 @@
 /* ---------- 顶部铺开：站点标识 | 星座导航 | 工具，所有页面都和正文同宽（首页也一样，换页时页头不动） ---------- */
 .site-header[data-mode="bar"] .island {
   display: grid;
-  /* 导航在站名和工具之间的空间里居中（而不是整条居中）：英文、日文导航更长，整条居中会压到站名 */
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  /* 导航在站名和工具之间的空间里居中（而不是整条居中）。平时和正文同宽；英文、日文导航更长、放不下时，
+     页头按内容加宽（导航列至少是自身宽度），不再挤到压住站名和右侧工具（e2e header-fit.mjs） */
+  grid-template-columns: auto minmax(max-content, 1fr) auto;
   align-items: center;
   gap: var(--space-4);
-  width: 100%;
-  max-width: var(--article-max-width);
+  width: max-content;
+  min-width: min(100%, var(--article-max-width));
+  max-width: 100%;
   min-height: var(--header-height);
   padding: 0 var(--space-6);
   border: 1px solid transparent;
@@ -180,14 +182,14 @@
 }
 
 /* 桌面上收拢和播报时不显示导航；手机上导航本来只剩菜单按钮，收拢时它留在胶囊右边 */
-@media (min-width: 640px) {
+@media (min-width: 1024px) {
   .site-header[data-mode="compact"] .island-nav,
   .site-header[data-mode="activity"] .island-nav {
     display: none;
   }
 }
 
-@media (max-width: 639px) {
+@media (max-width: 1023px) {
   .site-header[data-mode="activity"] .island-nav {
     display: none;
   }

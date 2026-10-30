@@ -1,4 +1,5 @@
-/* 手机全屏夜空菜单（mobile-menu.tsx）。只在 640px 以下出现，桌面用顶部横排导航。 */
+/* 全屏夜空菜单（mobile-menu.tsx）。1024px 以下（手机、平板）出现，桌面用顶部横排导航：
+   平板宽度放不下“站名 + 整排导航 + 右侧工具”，英文、日文更长（e2e header-fit.mjs）。 */
 .mobile-menu-trigger {
   display: none;
   align-items: center;
@@ -18,7 +19,7 @@
   outline-offset: 2px;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 1023px) {
   .mobile-menu-trigger {
     display: inline-flex;
   }
