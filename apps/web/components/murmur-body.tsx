@@ -8,8 +8,14 @@ import { safeUrl } from "../lib/safe-url";
 const components: Components = {
   img: ({ src, alt, title }) => {
     const href = safeUrl(typeof src === "string" ? src : undefined);
-    // eslint-disable-next-line @next/next/no-img-element -- 图床上的图片，尺寸由站长在后台拖定，不走 next/image
-    return href ? <img className="murmur-image" src={href} alt={alt ?? ""} loading="lazy" style={{ width: `${murmurImageWidth(title)}%` }} /> : null;
+    if (!href) return null;
+    // 包成按钮：点击（或键盘回车）由外层 ImageLightbox 放大查看
+    return (
+      <button type="button" className="murmur-zoom" aria-label={alt ? `放大图片：${alt}` : "放大图片"} style={{ width: `${murmurImageWidth(title)}%` }}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- 图床上的图片，尺寸由站长在后台拖定，不走 next/image */}
+        <img className="murmur-image" src={href} alt={alt ?? ""} loading="lazy" />
+      </button>
+    );
   },
   a: ({ href, children }) => {
     const url = safeUrl(href);

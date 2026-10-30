@@ -1,0 +1,114 @@
+/* 点图片放大：深色毛玻璃铺满屏幕，图片按屏幕大小完整显示（不放大到超过原图） */
+.lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-popup);
+  background: rgb(0 0 0 / 0.78);
+  backdrop-filter: blur(8px);
+  transition: opacity var(--duration-base) var(--ease-out);
+}
+
+.lightbox-backdrop[data-starting-style],
+.lightbox-backdrop[data-ending-style] {
+  opacity: 0;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-popup);
+  display: grid;
+  place-items: center;
+  padding: var(--space-12) var(--space-16);
+  outline: 0;
+  cursor: zoom-out;
+}
+
+.lightbox-image {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100dvh - 2 * var(--space-12));
+  border-radius: 12px;
+  box-shadow: 0 24px 64px rgb(0 0 0 / 0.5);
+  object-fit: contain;
+  transition: opacity var(--duration-slow) var(--ease-out), scale var(--duration-slow) var(--ease-out);
+}
+
+.lightbox[data-starting-style] .lightbox-image,
+.lightbox[data-ending-style] .lightbox-image {
+  opacity: 0;
+  scale: 0.96;
+}
+
+/* 控件在深色底上一律浅色，不随主题变 */
+.lightbox-button {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-full);
+  background: rgb(255 255 255 / 0.12);
+  color: #fff;
+  cursor: pointer;
+  transition: background var(--duration-fast);
+}
+
+.lightbox-button:hover {
+  background: rgb(255 255 255 / 0.24);
+}
+
+.lightbox-button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.lightbox-close {
+  top: var(--space-4);
+  right: var(--space-4);
+}
+
+.lightbox-prev,
+.lightbox-next {
+  top: 50%;
+  translate: 0 -50%;
+}
+
+.lightbox-prev {
+  left: var(--space-4);
+}
+
+.lightbox-next {
+  right: var(--space-4);
+}
+
+.lightbox-count {
+  position: absolute;
+  bottom: var(--space-4);
+  left: 50%;
+  translate: -50% 0;
+  margin: 0;
+  color: rgb(255 255 255 / 0.8);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 639px) {
+  .lightbox {
+    padding: var(--space-12) var(--space-2);
+  }
+
+  .lightbox-prev,
+  .lightbox-next {
+    top: auto;
+    bottom: var(--space-2);
+    translate: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lightbox-backdrop,
+  .lightbox-image {
+    transition: none;
+  }
+}

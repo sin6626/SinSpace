@@ -37,7 +37,7 @@ const sampleMurmurs = [
   { id: "m1", content: `Container Query 容器查询：按父容器的宽度来写响应式。\n\n![](${sampleImage} "w=40%")`, created: "2026-10-29T14:20:00Z", modified: null },
   { id: "m2", content: "`field-sizing: content` 能让文本框跟着内容长高，不用 JS。", created: "2026-10-29T13:05:00Z", modified: "2026-10-29T13:30:00Z" },
   { id: "m3", content: "今天好困。读取脚本要放在 <head> 里，<b>这里不会加粗</b>", created: "2026-10-29T12:00:00Z", modified: null },
-  { id: "m4", content: `只有一张图，没写宽度就是 100%：\n\n![](${sampleImage})`, created: "2026-10-27T15:00:00Z", modified: null },
+  { id: "m4", content: `两张图：第一张没写宽度就是 100%，点开可以左右切换。\n\n![](${sampleImage})\n\n![第二张](${sampleImage}?2 "w=30%")`, created: "2026-10-27T15:00:00Z", modified: null },
   { id: "m5", content: "跨年的那一天会写上年份。[MDN](https://developer.mozilla.org)", created: "2025-12-31T15:00:00Z", modified: null },
 ];
 

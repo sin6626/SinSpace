@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { getMurmurs, getOwner } from "../lib/blog-data";
 import { formatDate, formatTime } from "../lib/date";
+import ImageLightbox from "./image-lightbox";
 import MurmurBody from "./murmur-body";
 import "./murmurs.css";
 
@@ -23,41 +24,44 @@ function byDay(items: Murmur[]) {
 }
 
 // 碎碎念：站长随口说的闲话。像睡前的自言自语，按天分段，每天一串气泡，头像在旁边；没有赞踩、没有评论。
+// 点图片放大，同一条里的几张图可以左右切换。
 export function MurmurStream({ items, avatar, name }: { items: Murmur[]; avatar?: string; name: string }) {
   const days = byDay(items);
   return (
-    <div className="murmur-stream">
-      {days.map((day, index) => {
-        const date = new Date(day.items[0].created);
-        // 跨年的那一段才写年份
-        const showYear = index === 0 || days[index - 1].year !== day.year;
-        return (
-          <section key={day.key} className="murmur-day" aria-label={`${day.year} 年${dayFormatter.format(date)}`}>
-            <h2 className="murmur-date">
-              {showYear && <span className="murmur-year">{day.year}</span>}
-              <span>{dayFormatter.format(date)}</span>
-              <small>{weekdayFormatter.format(date)}</small>
-            </h2>
-            <div className="murmur-group">
-              {avatar ? (
-                // eslint-disable-next-line @next/next/no-img-element -- 后台个人资料里的头像
-                <img className="murmur-avatar" src={avatar} alt={name} width={36} height={36} loading="lazy" />
-              ) : <span className="murmur-avatar" aria-hidden="true">{name.slice(0, 1)}</span>}
-              <ol className="murmur-bubbles">
-                {day.items.map((item) => (
-                  <li key={item.id} className="murmur-bubble" data-image={/!\[[^\]]*\]\(/.test(item.content) ? "" : undefined}>
-                    <MurmurBody content={item.content} />
-                    <time dateTime={item.created} title={item.modified ? `改于 ${formatDate(item.modified)} ${formatTime(item.modified)}` : undefined}>
-                      {formatTime(item.created)}
-                    </time>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </section>
-        );
-      })}
-    </div>
+    <ImageLightbox itemSelector=".murmur-zoom" groupSelector=".murmur-bubble">
+      <div className="murmur-stream">
+        {days.map((day, index) => {
+          const date = new Date(day.items[0].created);
+          // 跨年的那一段才写年份
+          const showYear = index === 0 || days[index - 1].year !== day.year;
+          return (
+            <section key={day.key} className="murmur-day" aria-label={`${day.year} 年${dayFormatter.format(date)}`}>
+              <h2 className="murmur-date">
+                {showYear && <span className="murmur-year">{day.year}</span>}
+                <span>{dayFormatter.format(date)}</span>
+                <small>{weekdayFormatter.format(date)}</small>
+              </h2>
+              <div className="murmur-group">
+                {avatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- 后台个人资料里的头像
+                  <img className="murmur-avatar" src={avatar} alt={name} width={36} height={36} loading="lazy" />
+                ) : <span className="murmur-avatar" aria-hidden="true">{name.slice(0, 1)}</span>}
+                <ol className="murmur-bubbles">
+                  {day.items.map((item) => (
+                    <li key={item.id} className="murmur-bubble" data-image={/!\[[^\]]*\]\(/.test(item.content) ? "" : undefined}>
+                      <MurmurBody content={item.content} />
+                      <time dateTime={item.created} title={item.modified ? `改于 ${formatDate(item.modified)} ${formatTime(item.modified)}` : undefined}>
+                        {formatTime(item.created)}
+                      </time>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    </ImageLightbox>
   );
 }
 

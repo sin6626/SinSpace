@@ -163,12 +163,28 @@
   text-underline-offset: 0.2em;
 }
 
-.murmur-image {
+/* 图片外面是放大按钮：宽度百分比设在按钮上，图片铺满按钮 */
+.murmur-zoom {
   display: block;
   max-width: 100%;
-  height: auto;
   margin-block: var(--space-1);
+  padding: 0;
+  border: 0;
   border-radius: 12px;
+  background: none;
+  cursor: zoom-in;
+}
+
+.murmur-zoom:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.murmur-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: inherit;
 }
 
 @media (max-width: 639px) {
