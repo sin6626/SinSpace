@@ -27,7 +27,7 @@ export default async function PageDetail({ params }: { params: Promise<{ slug: s
 
   return (
     <article className="post-detail">
-      <IslandReading title={page.title} kind="页面" />
+      <IslandReading title={page.title} kind="page" />
       <header className="page-heading">
         <h1>{page.title}</h1>
         {page.subtitle && <p className="post-meta">{page.subtitle}</p>}

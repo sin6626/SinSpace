@@ -4,6 +4,7 @@ import { ArrowUp, Bell, Heart, Share2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useIsland } from "../lib/island-store";
 import { useArticleLike } from "../lib/use-article-like";
+import { useT } from "./locale-provider";
 import SubscribePopover from "./subscribe-popover";
 import "./article-actions.css";
 
@@ -18,15 +19,16 @@ export default function ArticleActions({ title, like, comments, subscribe }: {
   comments: ReactNode;
   subscribe: { apiUrl: string; siteName: string; types: ("post_c" | "note_c")[]; mailIcon: ReactNode } | null;
 }) {
+  const t = useT().articleActions;
   const progress = useIsland((state) => state.reading?.progress ?? 0);
 
   return (
-    <div className="article-actions" role="group" aria-label="文章操作">
+    <div className="article-actions" role="group" aria-label={t.group}>
       {like && <LikeButton like={like} />}
       {comments}
       <ShareButton title={title} />
       {subscribe && (
-        <SubscribePopover {...subscribe} side="left" triggerClassName="article-action" triggerLabel="订阅更新">
+        <SubscribePopover {...subscribe} side="left" triggerClassName="article-action" triggerLabel={t.subscribe}>
           <Bell size={18} strokeWidth={1.75} aria-hidden="true" />
         </SubscribePopover>
       )}
@@ -36,6 +38,7 @@ export default function ArticleActions({ title, like, comments, subscribe }: {
 }
 
 function LikeButton({ like }: { like: Like }) {
+  const t = useT().articleActions;
   const { liked, likes, thumbsUp } = useArticleLike({ apiUrl: like.apiUrl, id: like.id, type: like.type, like: like.count });
   return (
     <button
@@ -43,8 +46,8 @@ function LikeButton({ like }: { like: Like }) {
       className="article-action is-like"
       onClick={thumbsUp}
       aria-pressed={liked}
-      aria-label={liked ? `已喜欢，共 ${likes} 人喜欢` : `喜欢这篇，已有 ${likes} 人喜欢`}
-      title={liked ? "谢谢你的喜欢" : "喜欢这篇"}
+      aria-label={liked ? t.liked(likes) : t.like(likes)}
+      title={liked ? t.thanks : t.likeTitle}
     >
       <Heart size={18} strokeWidth={1.75} aria-hidden="true" />
       {likes > 0 && <span className="article-action-count">{likes}</span>}
@@ -55,6 +58,7 @@ function LikeButton({ like }: { like: Like }) {
 // 和 Shiro 一样用 Web Share API 调起系统分享面板（macOS 上有隔空投送、信息、备忘录、拷贝等，选项由系统提供）；
 // 浏览器不支持（如 Firefox 桌面版）或调用失败时退回复制链接，并在页头夜航岛上播报。用户取消分享（AbortError）什么都不做。
 function ShareButton({ title }: { title: string }) {
+  const t = useT().articleActions;
   const push = useIsland((state) => state.push);
   async function share() {
     const url = window.location.href.split("#")[0];
@@ -68,19 +72,20 @@ function ShareButton({ title }: { title: string }) {
     }
     try {
       await navigator.clipboard.writeText(url);
-      push({ icon: "link", title: "链接已复制", detail: title, duration: 2600 });
+      push({ icon: "link", title: t.copied, detail: title, duration: 2600 });
     } catch {
-      push({ icon: "info", title: "没能复制链接", detail: "可以直接复制地址栏里的网址", duration: 3200 });
+      push({ icon: "info", title: t.copyFailed, detail: t.copyFailedDetail, duration: 3200 });
     }
   }
   return (
-    <button type="button" className="article-action" onClick={share} aria-label="分享这篇" title="分享">
+    <button type="button" className="article-action" onClick={share} aria-label={t.share} title={t.shareTitle}>
       <Share2 size={18} strokeWidth={1.75} aria-hidden="true" />
     </button>
   );
 }
 
 function BackToTop({ progress }: { progress: number }) {
+  const t = useT().articleActions;
   const radius = 17;
   const length = 2 * Math.PI * radius;
   const toTop = () => {
@@ -93,8 +98,8 @@ function BackToTop({ progress }: { progress: number }) {
       className="article-action is-top"
       data-visible={progress > 0.03 ? "" : undefined}
       onClick={toTop}
-      aria-label={`回到顶部（已读 ${Math.round(progress * 100)}%）`}
-      title="回到顶部"
+      aria-label={t.top(Math.round(progress * 100))}
+      title={t.topTitle}
     >
       <svg className="article-action-ring" viewBox="0 0 40 40" aria-hidden="true">
         <circle cx="20" cy="20" r={radius} className="article-action-ring-track" />

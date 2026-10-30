@@ -1,4 +1,5 @@
 import { getThemeConfig } from "@/lib/blog-data";
+import { getLocale, getT } from "../lib/i18n/server";
 import { parseTechStack, type Tech } from "@/lib/theme-config";
 import IconifyIcon, { isIconName } from "./iconify-icon";
 
@@ -58,12 +59,15 @@ async function readTechStack() {
 }
 
 export default async function TechStack() {
-  const config = await readTechStack();
+  const [config, locale, t] = await Promise.all([readTechStack(), getLocale(), getT()]);
+  // 后台片段里的标题、说明是中文，英文、日文页面用文案字典里的
+  const title = locale === "zh" ? config?.title ?? t.home.techTitle : t.home.techTitle;
+  const description = locale === "zh" ? config?.description ?? t.home.techNote : t.home.techNote;
   return (
     <section className="home-section home-stack" aria-labelledby="home-stack-heading">
       <div className="home-section-heading">
-        <h2 id="home-stack-heading">{config?.title ?? "技术栈"}</h2>
-        <p>{config?.description ?? "平时在用、正在学的东西"}</p>
+        <h2 id="home-stack-heading">{title}</h2>
+        <p>{description}</p>
       </div>
       {(config?.rows ?? defaultRows).map((items, index) => <Track key={index} items={items} reverse={index % 2 === 1} />)}
     </section>

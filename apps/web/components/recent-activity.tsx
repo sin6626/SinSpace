@@ -3,6 +3,8 @@ import Link from "./locale-provider";
 import { unstable_rethrow } from "next/navigation";
 import { getRecentActivity, type RecentActivity } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
+import type { Messages } from "../lib/i18n/messages";
+import { getT } from "../lib/i18n/server";
 
 // 首页右栏“最近发生的事”（同 Shiro 的 ActivityRecent）：一条竖线串起来的时间线，
 // 每条前面一个小圆图标，评论和碎碎念的正文放在气泡里。
@@ -20,7 +22,7 @@ function Title({ item }: { item: RecentActivity }) {
   return item.href ? <Link className="activity-link" href={item.href}>{title}</Link> : title;
 }
 
-function Body({ item }: { item: RecentActivity }) {
+function Body({ item, t }: { item: RecentActivity; t: Messages["activity"] }) {
   switch (item.kind) {
     case "comment":
       return (
@@ -31,9 +33,9 @@ function Body({ item }: { item: RecentActivity }) {
               <img className="activity-avatar" src={item.avatar} alt="" width={18} height={18} loading="lazy" />
             )}
             <span className="activity-author">{item.author}</span>
-            <small>在</small>
-            {item.title ? <Title item={item} /> : <small>一处</small>}
-            <small>说：</small>
+            {t.commentIn && <small>{t.commentIn}</small>}
+            {item.title ? <Title item={item} /> : <small>{t.somewhere}</small>}
+            <small>{t.said}</small>
           </p>
           {item.text && <p className="activity-bubble">{item.text}</p>}
         </>
@@ -43,28 +45,29 @@ function Body({ item }: { item: RecentActivity }) {
       return (
         <>
           <p className="activity-line">
-            <small>{item.kind === "murmur" ? "说了句" : "写了一条"}</small>
-            <Link className="activity-link" href={item.href ?? "/"}><b>{item.kind === "murmur" ? "碎碎念" : "思考"}</b></Link>
+            {(item.kind === "murmur" ? t.saidMurmur : t.wroteThinking) && <small>{item.kind === "murmur" ? t.saidMurmur : t.wroteThinking}</small>}
+            <Link className="activity-link" href={item.href ?? "/"}><b>{item.kind === "murmur" ? t.murmur : t.thinking}</b></Link>{t.postedSuffix && <small>{t.postedSuffix}</small>}
           </p>
           {item.text && <p className="activity-bubble">{item.text}</p>}
         </>
       );
     case "like":
-      return <p className="activity-line"><small>有人点赞了</small><Title item={item} /></p>;
+      return <p className="activity-line"><small>{t.liked}</small><Title item={item} /></p>;
     default:
-      return <p className="activity-line"><small>发布了</small><Title item={item} /></p>;
+      return <p className="activity-line"><small>{t.published}</small><Title item={item} /></p>;
   }
 }
 
 export default async function RecentActivityList() {
+  const t = (await getT()).activity;
   let items: RecentActivity[];
   try {
     items = await getRecentActivity();
   } catch (error) {
     unstable_rethrow(error);
-    return <p className="post-empty" role="alert">最近的动态读取失败，请稍后刷新。</p>;
+    return <p className="post-empty" role="alert">{t.failed}</p>;
   }
-  if (!items.length) return <p className="post-empty">这里还很安静。</p>;
+  if (!items.length) return <p className="post-empty">{t.quiet}</p>;
   return (
     <ul className="activity-timeline">
       {items.map((item) => {
@@ -75,7 +78,7 @@ export default async function RecentActivityList() {
             <Icon size={14} strokeWidth={1.8} />
           </span>
           <div className="activity-body">
-            <Body item={item} />
+            <Body item={item} t={t} />
             <time dateTime={item.created}>{formatDate(item.created)}</time>
           </div>
         </li>

@@ -3,6 +3,7 @@
 import { Toast } from "@base-ui/react/toast";
 import { Bell, Heart } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { useLocale, useT } from "./locale-provider";
 import SubscribePopover from "./subscribe-popover";
 import "./site-actions.css";
 
@@ -51,6 +52,8 @@ function LikeToasts() {
 }
 
 function Actions({ apiUrl, siteName, likes, subscribeTypes, mailIcon }: Props) {
+  const t = useT().siteActions;
+  const locale = useLocale();
   const [count, setCount] = useState(likes);
   const [hearts, setHearts] = useState<FloatingHeart[]>([]);
   const [pending, setPending] = useState(false);
@@ -72,7 +75,7 @@ function Actions({ apiUrl, siteName, likes, subscribeTypes, mailIcon }: Props) {
     try {
       likedToday = localStorage.getItem(likedKey) === today();
     } catch {}
-    if (likedToday) return celebrate("一天一次就够啦", 4);
+    if (likedToday) return celebrate(t.oncePerDay, 4);
     setPending(true);
     try {
       const response = await fetch(`${apiUrl}/like_this`, { method: "POST" });
@@ -81,13 +84,14 @@ function Actions({ apiUrl, siteName, likes, subscribeTypes, mailIcon }: Props) {
       } catch {}
       if (response.ok) {
         setCount((value) => (value ?? 0) + 1);
-        celebrate("谢谢你的喜欢！", 10);
+        celebrate(t.thanks, 10);
       } else {
+        // Core 拒绝（今天点过）时返回中文说明，只有中文页面直接用它
         const body = await response.json().catch(() => null) as { message?: string } | null;
-        celebrate(body?.message || "一天一次就够啦", 4);
+        celebrate((locale === "zh" && body?.message) || t.oncePerDay, 4);
       }
     } catch {
-      celebrate("网络有点问题，等会儿再试试", 0);
+      celebrate(t.network, 0);
     } finally {
       setPending(false);
     }
@@ -97,7 +101,7 @@ function Actions({ apiUrl, siteName, likes, subscribeTypes, mailIcon }: Props) {
     <div className="site-actions">
       <div className="site-like">
         <button className="site-action is-like" type="button" onClick={like}>
-          喜欢本站
+          {t.like}
           <Heart size={16} aria-hidden="true" />
           {count !== null && <span className="site-action-count">{count}</span>}
         </button>
@@ -117,13 +121,13 @@ function Actions({ apiUrl, siteName, likes, subscribeTypes, mailIcon }: Props) {
             </span>
           ))}
         </div>
-        <Toast.Viewport className="like-toast-viewport" aria-label="喜欢本站的提示">
+        <Toast.Viewport className="like-toast-viewport" aria-label={t.toastLabel}>
           <LikeToasts />
         </Toast.Viewport>
       </div>
       {subscribeTypes && (
         <SubscribePopover apiUrl={apiUrl} siteName={siteName} types={subscribeTypes} mailIcon={mailIcon} triggerClassName="site-action is-subscribe">
-          订阅
+          {t.subscribe}
           <Bell size={16} aria-hidden="true" />
         </SubscribePopover>
       )}

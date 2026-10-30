@@ -2,6 +2,7 @@ import { Heart, Moon } from "lucide-react";
 import Link from "./locale-provider";
 import { Suspense } from "react";
 import { getSiteSettings, siteDescription } from "../lib/blog-data";
+import { getT } from "../lib/i18n/server";
 import { OnlineCount } from "./notifications";
 
 async function Motto() {
@@ -9,7 +10,8 @@ async function Motto() {
 }
 
 // 页脚：居中三行，不放站名。一弯小月亮加后台那句话；几个小链接；一行细字的英文落款和在线人数。
-export default function SiteFooter() {
+export default async function SiteFooter() {
+  const t = (await getT()).footer;
   return (
     <footer className="site-footer">
       <div className="site-footer-inner">
@@ -17,9 +19,9 @@ export default function SiteFooter() {
           <Moon size={16} strokeWidth={1.5} aria-hidden="true" />
           <Suspense fallback={siteDescription}><Motto /></Suspense>
         </p>
-        <nav className="site-footer-links" aria-label="页脚链接">
-          <Link href="/timeline">时间线</Link>
-          <Link href="/friends">友链</Link>
+        <nav className="site-footer-links" aria-label={t.links}>
+          <Link href="/timeline">{t.timeline}</Link>
+          <Link href="/friends">{t.friends}</Link>
           <a href="/feed.xml">RSS</a>
         </nav>
         <div className="site-footer-meta">

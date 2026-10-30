@@ -1,10 +1,11 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Toast } from "@base-ui/react/toast";
 import { io, type Socket } from "socket.io-client";
 import { useIsland, type IslandActivityIcon } from "../lib/island-store";
 import { getNotification, notificationSettings } from "../lib/notification-copy";
+import { useT } from "./locale-provider";
 import "./notifications.css";
 
 const SocketContext = createContext<Socket | null>(null);
@@ -12,11 +13,12 @@ const SocketContext = createContext<Socket | null>(null);
 const OnlineContext = createContext<number | null>(null);
 
 export default function Notifications({ url, children }: { url: string; children: React.ReactNode }) {
+  const t = useT().notifications;
   return (
     <Toast.Provider timeout={notificationSettings.timeout} limit={notificationSettings.limit}>
       <Connection url={url}>{children}</Connection>
       <Toast.Portal>
-        <Toast.Viewport className="notification-viewport" aria-label="博客通知">
+        <Toast.Viewport className="notification-viewport" aria-label={t.viewport}>
           <ToastList />
         </Toast.Viewport>
       </Toast.Portal>
@@ -27,6 +29,8 @@ export default function Notifications({ url, children }: { url: string; children
 function Connection({ url, children }: { url: string; children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [online, setOnline] = useState<number | null>(null);
+  // 播报文案按当前语言取；放进 ref，连接不用因为文案对象变化而重建
+  const copy = useRef(useT().notifications);
   useEffect(() => {
     const connection = io(url, { transports: ["websocket"], autoConnect: false });
     // 文章发布、修改、删除改由页头夜航岛播报（原来是右下角 Toast）；新文章带上标题
@@ -39,7 +43,9 @@ function Connection({ url, children }: { url: string; children: React.ReactNode 
       const icons: Record<string, IslandActivityIcon> = { POST_CREATE: "post", POST_UPDATE: "update", POST_DELETE: "remove" };
       const data = (message as { data?: { title?: unknown } }).data;
       const title = typeof data?.title === "string" ? `《${data.title}》` : undefined;
-      useIsland.getState().push({ icon: icons[type] ?? "info", title: notification.title, detail: title ?? notification.description, duration: 5000 });
+      // getNotification（lib/notification-copy.ts）只决定播不播，文字按类型从当前语言的文案里取
+      const text = copy.current[type as "POST_CREATE" | "POST_UPDATE" | "POST_DELETE"] ?? notification;
+      useIsland.getState().push({ icon: icons[type] ?? "info", title: text.title, detail: title ?? text.description, duration: 5000 });
     };
     connection.on("message", onMessage);
     connection.on("connect", () => setSocket(connection));
@@ -61,7 +67,8 @@ function onlineCount(message: unknown) {
 
 export function OnlineCount() {
   const online = useContext(OnlineContext);
-  return online === null ? null : <p className="site-online"><span className="site-online-dot" aria-hidden="true" />此刻有 {online} 人在这里</p>;
+  const t = useT().footer;
+  return online === null ? null : <p className="site-online"><span className="site-online-dot" aria-hidden="true" />{t.online(online)}</p>;
 }
 
 // 正在阅读：每篇文章/手记一个房间（article-<id>，由 ArticleNotifications 加入），人数读 Core 的 /activity/online-count。
@@ -69,6 +76,7 @@ export function OnlineCount() {
 export function ReadingCount({ apiUrl, id }: { apiUrl: string; id: string }) {
   const socket = useContext(SocketContext);
   const [count, setCount] = useState<number | null>(null);
+  const t = useT().notifications;
   useEffect(() => {
     if (!socket) return;
     let stopped = false;
@@ -90,7 +98,7 @@ export function ReadingCount({ apiUrl, id }: { apiUrl: string; id: string }) {
       clearInterval(timer);
     };
   }, [socket, apiUrl, id]);
-  return count ? <span className="site-online"><span className="site-online-dot" aria-hidden="true" />{count} 人正在读</span> : null;
+  return count ? <span className="site-online"><span className="site-online-dot" aria-hidden="true" />{t.readingNow(count)}</span> : null;
 }
 
 export function ArticleNotifications({ id }: { id: string }) {
@@ -111,6 +119,7 @@ export function ArticleNotifications({ id }: { id: string }) {
 
 function ToastList() {
   const { toasts } = Toast.useToastManager();
+  const t = useT().notifications;
   return toasts.map((toast) => (
     <Toast.Root key={toast.id} toast={toast} className="notification-toast">
       <Toast.Content className="notification-content">
@@ -118,7 +127,7 @@ function ToastList() {
           <Toast.Title className="notification-title" />
           <Toast.Description className="notification-description" />
         </div>
-        <Toast.Close className="notification-close">{notificationSettings.close}</Toast.Close>
+        <Toast.Close className="notification-close">{t.close}</Toast.Close>
       </Toast.Content>
     </Toast.Root>
   ));

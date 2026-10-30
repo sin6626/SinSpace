@@ -2,6 +2,7 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useSyncExternalStore } from "react";
+import { useT } from "./locale-provider";
 import "./theme-switcher.css";
 
 // 浅色 / 深色主题：一个按钮来回切换。默认深色，选了浅色存 theme=light。
@@ -56,8 +57,9 @@ export function useTheme() {
 // 图标显示现在的状态，读屏说明点了会怎样。
 export default function ThemeToggle() {
   const theme = useTheme();
+  const t = useT().theme;
   return (
-    <button type="button" className="icon-button theme-toggle" onClick={toggle} aria-label={theme === "dark" ? "切换到浅色主题" : "切换到深色主题"}>
+    <button type="button" className="icon-button theme-toggle" onClick={toggle} aria-label={theme === "dark" ? t.toLight : t.toDark}>
       {theme === "dark" ? <Moon size={18} strokeWidth={1.75} aria-hidden="true" /> : <Sun size={18} strokeWidth={1.75} aria-hidden="true" />}
     </button>
   );

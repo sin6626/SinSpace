@@ -3,6 +3,7 @@
 import { Popover } from "@base-ui/react/popover";
 import { X } from "lucide-react";
 import { useRef, type ReactNode } from "react";
+import { useT } from "./locale-provider";
 import SubscribeForm from "./subscribe-form";
 import "./details-sidebar.css";
 import "./subscribe-popover.css";
@@ -20,6 +21,7 @@ export default function SubscribePopover({ apiUrl, siteName, types, mailIcon, tr
   children: ReactNode;
 }) {
   const emailRef = useRef<HTMLInputElement>(null);
+  const t = useT().subscribe;
   return (
     <Popover.Root>
       <Popover.Trigger className={triggerClassName} aria-label={triggerLabel} title={triggerLabel}>{children}</Popover.Trigger>
@@ -28,8 +30,8 @@ export default function SubscribePopover({ apiUrl, siteName, types, mailIcon, tr
           <Popover.Popup className="site-action-popup" initialFocus={(type) => (type === "touch" ? true : emailRef.current)}>
             <div className="subscribe-header">
               <span className="subscribe-icon" aria-hidden="true">{mailIcon}</span>
-              <Popover.Title className="subscribe-title">邮件订阅</Popover.Title>
-              <Popover.Close className="subscribe-close" aria-label="关闭">
+              <Popover.Title className="subscribe-title">{t.title}</Popover.Title>
+              <Popover.Close className="subscribe-close" aria-label={t.close}>
                 <X size={18} strokeWidth={1.75} aria-hidden="true" />
               </Popover.Close>
             </div>

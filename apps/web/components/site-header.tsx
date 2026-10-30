@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
-import Link from "./locale-provider";
+import Link, { useT } from "./locale-provider";
 import { usePathname } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState, type FocusEvent, type ReactNode } from "react";
 import { useIsland, type IslandActivityIcon } from "../lib/island-store";
@@ -83,6 +83,7 @@ function useScrolled() {
 // account：读者登录入口（header-account.tsx），放在主题按钮左边
 // activityIcons：播报用的图标（island-icons.tsx，服务端渲染好传进来）
 export default function SiteHeader({ brand, nav, account, activityIcons }: { brand: ReactNode; nav: ReactNode; account?: ReactNode; activityIcons: Record<IslandActivityIcon, ReactNode> }) {
+  const t = useT().header;
   const scrolled = useScrolled();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -196,7 +197,7 @@ export default function SiteHeader({ brand, nav, account, activityIcons }: { bra
           onBlur={onBlur}
         >
           <motion.div layout="position" transition={spring} className="island-brand">
-            <Link className="site-brand" href="/" aria-label="回到首页">{brand}</Link>
+            <Link className="site-brand" href="/" aria-label={t.home}>{brand}</Link>
           </motion.div>
 
           <motion.div layout="position" transition={spring} className="island-nav">{nav}</motion.div>
@@ -214,9 +215,9 @@ export default function SiteHeader({ brand, nav, account, activityIcons }: { bra
                 animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                 exit={{ opacity: 0, scale: 0.9, filter: "blur(4px)" }}
                 transition={{ duration: 0.22, delay: 0.06 }}
-                aria-label={`正在读${reading.kind}：${reading.title}，已读 ${Math.round(reading.progress * 100)}%，展开导航`}
+                aria-label={t.reading(t.kinds[reading.kind], reading.title, Math.round(reading.progress * 100))}
               >
-                <span className="island-section">{reading.kind}</span>
+                <span className="island-section">{t.kinds[reading.kind]}</span>
                 <span className="island-title">{reading.title}</span>
                 {reading.date && <time className="island-date">{reading.date.slice(5)}</time>}
                 <span className="island-progress">
@@ -256,7 +257,7 @@ export default function SiteHeader({ brand, nav, account, activityIcons }: { bra
                   <strong>{activity.title}</strong>
                   {activity.detail && <span>{activity.detail}</span>}
                 </motion.span>
-                {activity.href && <Link className="island-activity-link" href={activity.href}>去看看</Link>}
+                {activity.href && <Link className="island-activity-link" href={activity.href}>{t.goSee}</Link>}
               </motion.div>
             )}
           </AnimatePresence>

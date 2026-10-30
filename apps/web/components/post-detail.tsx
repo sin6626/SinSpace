@@ -42,7 +42,7 @@ export default async function PostDetail({ params, searchParams }: {
   return (
     <article className="post-detail" lang={ai.lang ?? undefined}>
       <ArticleNotifications id={post.id} />
-      <IslandReading title={body.title} kind="文章" date={formatDate(post.created)} />
+      <IslandReading title={body.title} kind="post" date={formatDate(post.created)} />
       <header className="page-heading">
         <nav className="detail-crumb" aria-label="位置">
           <Link href="/posts">文章</Link>

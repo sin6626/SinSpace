@@ -59,7 +59,8 @@
 /* ---------- 顶部铺开：站点标识 | 星座导航 | 工具，所有页面都和正文同宽（首页也一样，换页时页头不动） ---------- */
 .site-header[data-mode="bar"] .island {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  /* 导航在站名和工具之间的空间里居中（而不是整条居中）：英文、日文导航更长，整条居中会压到站名 */
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-4);
   width: 100%;

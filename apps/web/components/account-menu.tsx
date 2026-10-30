@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { create } from "zustand";
 import { useIsland } from "../lib/island-store";
+import { useT } from "./locale-provider";
 import { providerNames, signIn, signOut, useLoginError, useReaderSession, type LoginProvider, type Reader } from "./reader-session";
 import "./account-menu.css";
 
@@ -32,13 +33,14 @@ export default function AccountMenu({ apiUrl, providers, site, host = false, sid
   host?: boolean;
   side?: "bottom" | "top";
 }) {
+  const t = useT().account;
   const session = useReaderSession(apiUrl);
   const loginError = useLoginError("header");
   const push = useIsland((state) => state.push);
 
   useEffect(() => {
-    if (host && loginError) push({ icon: "info", title: "登录没有成功", detail: loginError, duration: 6000 });
-  }, [host, loginError, push]);
+    if (host && loginError) push({ icon: "info", title: t.loginFailed, detail: loginError, duration: 6000 });
+  }, [host, loginError, push, t.loginFailed]);
 
   const reader = session.status === "reader" ? session.reader : null;
   const dialog = host && <LoginDialog apiUrl={apiUrl} providers={providers} site={site} error={loginError} />;
@@ -47,7 +49,7 @@ export default function AccountMenu({ apiUrl, providers, site, host = false, sid
     if (!providers.length) return dialog;
     return (
       <>
-        <button type="button" className="icon-button account-trigger" onClick={() => openLoginDialog()} aria-label="登录" title="登录">
+        <button type="button" className="icon-button account-trigger" onClick={() => openLoginDialog()} aria-label={t.login} title={t.login}>
           <CircleUserRound size={19} strokeWidth={1.75} aria-hidden="true" />
         </button>
         {dialog}
@@ -72,6 +74,7 @@ function Avatar({ reader, providers, large = false }: { reader: Reader; provider
 }
 
 function AccountDropdown({ apiUrl, reader, providers, host, side }: { apiUrl: string; reader: Reader; providers: Provider[]; host: boolean; side: "bottom" | "top" }) {
+  const t = useT().account;
   const router = useRouter();
   const setNavOpen = useIsland((state) => state.setNavOpen);
   const source = reader.provider === "github" || reader.provider === "google" ? providerNames[reader.provider] : null;
@@ -85,14 +88,14 @@ function AccountDropdown({ apiUrl, reader, providers, host, side }: { apiUrl: st
   return (
     // 菜单开着时页头夜航岛保持展开，否则鼠标移进菜单时岛会收起、菜单失去依附
     <Menu.Root onOpenChange={(open) => { if (host) setNavOpen(open); }}>
-      <Menu.Trigger className="account-trigger account-trigger-avatar" aria-label={`账号：${reader.name}`} title={reader.name}>
+      <Menu.Trigger className="account-trigger account-trigger-avatar" aria-label={t.accountOf(reader.name)} title={reader.name}>
         <Avatar reader={reader} providers={providers} />
       </Menu.Trigger>
       <Menu.Portal>
         <Menu.Positioner className="account-positioner" side={side} align="end" sideOffset={10} collisionPadding={12}>
           <Menu.Popup className="account-menu">
             <Menu.Group>
-              <Menu.GroupLabel className="account-label">账号</Menu.GroupLabel>
+              <Menu.GroupLabel className="account-label">{t.account}</Menu.GroupLabel>
               <div className="account-profile">
                 <Avatar reader={reader} providers={providers} large />
                 <div className="account-names">
@@ -102,16 +105,16 @@ function AccountDropdown({ apiUrl, reader, providers, host, side }: { apiUrl: st
               </div>
               <p className="account-meta">
                 {sourceIcon && <span className="account-meta-icon" aria-hidden="true">{sourceIcon}</span>}
-                {source ? `通过 ${source} 登录` : "已登录"}
-                <span className="account-role">{reader.isOwner ? "站长" : "读者"}</span>
+                {source ? t.via(source) : t.signedIn}
+                <span className="account-role">{reader.isOwner ? t.owner : t.reader}</span>
               </p>
             </Menu.Group>
             <Menu.Separator className="account-separator" />
             <Menu.Item className="account-item" onClick={() => void logout()}>
               <LogOut size={16} strokeWidth={1.75} aria-hidden="true" />
-              退出登录
+              {t.logout}
             </Menu.Item>
-            {reader.isOwner && <p className="account-note">同一浏览器里的后台也会一起退出</p>}
+            {reader.isOwner && <p className="account-note">{t.ownerNote}</p>}
           </Menu.Popup>
         </Menu.Positioner>
       </Menu.Portal>
@@ -121,6 +124,7 @@ function AccountDropdown({ apiUrl, reader, providers, host, side }: { apiUrl: st
 
 // 居中的登录弹窗：站长头像带一圈月光，下面“登录到 站名”，一排圆形的彩色品牌按钮（点了显示转圈，等待跳去授权页）
 function LoginDialog({ apiUrl, providers, site, error }: { apiUrl: string; providers: Provider[]; site: Site; error: string | null }) {
+  const t = useT().account;
   const { open, hash, hide } = useLoginDialog();
   const [pending, setPending] = useState<LoginProvider | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
@@ -132,7 +136,7 @@ function LoginDialog({ apiUrl, providers, site, error }: { apiUrl: string; provi
     try {
       await signIn(apiUrl, provider, hash);
     } catch (reason) {
-      setFailure(reason instanceof Error ? reason.message : "登录跳转失败");
+      setFailure(reason instanceof Error ? reason.message : t.redirectFailed);
       setPending(null);
     }
   }
@@ -146,12 +150,12 @@ function LoginDialog({ apiUrl, providers, site, error }: { apiUrl: string; provi
             // eslint-disable-next-line @next/next/no-img-element -- 站长头像来自后台任意地址
             <img className="login-avatar" src={site.avatar} alt="" width={64} height={64} />
           )}
-          <Dialog.Title className="login-title">登录到 <strong>{site.name}</strong></Dialog.Title>
-          <Dialog.Description className="login-hint">评论时会署上你的名字和头像</Dialog.Description>
+          <Dialog.Title className="login-title">{t.loginTo} <strong>{site.name}</strong></Dialog.Title>
+          <Dialog.Description className="login-hint">{t.loginHint}</Dialog.Description>
           <ul className="login-providers">
             {providers.map(({ id, icon }) => (
               <li key={id}>
-                <button type="button" className="login-provider" onClick={() => void login(id)} disabled={pending !== null} aria-label={`使用 ${providerNames[id]} 登录`}>
+                <button type="button" className="login-provider" onClick={() => void login(id)} disabled={pending !== null} aria-label={t.useProvider(providerNames[id])}>
                   <span className="login-provider-icon">
                     {pending === id ? <LoaderCircle className="login-spinner" size={20} strokeWidth={2} aria-hidden="true" /> : icon}
                   </span>
@@ -161,7 +165,7 @@ function LoginDialog({ apiUrl, providers, site, error }: { apiUrl: string; provi
             ))}
           </ul>
           {message && <p className="login-error" role="alert">{message}</p>}
-          <Dialog.Close className="login-close" aria-label="关闭">
+          <Dialog.Close className="login-close" aria-label={t.close}>
             <X size={18} strokeWidth={1.75} aria-hidden="true" />
           </Dialog.Close>
         </Dialog.Popup>

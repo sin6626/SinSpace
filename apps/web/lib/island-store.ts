@@ -17,7 +17,9 @@ export type IslandActivity = {
   duration: number;
 };
 
-export type IslandReading = { title: string; kind: string; date?: string; progress: number };
+// kind 是键（post/note/page），显示时按当前语言翻译（messages 的 header.kinds）
+export type IslandReadingKind = "post" | "note" | "page";
+export type IslandReading = { title: string; kind: IslandReadingKind; date?: string; progress: number };
 
 type IslandState = {
   reading: IslandReading | null;

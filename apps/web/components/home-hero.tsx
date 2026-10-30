@@ -3,6 +3,7 @@ import { unstable_rethrow } from "next/navigation";
 import { Suspense } from "react";
 import { getOwner, getSiteLikes, getSiteSettings, getSubscribeOptions, siteDescription, siteName } from "../lib/blog-data";
 import { getApiUrl } from "../lib/config";
+import { getT } from "../lib/i18n/server";
 import IconifyIcon, { SocialIcon } from "./iconify-icon";
 import ScrollHint from "./scroll-hint";
 import SiteActions from "./site-actions";
@@ -42,10 +43,10 @@ async function Socials() {
 }
 
 async function Portrait() {
-  const avatar = (await loadOwner())?.avatar;
+  const [avatar, t] = await Promise.all([loadOwner().then((owner) => owner?.avatar), getT()]);
   return avatar ? (
     // eslint-disable-next-line @next/next/no-img-element -- 头像来自后台任意地址，不走 Next 图片优化
-    <img className="home-hero-avatar" src={avatar} alt="Sin 的头像" width={300} height={300} fetchPriority="high" />
+    <img className="home-hero-avatar" src={avatar} alt={t.hero.avatarAlt} width={300} height={300} fetchPriority="high" />
   ) : <span className="home-hero-avatar is-empty" aria-hidden="true" />;
 }
 
@@ -74,7 +75,8 @@ async function Motto() {
   return (await getSiteSettings().catch(() => null))?.description ?? siteDescription;
 }
 
-export default function HomeHero() {
+export default async function HomeHero() {
+  const t = (await getT()).hero;
   return (
     <section className="home-hero" aria-labelledby="home-hero-title">
       <Starfield />
@@ -82,7 +84,7 @@ export default function HomeHero() {
         <div className="home-hero-half is-text">
           <div className="home-hero-content">
             <h1 id="home-hero-title" className="home-hero-title">
-              <span>你好，我是</span>
+              <span>{t.greeting}</span>
               {/* “Sin。”包成一块：窄屏放不下一行时一起换行，句号不会单独掉到下一行 */}
               <span>
                 <strong className="home-hero-name">
@@ -92,15 +94,15 @@ export default function HomeHero() {
                   <MascotLayer layer="front" />
                   <span className="home-hero-star" aria-hidden="true" />
                 </strong>
-                <span>。</span>
+                <span>{t.nameSuffix}</span>
               </span>
               <br />
-              <span>一个在深夜写代码的</span><strong>大三学生</strong>
+              {t.titleBefore && <span>{t.titleBefore}</span>}<strong>{t.titleStrong}</strong>{t.titleAfter && <span>{t.titleAfter}</span>}
             </h1>
             <p className="home-hero-description">
-              白天上课，晚上折腾前端、写博客、做点小东西。
+              {t.line1}
               <br />
-              探索全栈与设计的普通开发者。
+              {t.line2}
             </p>
             <Suspense fallback={null}>
               <Socials />

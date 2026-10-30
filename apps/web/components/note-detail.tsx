@@ -47,7 +47,7 @@ export default async function NoteDetail({ params, searchParams }: { params: Pro
   return (
     <article className="post-detail note-detail" lang={ai.lang ?? undefined}>
       <ArticleNotifications id={note.id} />
-      <IslandReading title={body.title} kind="手记" date={formatDate(note.created)} />
+      <IslandReading title={body.title} kind="note" date={formatDate(note.created)} />
       <header className="page-heading">
         <nav className="detail-crumb" aria-label="位置">
           <Link href="/notes">手记</Link>

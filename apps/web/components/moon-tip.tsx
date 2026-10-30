@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
+import { useT } from "./locale-provider";
 import { useState, type Ref } from "react";
 import { moonInfo } from "../lib/moon";
 import "./moon-tip.css";
@@ -11,15 +12,17 @@ import "./moon-tip.css";
 const spring = { type: "spring", stiffness: 420, damping: 22, mass: 0.8 } as const;
 
 export default function MoonTip({ ref }: { ref: Ref<HTMLDivElement> }) {
+  const t = useT().moon;
   const [info, setInfo] = useState<ReturnType<typeof moonInfo> | null>(null);
   const show = () => setInfo(moonInfo(Date.now()));
   const hide = () => setInfo(null);
   const items = info
     ? [
-        { key: "name", label: "今晚", value: info.name },
-        { key: "lit", label: "亮面", value: `${info.illumination}%` },
-        { key: "age", label: "月龄", value: `${info.age} 天` },
-        { key: "next", label: info.next, value: `${info.daysToNext} 天后` },
+        // 月相名（lib/moon.ts 给的是中文名）按当前语言换
+        { key: "name", label: t.tonight, value: t.phases[info.name] ?? info.name },
+        { key: "lit", label: t.lit, value: `${info.illumination}%` },
+        { key: "age", label: t.age, value: t.days(info.age) },
+        { key: "next", label: t.phases[info.next] ?? info.next, value: t.inDays(info.daysToNext) },
       ]
     : [];
 
@@ -29,7 +32,7 @@ export default function MoonTip({ ref }: { ref: Ref<HTMLDivElement> }) {
         ref={ref}
         className="moon-tip"
         tabIndex={0}
-        aria-label="今晚的月亮"
+        aria-label={t.label}
         onPointerEnter={(event) => { if (event.pointerType === "mouse") show(); }}
         onPointerLeave={(event) => { if (event.pointerType === "mouse") hide(); }}
         onFocus={show}
