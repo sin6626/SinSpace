@@ -2,7 +2,7 @@
 // 不依赖 Next，检查脚本 scripts/verify-sky-calendar.mjs 直接加载。
 
 export type SkySource = "leetcode" | "github";
-// levels：两边各自的亮度档（0–4），level 是两者中较亮的那个；页脚图例关掉一边时按另一边的档显示
+// levels：两边各自的亮度档（0–5），level 是两者中较亮的那个；页脚图例关掉一边时按另一边的档显示
 export type SkyDay = { date: string; leetcode: number; github: number; levels: Record<SkySource, number>; level: number; kind: SkySource | "both" | null };
 export type Sky = { days: (SkyDay | null)[]; weeks: number; years: { year: string; week: number }[] };
 
@@ -30,12 +30,13 @@ export function parseGitHub(html: string) {
   return days;
 }
 
-// 每种来源按自己的分布分四档亮度（四分位数），提交多的日子更亮；两边各自比较，刷题次数多不会把写代码的日子压暗
+// 每种来源按自己的分布分档（四分位数），提交多的日子更亮；两边各自比较，刷题次数多不会把写代码的日子压暗。
+// 第 5 档是最亮的约 8%（不低于第 92 百分位、且高于上四分位），页脚只给这些星画十字星芒，像夜空里少数几颗亮星。
 function leveler(days: Map<string, number>) {
   const sorted = [...days.values()].sort((a, b) => a - b);
   const at = (ratio: number) => sorted[Math.floor((sorted.length - 1) * ratio)] ?? 0;
-  const [q1, q2, q3] = [at(0.25), at(0.5), at(0.75)];
-  return (count: number) => (count <= 0 ? 0 : count <= q1 ? 1 : count <= q2 ? 2 : count <= q3 ? 3 : 4);
+  const [q1, q2, q3, peak] = [at(0.25), at(0.5), at(0.75), at(0.92)];
+  return (count: number) => (count <= 0 ? 0 : count <= q1 ? 1 : count <= q2 ? 2 : count <= q3 ? 3 : count >= peak ? 5 : 4);
 }
 
 // 从最早有记录的那一周（周一）排到今天所在的那一周，最多 maxWeeks 周；今天之后的格子为 null。

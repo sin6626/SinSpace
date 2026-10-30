@@ -1,7 +1,6 @@
-/* 页脚星带（footer-sky.tsx）：一列一周、一行一个星期几，铺满页脚宽度。每格中间一颗星，没有记录的日子是很淡的远星，
-   提交越多星越大越亮；最亮的那档会慢慢闪。两类星的颜色 --sky-leetcode / --sky-github 定义在 globals.css 的各套配色里。 */
+/* 页脚星带（footer-sky.tsx）：一列一周、一行一个星期几，铺满页脚宽度。有提交的日子是一颗点光源般的星，
+   提交越多光晕越大越亮，每类最亮的约 8% 带十字星芒、慢慢闪；没提交的日子只有零星的星尘。两类星的颜色 --sky-leetcode / --sky-github 定义在 globals.css 的各套配色里。 */
 .footer-sky {
-  --sky-both: color-mix(in oklab, var(--sky-leetcode), var(--sky-github));
   --on-leetcode: 1;
   --on-github: 1;
   display: grid;
@@ -44,77 +43,107 @@
   --lc: 0;
   --gh: 0;
   --lvl: max(calc(var(--lc) * var(--on-leetcode)), calc(var(--gh) * var(--on-github)));
-  display: grid;
-  place-items: center;
+  --glow: min(var(--lvl), 4);
+  position: relative;
   aspect-ratio: 1;
 }
 
-/* 每颗星在自己的格子里稍微错开一点（几组互质的 nth-child 叠出来的伪随机），看起来像星空而不是整齐的点阵 */
+/* 星星在格子里错开（几组互质的 nth-child 叠出来的伪随机，避开 7 的倍数以免整行一起偏），整体读起来像星空而不是点阵 */
 .footer-sky-band i:nth-child(3n) {
-  translate: 16% -12%;
+  translate: 18% -14%;
 }
 
-.footer-sky-band i:nth-child(5n + 1) {
-  translate: -14% 15%;
+.footer-sky-band i:nth-child(4n + 1) {
+  translate: -22% 8%;
+}
+
+.footer-sky-band i:nth-child(5n + 2) {
+  translate: 10% 24%;
 }
 
 .footer-sky-band i:nth-child(11n + 4) {
-  translate: 18% 14%;
+  translate: 26% 16%;
 }
 
 .footer-sky-band i:nth-child(13n + 6) {
-  translate: -18% -16%;
+  translate: -24% -20%;
 }
 
-/* 档位 0 是很淡的远星；1–4 档越来越大、越来越亮，第 4 档带一圈光。关掉一边时这些值跟着变，过渡 0.3 秒 */
+/* 星是一个点光源：中心一个很小的亮核，外面一圈往外淡开的光。亮度档只改变光晕大小、亮核粗细和整体亮度，
+   不把星画成实心圆盘（那样像硬币或灯泡）。没有记录、或者被图例关掉的那天（档位 0）看不见。 */
 .footer-sky-band i::before {
+  --core: calc(0.5px + var(--glow) * 0.25px);
   content: "";
-  width: calc(16% + var(--lvl) * 8.5%);
+  position: absolute;
+  inset: 0;
+  width: calc(30% + var(--glow) * 22%);
   aspect-ratio: 1;
+  margin: auto;
   border-radius: var(--radius-full);
-  background: color-mix(in srgb, currentColor calc(min(var(--lvl), 1) * 100%), var(--foreground));
-  opacity: calc(0.1 + min(var(--lvl), 1) * 0.15 + var(--lvl) * 0.1875);
-  box-shadow: 0 0 calc(max(var(--lvl) - 3, 0) * 0.35rem) currentColor;
+  background: radial-gradient(
+    circle closest-side,
+    currentColor 0 var(--core),
+    color-mix(in srgb, currentColor 50%, transparent) calc(var(--core) + 0.6px),
+    color-mix(in srgb, currentColor 12%, transparent) 55%,
+    transparent
+  );
+  opacity: calc(min(var(--lvl), 1) * (0.2 + var(--glow) * 0.2));
   transition:
     width 300ms var(--ease-out),
-    opacity 300ms var(--ease-out),
-    background-color 300ms var(--ease-out),
-    box-shadow 300ms var(--ease-out);
+    opacity 300ms var(--ease-out);
+}
+
+/* 第 5 档（每类最亮的约 8% 的日子）带一对细细的十字星芒（和首页星空里亮星的星芒一个意思），关掉这一类时跟着熄 */
+.footer-sky-band [data-level="5"]::after {
+  content: "";
+  position: absolute;
+  inset: -60%;
+  background:
+    linear-gradient(to right, transparent, currentColor 50%, transparent) center / 100% 1px no-repeat,
+    linear-gradient(to bottom, transparent, currentColor 50%, transparent) center / 1px 100% no-repeat;
+  opacity: calc(max(var(--lvl) - 4, 0) * 0.5);
+  transition: opacity 300ms var(--ease-out);
+}
+
+/* 没有记录的日子不画点（否则会露出 7 行的格子），只稀稀拉拉撒几颗极淡的星尘，让没提交的那几个月也还是夜空 */
+.footer-sky-band i:not([class]):is(:nth-child(11n + 5), :nth-child(17n + 8), :nth-child(23n + 3))::before {
+  width: 40%;
+  background: radial-gradient(circle closest-side, var(--foreground) 0 0.5px, transparent 1px);
+  opacity: 0.22;
 }
 
 .footer-sky-band .is-future::before {
   display: none;
 }
 
-.footer-sky-band .is-leetcode {
+.footer-sky-band .is-leetcode,
+.footer-sky-band .is-both[data-lead="leetcode"] {
   color: var(--sky-leetcode);
 }
 
-.footer-sky-band .is-github {
+.footer-sky-band .is-github,
+.footer-sky-band .is-both[data-lead="github"] {
   color: var(--sky-github);
 }
 
-.footer-sky-band .is-both {
-  color: var(--sky-both);
-}
-
-.footer-sky[data-hide~="leetcode"] .is-both {
+/* 两样都有的日子用较亮那边的颜色（不混色，混出来是发灰的脏色）；关掉一边时换成另一边 */
+.footer-sky[data-hide~="leetcode"] .footer-sky-band .is-both {
   color: var(--sky-github);
 }
 
-.footer-sky[data-hide~="github"] .is-both {
+.footer-sky[data-hide~="github"] .footer-sky-band .is-both {
   color: var(--sky-leetcode);
 }
 
-/* 最亮那档慢慢闪：动的是整格的透明度（乘在星星自己的透明度上），被关掉时星已经很淡，闪也看不出来 */
+/* 带星芒的亮星慢慢闪：动的是整格的透明度（乘在星星自己的透明度上），被关掉时星已经看不见，闪也看不出来 */
 @keyframes footer-sky-twinkle {
   50% {
-    opacity: 0.55;
+    opacity: 0.5;
   }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .footer-sky-band [data-level="4"] {
+  .footer-sky-band [data-level="5"] {
     animation: footer-sky-twinkle 4.8s ease-in-out calc(var(--twinkle) * -0.53s) infinite;
   }
 }

@@ -31,7 +31,7 @@ const inspect = `(() => {
 const star = `((selector) => { const cell = document.querySelector(".footer-sky-band " + selector); const before = getComputedStyle(cell, "::before"); return { opacity: Number(before.opacity), color: getComputedStyle(cell).color }; })`;
 async function toggleCheck() {
   const click = (name) => browser.evaluate(`[...document.querySelectorAll(".footer-sky-legend button")].find((b) => b.textContent === "${name}").click()`);
-  const sample = () => browser.evaluate(`({ lc: ${star}(".is-leetcode[data-level='4']"), both: ${star}(".is-both"), github: ${star}(".is-github"), hide: document.querySelector(".footer-sky").dataset.hide ?? "", pressed: document.querySelector(".footer-sky-legend .is-leetcode").getAttribute("aria-pressed") })`);
+  const sample = () => browser.evaluate(`({ lc: ${star}(".is-leetcode:is([data-level='4'], [data-level='5'])"), both: ${star}(".is-both"), github: ${star}(".is-github"), hide: document.querySelector(".footer-sky").dataset.hide ?? "", pressed: document.querySelector(".footer-sky-legend .is-leetcode").getAttribute("aria-pressed") })`);
   const before = await sample();
   await click("LeetCode");
   await sleep(500);
