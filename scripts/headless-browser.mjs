@@ -1,15 +1,23 @@
 // 独立的无头 Chromium（Playwright 缓存里的 headless shell），经 DevTools 协议驱动，不碰用户自己的浏览器。
 // 截图脚本和浏览器回归测试共用。
+// 浏览器配置目录每次新建在系统临时目录里，关闭时删掉（只删这次自己建的那一个）；原来固定用 /tmp/sin-headless-<端口>
+// 且从不清理，攒到 34 个、2.8G（2026-10-30 清理过）。脚本中途崩溃时会留下一个，名字仍以 sin-headless- 开头。
 import { spawn } from "node:child_process";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const bin = `${process.env.HOME}/Library/Caches/ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-mac-arm64/chrome-headless-shell`;
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export async function openBrowser({ port = 9333 } = {}) {
-  const proc = spawn(bin, [`--remote-debugging-port=${port}`, `--user-data-dir=/tmp/sin-headless-${port}`, "--hide-scrollbars", "--no-first-run", "about:blank"], { stdio: "ignore" });
+  const profile = mkdtempSync(join(tmpdir(), `sin-headless-${port}-`));
+  const proc = spawn(bin, [`--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, "--hide-scrollbars", "--no-first-run", "about:blank"], { stdio: "ignore" });
+  const exited = new Promise((resolve) => proc.once("exit", resolve));
+  const cleanup = () => exited.then(() => rmSync(profile, { recursive: true, force: true }));
   let targets;
   for (let i = 0; i < 50; i++) { try { targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json(); break; } catch { await sleep(200); } }
-  if (!targets) { proc.kill(); throw new Error("无头浏览器没有启动"); }
+  if (!targets) { proc.kill(); await cleanup(); throw new Error("无头浏览器没有启动"); }
   const page = targets.find((t) => t.type === "page");
   const ws = new WebSocket(page.webSocketDebuggerUrl);
   await new Promise((r) => ws.addEventListener("open", r));
@@ -39,6 +47,7 @@ export async function openBrowser({ port = 9333 } = {}) {
       if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description ?? result.exceptionDetails.text);
       return result.result.value;
     },
-    close() { ws.close(); proc.kill(); },
+    // 等浏览器进程退出后再删它的配置目录（还在写文件时删会删不干净）
+    close() { ws.close(); proc.kill(); return cleanup(); },
   };
 }
