@@ -2,7 +2,7 @@ import { notFound, unstable_rethrow } from "next/navigation";
 import { getNotesByTopic, getTopics, searchNotes } from "../lib/blog-data";
 import type { ReactNode } from "react";
 import ResultList from "./result-list";
-import { getT } from "../lib/i18n/server";
+import { getLocale, getT } from "../lib/i18n/server";
 
 type Note = { id: string; nid: number; title: string; created: string };
 const toItems = (notes: Note[]) => notes.map((note) => ({ key: note.id, href: `/notes/${note.nid}`, title: note.title, created: note.created }));
@@ -10,7 +10,7 @@ const toItems = (notes: Note[]) => notes.map((note) => ({ key: note.id, href: `/
 export async function NoteSearch({ keyword, search, filters }: { keyword: string; search: ReactNode; filters: ReactNode }) {
   let result: Awaited<ReturnType<typeof searchNotes>> | null = null;
   try {
-    result = await searchNotes(keyword);
+    result = await searchNotes(keyword, await getLocale());
   } catch (error) {
     unstable_rethrow(error);
   }
@@ -22,7 +22,7 @@ export async function NoteSearch({ keyword, search, filters }: { keyword: string
 export async function NotesByTopic({ slug, search, filters }: { slug: string; search: ReactNode; filters: ReactNode }) {
   let topics: Awaited<ReturnType<typeof getTopics>> | null = null;
   try {
-    topics = await getTopics();
+    topics = await getTopics(await getLocale());
   } catch (error) {
     unstable_rethrow(error);
   }
@@ -32,7 +32,7 @@ export async function NotesByTopic({ slug, search, filters }: { slug: string; se
   let result: Awaited<ReturnType<typeof getNotesByTopic>> | null = null;
   if (topic) {
     try {
-      result = await getNotesByTopic(topic.id);
+      result = await getNotesByTopic(topic.id, await getLocale());
     } catch (error) {
       unstable_rethrow(error);
     }

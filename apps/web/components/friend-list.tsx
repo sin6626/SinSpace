@@ -1,11 +1,11 @@
 import { LinkState, LinkType } from "@mx-space/api-client";
 import { unstable_rethrow } from "next/navigation";
-import { getLinkApplyOpen, getLinks, getSiteSettings } from "../lib/blog-data";
+import { getLinkApplyOpen, getLinks, getSiteDescription, getSiteSettings } from "../lib/blog-data";
 import { getApiUrl } from "../lib/config";
 import { safeUrl } from "../lib/safe-url";
 import LinkApplyForm from "./link-apply-form";
 import "./corners.css";
-import { getT } from "../lib/i18n/server";
+import { getLocale, getT } from "../lib/i18n/server";
 import LoadError from "./load-error";
 
 type Link = Awaited<ReturnType<typeof getLinks>>[number];
@@ -27,8 +27,9 @@ function LinkCards({ links }: { links: Link[] }) {
                 <img className="friend-avatar" src={avatar} alt="" width={48} height={48} loading="lazy" />
               ) : <span className="friend-avatar is-letter" aria-hidden="true">{Array.from(link.name.trim())[0] ?? "✦"}</span>}
               <div>
-                <h3>{url ? <a className="card-link" href={url} target="_blank" rel="noopener noreferrer">{link.name}</a> : link.name}</h3>
-                {link.description && <p>{link.description}</p>}
+                <h3 lang={/\p{Script=Han}/u.test(link.name) ? "zh-CN" : undefined}>{url ? <a className="card-link" href={url} target="_blank" rel="noopener noreferrer">{link.name}</a> : link.name}</h3>
+                {/* 朋友们自己填的站名和介绍，原样显示（含中文时标明语言） */}
+                {link.description && <p lang="zh-CN">{link.description}</p>}
               </div>
             </article>
           </li>
@@ -88,7 +89,7 @@ export default async function FriendList() {
 
 // 申请区：先给出本站信息方便对方回加，再给申请表单。开关读取失败时按“未开放”处理，不影响上面的友链列表。
 async function LinkApply() {
-  const [open, site, { friends: t }] = await Promise.all([getLinkApplyOpen().catch(() => false), getSiteSettings().catch(() => null), getT()]);
+  const [open, site, { friends: t }, motto] = await Promise.all([getLinkApplyOpen().catch(() => false), getSiteSettings().catch(() => null), getT(), getLocale().then(getSiteDescription)]);
   return (
     <section className="link-apply" aria-labelledby="link-apply-heading">
       <h2 id="link-apply-heading">{t.apply}</h2>
@@ -96,7 +97,7 @@ async function LinkApply() {
         <dl className="post-meta">
           <dt>{t.siteName}</dt><dd>{site.name}</dd>
           <dt>{t.siteUrl}</dt><dd>{site.siteUrl}</dd>
-          <dt>{t.intro}</dt><dd>{site.description}</dd>
+          <dt>{t.intro}</dt><dd lang={motto.original ? "zh-CN" : undefined}>{motto.text}</dd>
         </dl>
       )}
       {open ? <LinkApplyForm apiUrl={getApiUrl()} /> : <p className="post-meta">{t.closed}</p>}

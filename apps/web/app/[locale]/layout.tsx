@@ -3,7 +3,7 @@ import { ViewTransition } from "react";
 import { Geist_Mono, Noto_Sans_SC, Noto_Serif_SC, Nunito } from "next/font/google";
 import Notifications from "@/components/notifications";
 import { getApiUrl } from "@/lib/config";
-import { getSiteSettings, siteName } from "@/lib/blog-data";
+import { getSiteDescription, getSiteSettings, siteName } from "@/lib/blog-data";
 import { Suspense } from "react";
 import HeaderAccount from "@/components/header-account";
 import { islandIcons } from "@/components/island-icons";
@@ -59,9 +59,10 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const [settings, locale] = await Promise.all([getSiteSettings().catch(() => null), getLocale()]);
+  const locale = await getLocale();
+  const [settings, motto] = await Promise.all([getSiteSettings().catch(() => null), getSiteDescription(locale)]);
   const name = settings?.name ?? siteName;
-  const description = settings?.description;
+  const description = motto.text;
   return {
     metadataBase: settings ? new URL(settings.siteUrl) : undefined,
     title: { default: name, template: `%s - ${name}` },

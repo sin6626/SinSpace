@@ -89,3 +89,5 @@
 2026-10-22：导入本仓库 mx-admin，新增 `dev:admin` / `dev:all`。签名 Webhook 与真实隔离库缓存失效已验证。见[配置说明](./webhook-local.md)、[后台来源](./admin-source.md)、[通知栏计划](./notification-center-plan.md)。后续已接入 Base UI Toast，文案和范围见通知文档。
 
 2026-10-24：新增友链、一言（说说）、思考（速记）页面。速记的引用与卡片类型 Core 已支持、后台尚无界面，补全计划见 [速记引用与卡片计划](./recently-plan.md)。
+
+2026-10-30：外文页面的后台内容改为读 Core 里的译文（AI 翻译、翻译条目、配置片段 i18n），缺的译文用手动翻译工具补进 Core，见[手动翻译](./manual-translation.md)。

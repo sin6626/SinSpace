@@ -1,10 +1,10 @@
 import { ChevronDown } from "lucide-react";
 import { unstable_rethrow } from "next/navigation";
 import { Suspense } from "react";
-import { getOwner, getSiteLikes, getSiteSettings, getSubscribeOptions, siteDescription, siteName } from "../lib/blog-data";
+import { getOwner, getSiteDescription, getSiteLikes, getSiteSettings, getSubscribeOptions, siteDescription, siteName } from "../lib/blog-data";
 import { getApiUrl } from "../lib/config";
 import type { SocialLink } from "../lib/social";
-import { getT } from "../lib/i18n/server";
+import { getLocale, getT } from "../lib/i18n/server";
 import IconifyIcon, { SocialIcon } from "./iconify-icon";
 import ScrollHint from "./scroll-hint";
 import SiteActions from "./site-actions";
@@ -76,8 +76,10 @@ function MascotLayer({ layer }: { layer: "back" | "blink" | "front" }) {
   return <img className={`home-hero-mascot is-${layer}`} src={`/mascot/${layer}.webp`} alt="" aria-hidden="true" width={600} height={390} draggable={false} />;
 }
 
+// 站点那句话：外文页面用配置片段里的译文，没写译文时是中文原文并标明语言
 async function Motto() {
-  return (await getSiteSettings().catch(() => null))?.description ?? siteDescription;
+  const { text, original } = await getSiteDescription(await getLocale());
+  return original ? <span lang="zh-CN">{text}</span> : text;
 }
 
 export default async function HomeHero() {

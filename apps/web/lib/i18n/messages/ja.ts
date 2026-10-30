@@ -112,6 +112,9 @@ const ja: Messages = {
     published: "公開しました：",
     failed: "最近のできごとを読み込めませんでした。しばらくして再読み込みしてください。",
     quiet: "いまはまだ静かです。",
+    aThinking: "ある思考",
+    deleted: "削除されたコンテンツ",
+    photo: "（写真）",
   },
   siteActions: {
     like: "このサイトにいいね",

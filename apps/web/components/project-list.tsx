@@ -2,7 +2,7 @@ import { ArrowUpRight } from "lucide-react";
 import { unstable_rethrow } from "next/navigation";
 import { getProjects } from "../lib/blog-data";
 import { safeUrl } from "../lib/safe-url";
-import { getT } from "../lib/i18n/server";
+import { getLocale, getT } from "../lib/i18n/server";
 import "./corners.css";
 import LoadError from "./load-error";
 
@@ -24,8 +24,9 @@ export async function ProjectCard({ project, headingLevel = 2 }: { project: Proj
         // eslint-disable-next-line @next/next/no-img-element -- 后台上传的任意域名图片，不走 next/image 白名单
         <img className="project-card-icon" src={avatar} alt="" width={48} height={48} />
       ) : <span className="project-card-icon is-letter" aria-hidden="true">{Array.from(project.name.trim())[0] ?? "✦"}</span>}
-      <Heading>{project.name}</Heading>
-      {project.description && <p className="project-card-description">{project.description}</p>}
+      {/* 外文页面上没在配置片段里写译文的作品，名字和介绍标明是中文 */}
+      <Heading lang={project.original ? "zh-CN" : undefined}>{project.name}</Heading>
+      {project.description && <p className="project-card-description" lang={project.original ? "zh-CN" : undefined}>{project.description}</p>}
       {links.length > 0 && (
         <div className="project-card-links">
           {links.map((link) => (
@@ -41,7 +42,7 @@ export default async function ProjectList() {
   const { projects: t } = await getT();
   let projects: Awaited<ReturnType<typeof getProjects>>;
   try {
-    projects = await getProjects();
+    projects = await getProjects(await getLocale());
   } catch (error) {
     unstable_rethrow(error);
     // 重试用整页加载，确保重新请求；不用客户端路由。

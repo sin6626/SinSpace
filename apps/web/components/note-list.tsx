@@ -9,7 +9,7 @@ import Entry, { EntryTag } from "./entry";
 import SidebarSearch from "./sidebar-search";
 import "./details-sidebar.css";
 import "./corners.css";
-import { getT } from "../lib/i18n/server";
+import { getLocale, getT } from "../lib/i18n/server";
 import LoadError from "./load-error";
 
 type NoteEntryData = Awaited<ReturnType<typeof getNotes>>["data"][number];
@@ -24,6 +24,7 @@ export async function NoteEntry({ note, headingLevel = 2 }: { note: NoteEntryDat
       title={note.title}
       created={note.created}
       headingLevel={headingLevel}
+      lang={note.original ? "zh-CN" : undefined}
       serif
       excerpt={note.excerpt}
       stats={note.stats}
@@ -51,7 +52,7 @@ export default async function NoteList({ searchParams }: { searchParams: Promise
 
   let result: Awaited<ReturnType<typeof getNotes>>;
   try {
-    result = await getNotes(page);
+    result = await getNotes(page, await getLocale());
     if (page > Math.max(1, result.pagination.totalPage)) notFound();
   } catch (error) {
     unstable_rethrow(error);

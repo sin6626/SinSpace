@@ -2,7 +2,7 @@ import { unstable_rethrow } from "next/navigation";
 import { getPostsByTag, searchPosts } from "../lib/blog-data";
 import type { ReactNode } from "react";
 import ResultList, { type ResultItem } from "./result-list";
-import { getT } from "../lib/i18n/server";
+import { getLocale, getT } from "../lib/i18n/server";
 
 type Post = { id: string; title: string; created: string; slug: string; category: { name: string; slug: string } | null };
 
@@ -20,14 +20,14 @@ async function load<T>(read: () => Promise<T>) {
 }
 
 export async function PostSearch({ keyword, search, filters }: { keyword: string; search: ReactNode; filters: ReactNode }) {
-  const [result, { posts: t, list }] = await Promise.all([load(() => searchPosts(keyword)), getT()]);
+  const [result, { posts: t, list }] = await Promise.all([load(async () => searchPosts(keyword, await getLocale())), getT()]);
   const items = result && toItems(result.data);
   const summary = result ? list.searchSummary(keyword, result.total, result.data.length) : list.searchQuery(keyword);
   return <ResultList title={t.search} summary={summary} items={items} emptyText={t.searchEmpty} search={search} filters={filters} />;
 }
 
 export async function PostsByTag({ name, search, filters }: { name: string; search: ReactNode; filters: ReactNode }) {
-  const [posts, { posts: t, list }] = await Promise.all([load(() => getPostsByTag(name)), getT()]);
+  const [posts, { posts: t, list }] = await Promise.all([load(async () => getPostsByTag(name, await getLocale())), getT()]);
   const items = posts && toItems(posts);
   return <ResultList title={t.tag(name)} summary={items ? list.total(items.length) : ""} items={items} emptyText={t.tagEmpty} search={search} filters={filters} />;
 }

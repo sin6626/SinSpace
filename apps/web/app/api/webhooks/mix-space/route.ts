@@ -21,6 +21,8 @@ const kindTags = {
   // 列在这里也让备份恢复（CONTENT_REFRESH）时一并失效。
   PROJECT: ["blog:projects"],
   LINK: ["blog:links"],
+  // AI 翻译（或手动写入的译文）新增、更新：外文页面的正文、标题、摘要都来自它；文章、手记列表和导航的译名也跟着变
+  TRANSLATION: ["blog:ai", "blog:posts", "blog:notes", "blog:pages"],
 };
 const eventTags = new Map<string, readonly string[]>(
   Object.entries(kindTags).flatMap(([kind, tags]) =>

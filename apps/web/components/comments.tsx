@@ -36,7 +36,7 @@ function CommentBody({ comment, replyTo, form, canReply, t }: { comment: Comment
         {comment.deleted ? (
           <p className="comment-deleted">{t.comments.deleted}</p>
         ) : (
-          <div className="comment-text">
+          <div className="comment-text" lang="zh-CN">
             <Markdown allowedElements={allowedElements} unwrapDisallowed skipHtml>{comment.text}</Markdown>
           </div>
         )}

@@ -6,6 +6,7 @@ import ArticleAside from "./article-aside";
 import "./post-detail.css";
 import { Suspense } from "react";
 import Comments from "./comments";
+import { ArticleAiNotes, loadArticleAi } from "./article-ai";
 import { getT } from "../lib/i18n/server";
 import LoadError from "./load-error";
 
@@ -27,22 +28,27 @@ export default async function PageDetail({ params }: { params: Promise<{ slug: s
     return <LoadError what={t.pages.title} href={`/${slug}`} />;
   }
   if (!page) notFound();
+  // 外文页面读后台已有的译文（和文章、手记一样），没有译文时显示中文原文并说明
+  const ai = await loadArticleAi(page.id);
+  const body = ai.translation ?? page;
+  const subtitle = ai.translation ? ai.translation.subtitle : page.subtitle;
 
   return (
     <article className="post-detail">
-      <IslandReading title={page.title} kind="page" />
+      <IslandReading title={body.title} kind="page" />
       <header className="page-heading">
-        <h1>{page.title}</h1>
-        {page.subtitle && <p className="post-meta">{page.subtitle}</p>}
+        <h1 lang={ai.original}>{body.title}</h1>
+        {subtitle && <p className="post-meta" lang={ai.original}>{subtitle}</p>}
       </header>
       <div className="post-list-content">
-        <ArticleBody text={page.text} contentFormat={page.contentFormat} content={page.content} emptyText={t.pages.noBody} />
+        <ArticleAiNotes ai={ai} />
+        <div lang={ai.original}><ArticleBody text={body.text} contentFormat={body.contentFormat} content={body.content} emptyText={t.pages.noBody} /></div>
         <Suspense fallback={<p className="post-meta" role="status">{t.list.loadingComments}</p>}>
           <Comments refId={page.id} refType="Page" allowComment={page.allowComment} />
         </Suspense>
       </div>
       {/* 右侧悬浮栏：目录 + 操作（喜欢、分享、订阅、回到顶部），宽屏悬浮在正文右侧留白里，窄屏隐藏 */}
-      <ArticleAside title={page.title} comments={{ refId: page.id, refType: "Page", allowComment: page.allowComment }} />
+      <ArticleAside title={body.title} comments={{ refId: page.id, refType: "Page", allowComment: page.allowComment }} />
     </article>
   );
 }

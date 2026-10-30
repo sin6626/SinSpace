@@ -5,7 +5,7 @@ import { Suspense, type ReactNode } from "react";
 import { getMurmurs, getNotes, getPosts } from "../lib/blog-data";
 import { murmurImageSources } from "../lib/murmur";
 import { formatDate } from "../lib/date";
-import { getT } from "../lib/i18n/server";
+import { getLocale, getT } from "../lib/i18n/server";
 import { excerpt } from "../lib/excerpt";
 import { postHref } from "./post-list";
 import RecentActivityList from "./recent-activity";
@@ -55,18 +55,19 @@ function Section<T>({ title, note, allHref, allLabel, failed, items, empty, clas
 }
 
 // 竖向时间线的一条：前面一颗小星，标题在左，附加信息和日期靠右；整条可点。
-function TimelineItem({ href, created, title, meta, serif, pinned }: {
+function TimelineItem({ href, created, title, meta, serif, pinned, original }: {
   href: string | null;
   created: string;
   title: string;
   meta?: ReactNode;
   serif?: boolean;
   pinned?: boolean;
+  original?: boolean;
 }) {
   return (
     <li className={pinned ? "home-timeline-item is-pinned" : "home-timeline-item"}>
       <span className="home-timeline-node" aria-hidden="true" />
-      <span className={serif ? "home-timeline-title is-serif" : "home-timeline-title"}>
+      <span className={serif ? "home-timeline-title is-serif" : "home-timeline-title"} lang={original ? "zh-CN" : undefined}>
         {href ? <Link className="card-link" href={href}>{title}</Link> : title}
       </span>
       <span className="home-timeline-meta">
@@ -82,8 +83,8 @@ export default async function HomeLatest() {
   const t = (await getT()).home;
   const section = (copy: { title: string; note: string; empty: string }) => ({ ...copy, allLabel: t.all, failed: t.loadFailed(copy.title) });
   const [posts, notes, murmurs] = await Promise.all([
-    load(async () => (await getPosts(1)).data.slice(0, 5)),
-    load(async () => (await getNotes(1)).data.slice(0, 5)),
+    load(async () => (await getPosts(1, undefined, await getLocale())).data.slice(0, 5)),
+    load(async () => (await getNotes(1, await getLocale())).data.slice(0, 5)),
     load(async () => (await getMurmurs(1)).data.slice(0, 6)),
   ]);
   return (
@@ -98,6 +99,7 @@ export default async function HomeLatest() {
                   href={postHref(post)}
                   created={post.created}
                   title={post.title}
+                  original={post.original}
                   pinned={post.pinned}
                   meta={<>{post.pinned && <span className="badge">{t.pinned}</span>}{post.category && <span>{post.category.name}</span>}</>}
                 />
@@ -114,6 +116,7 @@ export default async function HomeLatest() {
                   href={`/notes/${note.nid}`}
                   created={note.created}
                   title={note.title}
+                  original={note.original}
                   serif
                   meta={<span>{[note.mood, note.weather].filter(Boolean).join(" · ") || note.topic}</span>}
                 />
@@ -132,7 +135,7 @@ export default async function HomeLatest() {
                 return (
                   <li key={item.id}>
                     <time dateTime={item.created}>{formatDate(item.created)}</time>
-                    {text && <p>{text}</p>}
+                    {text && <p lang="zh-CN">{text}</p>}
                     {images.length > 0 && (
                       <div className="home-murmur-thumbs" aria-label={t.images(images.length)}>
                         {images.slice(0, 3).map((src) => (

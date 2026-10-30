@@ -112,6 +112,9 @@ const zh = {
     published: "发布了",
     failed: "最近的动态读取失败，请稍后刷新。",
     quiet: "这里还很安静。",
+    aThinking: "一条思考",
+    deleted: "已删除的内容",
+    photo: "（一张图）",
   },
   siteActions: {
     like: "喜欢本站",

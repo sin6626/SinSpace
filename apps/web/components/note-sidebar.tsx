@@ -2,7 +2,7 @@ import { ChevronDown, Hash } from "lucide-react";
 import Link from "./locale-provider";
 import { unstable_rethrow } from "next/navigation";
 import { getTopics } from "../lib/blog-data";
-import { getT } from "../lib/i18n/server";
+import { getLocale, getT } from "../lib/i18n/server";
 import "./details-sidebar.css";
 
 // 手记列表的话题：默认收起，选中某个话题时自动展开。
@@ -10,7 +10,7 @@ export default async function NoteTopicDrawer({ activeTopic }: { activeTopic?: s
   const { notes: t, list } = await getT();
   let topics: Awaited<ReturnType<typeof getTopics>> | null = null;
   try {
-    topics = await getTopics();
+    topics = await getTopics(await getLocale());
   } catch (error) {
     unstable_rethrow(error);
   }

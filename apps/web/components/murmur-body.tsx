@@ -28,7 +28,8 @@ const componentsFor = (t: Messages["murmurs"]): Components => ({
 export default async function MurmurBody({ content }: { content: string }) {
   const components = componentsFor((await getT()).murmurs);
   return (
-    <div className="murmur-body">
+    // 站长自己的话，不翻译，外文页面上标明是中文
+    <div className="murmur-body" lang="zh-CN">
       <Markdown remarkPlugins={[remarkGfm]} components={components} allowedElements={["p", "a", "img", "strong", "em", "del", "code", "pre", "ul", "ol", "li", "blockquote", "br"]} unwrapDisallowed>
         {content}
       </Markdown>

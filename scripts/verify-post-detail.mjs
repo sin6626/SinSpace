@@ -29,7 +29,7 @@ vm.runInNewContext(code, {
 })
 const render = (category = 'study%26think', slug = 'test') => module.exports.default({ params: Promise.resolve({ category, slug }) })
 const html = renderToStaticMarkup(await render())
-assert.deepEqual(Array.from(request), ['study%26think', 'test'])
+assert.deepEqual(Array.from(request), ['study%26think', 'test', 'zh'])
 assert.ok(html.includes('<h2 id="标题">标题</h2>') && html.includes('<li>条目</li>'), 'Markdown 标题带目录锚点 id')
 // 目录锚点：重名标题加序号，去掉标点，空标题退回 section。
 const slug = articleBody.exports.createSlugger()

@@ -51,7 +51,7 @@ export default async function ThinkingList({ searchParams }: { searchParams: Pro
               const href = item.ref && refHref(item.ref, categories);
               return (
                 <li key={item.id} className="thinking-card">
-                  <ArticleBody text={item.content} emptyText="" />
+                  <div lang="zh-CN"><ArticleBody text={item.content} emptyText="" /></div>
                   <p className="post-meta thinking-meta">
                     <time dateTime={item.created}>{formatDate(item.created)}</time>
                     {item.ref && (href ? <Link href={href}>{t.quote(item.ref.title)}</Link> : <span>{t.quote(item.ref.title)}</span>)}

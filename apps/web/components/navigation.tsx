@@ -3,7 +3,7 @@ import { unstable_rethrow } from "next/navigation";
 import { getNavigationData, getNavigationPanels, getOwner } from "../lib/blog-data";
 import { SocialIcon } from "./iconify-icon";
 import NavigationMenu, { type NavigationState } from "./navigation-menu";
-import { getT } from "../lib/i18n/server";
+import { getLocale, getT } from "../lib/i18n/server";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -28,8 +28,8 @@ async function NavigationData({ account }: { account?: ReactNode }) {
   try {
     // 悬停面板的数据和站长社交账号读不到时不影响导航本身，面板退回简单列表
     const [data, panels, owner] = await Promise.all([
-      getNavigationData(),
-      getNavigationPanels().catch((error) => { unstable_rethrow(error); return null; }),
+      getNavigationData(await getLocale()),
+      getNavigationPanels(await getLocale()).catch((error) => { unstable_rethrow(error); return null; }),
       getOwner().catch((error) => { unstable_rethrow(error); return null; }),
     ]);
     state = {

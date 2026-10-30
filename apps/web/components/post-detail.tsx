@@ -10,7 +10,7 @@ import ArticleBody from "./article-body";
 import ArticleAside from "./article-aside";
 import { ArticleAiNotes, ArticleLanguages, loadArticleAi } from "./article-ai";
 import ArticleStats from "./article-stats";
-import { getT } from "../lib/i18n/server";
+import { getLocale, getT } from "../lib/i18n/server";
 import "./post-detail.css";
 import { Suspense } from "react";
 import Comments from "./comments";
@@ -30,7 +30,7 @@ export default async function PostDetail({ params }: { params: Promise<{ categor
   const href = `/posts/${category}/${slug}`;
   let post: Awaited<ReturnType<typeof getPost>>;
   try {
-    post = await getPost(category, slug);
+    post = await getPost(category, slug, await getLocale());
   } catch (error) {
     unstable_rethrow(error);
     return <LoadError what={t.posts.title} href={href} />;
@@ -75,7 +75,7 @@ export default async function PostDetail({ params }: { params: Promise<{ categor
 
 // 相邻文章：复用时间线缓存（全部已发布文章按发布时间倒序），读取失败时不显示。
 async function PostNeighbors({ id }: { id: string }) {
-  const posts = await getTimeline().then((items) => items.flatMap((item) => item.kind === "post" ? [item] : []), () => []);
+  const posts = await getTimeline(await getLocale()).then((items) => items.flatMap((item) => item.kind === "post" ? [item] : []), () => []);
   const index = posts.findIndex((item) => item.id === id);
   if (index < 0) return null;
   const href = (item: (typeof posts)[number]) => `/posts/${encodeURIComponent(item.category.slug)}/${encodeURIComponent(item.slug)}`;

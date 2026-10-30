@@ -4,6 +4,7 @@ import { getApiClient } from "./api";
 import { safeUrl } from "./safe-url";
 import { excerpt, readingMinutes } from "./excerpt";
 import { socialLinks } from "./social";
+import { parseContentTranslations } from "./theme-config";
 
 // 站名和描述以后台 SEO 设置为准（getSiteSettings），这两个值只是读取失败时的兜底。
 export const siteName = "Sin’s Space";
@@ -29,18 +30,19 @@ async function orNotFound<T>(request: Promise<T>) {
   }
 }
 
-export async function getNavigationData() {
+// lang：外文页面传 en / ja，分类名和页面标题换成 Core 里的译文（没有译文的保持中文），见 getLocalizedNames。
+export async function getNavigationData(lang: ContentLang = "zh") {
   "use cache";
   cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
-  cacheTag("blog:navigation", "blog:categories", "blog:pages");
-  const data = await getApiClient().aggregate.getAggregateData();
+  cacheTag("blog:navigation", "blog:categories", "blog:pages", "blog:ai");
+  const [data, names] = await Promise.all([getApiClient().aggregate.getAggregateData(), localizedNames(lang)]);
   if (!Array.isArray(data.categories) || !Array.isArray(data.pageMeta)) {
     throw new Error("导航数据缺少分类或页面。");
   }
   return {
-    categories: data.categories.map(({ name, slug }) => ({ name, slug })),
+    categories: data.categories.map(({ name, slug }) => ({ name: names?.categories[slug] ?? name, slug })),
     // 后台页面按“排序”字段排列（关于我在关于本站前面）。
-    pageMeta: [...data.pageMeta].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map(({ title, slug }) => ({ title, slug })),
+    pageMeta: [...data.pageMeta].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map(({ id, title, slug }) => ({ title: names?.titles[id] ?? title, slug })),
   };
 }
 
@@ -105,11 +107,11 @@ export async function getSiteUrl() {
   return (await getSiteSettings()).siteUrl;
 }
 
-export async function getCategories() {
+export async function getCategories(lang: ContentLang = "zh") {
   "use cache";
   cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
   cacheTag("blog:categories");
-  const { data } = await getApiClient().category.getAllCategories();
+  const { data } = await getApiClient(lang).category.getAllCategories();
   return data.map(({ id, name, slug, type, count, created }) => ({
     id, name, slug, type, count, created,
   }));
@@ -118,19 +120,20 @@ export async function getCategories() {
 // 列表里每条的摘要按这个顺序取，保证不冷清（用户 2026-10-29 定）：AI 摘要 → 自己写的摘要 → 正文开头。
 // AI 摘要只读后台已生成的（getArticleAi，1 小时缓存，与详情页共用），读不到就往下退。
 export type ListExcerpt = { text: string; source: "ai" | "summary" | "text" } | null;
-async function listExcerpt(id: string, summary: string | null | undefined, text: string | null | undefined): Promise<ListExcerpt> {
-  const ai = await getArticleAi(id).catch(() => null);
+async function listExcerpt(id: string, summary: string | null | undefined, text: string | null | undefined, lang: ContentLang): Promise<ListExcerpt> {
+  const ai = await getArticleAi(id, lang).catch(() => null);
   if (ai?.summary) return { text: ai.summary, source: "ai" };
   if (summary?.trim()) return { text: summary.trim(), source: "summary" };
   const body = excerpt(text, 120);
   return body ? { text: body, source: "text" } : null;
 }
 
-export async function getPosts(page: number, categoryId?: string) {
+// 外文页面（lang 为 en / ja）由 Core 把已有译文换进标题、正文、摘要、标签和分类名，摘录和阅读时长也按译文算。
+export async function getPosts(page: number, categoryId?: string, lang: ContentLang = "zh") {
   "use cache";
   cacheLife({ stale: 60, revalidate: 60, expire: 300 });
-  cacheTag("blog:posts", "blog:categories");
-  const { data, pagination } = await getApiClient().post.getList(page, 10, {
+  cacheTag("blog:posts", "blog:categories", "blog:ai");
+  const { data, pagination } = await getApiClient(lang).post.getList(page, 10, {
     categoryIds: categoryId ? [categoryId] : undefined,
     // text 只在服务端用来算摘录和阅读时长，不返回给页面
     select: ["title", "summary", "text", "created", "categoryId", "slug", "pin", "tags", "count"],
@@ -141,24 +144,27 @@ export async function getPosts(page: number, categoryId?: string) {
       title: post.title,
       slug: post.slug,
       summary: post.summary,
-      excerpt: await listExcerpt(post.id, post.summary, post.text),
+      excerpt: await listExcerpt(post.id, post.summary, post.text, lang),
       stats: { minutes: readingMinutes(post.text), reads: post.count?.read ?? 0, likes: post.count?.like ?? 0 },
       tags: (post.tags ?? []).slice(0, 3),
       created: post.created,
       categoryId: post.categoryId,
       // Core 把置顶文章排在最前，页面需要标出来，否则看起来像排序错了。
       pinned: Boolean(post.pin),
+      // 外文页面上这篇还没有译文，标题和摘录仍是中文
+      original: lang !== "zh" && !(post as { isTranslated?: boolean }).isTranslated,
       category: post.category ? { name: post.category.name, slug: post.category.slug } : null,
     }))),
     pagination: { ...pagination },
   };
 }
 
-export async function getPost(category: string, slug: string) {
+// 详情的正文译文由页面另取（getArticleTranslation），这里是中文原文；lang 只把面包屑里的分类名换成译文。
+export async function getPost(category: string, slug: string, lang: ContentLang = "zh") {
   "use cache";
   cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
   cacheTag("blog:posts", "blog:categories");
-  const post = await orNotFound(getApiClient().post.getPost(category, slug));
+  const [post, names] = await Promise.all([orNotFound(getApiClient().post.getPost(category, slug)), localizedNames(lang)]);
   if (!post) return null;
   cacheTag(`blog:post:${post.id}`);
   return {
@@ -171,15 +177,16 @@ export async function getPost(category: string, slug: string) {
     count: { read: post.count?.read ?? 0, like: post.count?.like ?? 0 },
     ...lexicalContent(post),
     created: post.created,
-    category: post.category ? { name: post.category.name, slug: post.category.slug } : null,
+    category: post.category ? { name: names?.categories[post.category.slug] ?? post.category.name, slug: post.category.slug } : null,
   };
 }
 
-export async function getNotes(page: number) {
+// 外文页面由 Core 把已有译文换进标题、正文、心情、天气和话题名。
+export async function getNotes(page: number, lang: ContentLang = "zh") {
   "use cache";
   cacheLife({ stale: 60, revalidate: 60, expire: 300 });
-  cacheTag("blog:notes");
-  const { data, pagination } = await getApiClient().note.getList(page, 10);
+  cacheTag("blog:notes", "blog:ai");
+  const { data, pagination } = await getApiClient(lang).note.getList(page, 10);
   return {
     // 手记没有手写摘要字段：AI 摘要 → 正文开头
     data: await Promise.all(data.map(async (note) => ({
@@ -190,17 +197,20 @@ export async function getNotes(page: number) {
       mood: note.mood,
       weather: note.weather,
       topic: note.topic?.name ?? null,
-      excerpt: await listExcerpt(note.id, null, note.text),
+      original: lang !== "zh" && !(note as { isTranslated?: boolean }).isTranslated,
+      excerpt: await listExcerpt(note.id, null, note.text, lang),
       stats: { minutes: readingMinutes(note.text), reads: note.count?.read ?? 0, likes: note.count?.like ?? 0 },
     }))),
     pagination: { ...pagination },
   };
 }
 
-export async function getNote(nid: number) {
+// 正文译文由页面另取；lang 只把心情、天气、话题和相邻手记的标题换成译文。
+export async function getNote(nid: number, lang: ContentLang = "zh") {
   "use cache";
   cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
-  cacheTag("blog:notes");
+  cacheTag("blog:notes", "blog:ai");
+  const names = await localizedNames(lang);
   let result;
   try {
     result = await orNotFound(getApiClient().note.getNoteByNid(nid));
@@ -213,8 +223,8 @@ export async function getNote(nid: number) {
   const { data: note, prev, next } = result;
   cacheTag(`blog:note:${note.id}`);
   // Mix Space 的 prev 是更新的一篇，next 是更早的一篇。
-  const link = (item?: { nid?: number; title?: string }) =>
-    item?.nid && item.title ? { nid: item.nid, title: item.title } : null;
+  const link = (item?: { id?: string; nid?: number; title?: string }) =>
+    item?.nid && item.title ? { nid: item.nid, title: (item.id && names?.titles[item.id]) || item.title } : null;
   return {
     locked: false as const,
     id: note.id,
@@ -226,23 +236,36 @@ export async function getNote(nid: number) {
     count: { read: note.count?.read ?? 0, like: note.count?.like ?? 0 },
     ...lexicalContent(note),
     created: note.created,
-    mood: note.mood,
-    weather: note.weather,
-    topic: note.topic?.name ?? null,
+    mood: (note.mood && names?.moods[note.mood]) || note.mood,
+    weather: (note.weather && names?.weathers[note.weather]) || note.weather,
+    topic: note.topic ? names?.topics[note.topic.id] ?? note.topic.name : null,
     newer: link(prev),
     older: link(next),
   };
 }
 
-export async function getProjects() {
+// lang：外文页面用配置片段 i18n 里写好的作品名和介绍（Core 没有作品翻译），没写的保持中文并标出原文语言。
+export async function getProjects(lang: ContentLang = "zh") {
   "use cache";
   // Core 没有可勾选的作品事件，Webhook 无法通知，缓存时间设短一些。
   cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
-  cacheTag("blog:projects");
-  const { data } = await getApiClient().project.getAll();
+  cacheTag("blog:projects", "blog:theme");
+  const [{ data }, config] = await Promise.all([getApiClient().project.getAll(), lang === "zh" ? null : getThemeConfig().catch(() => null)]);
+  const translated = config ? parseContentTranslations(config, lang).projects : {};
   return data.map(({ id, name, description, avatar, projectUrl, previewUrl, docUrl }) => ({
-    id, name, description, avatar, projectUrl, previewUrl, docUrl,
+    id,
+    name: translated[id]?.name ?? name,
+    description: translated[id]?.description ?? description,
+    original: lang !== "zh" && !translated[id]?.name,
+    avatar, projectUrl, previewUrl, docUrl,
   }));
+}
+
+// 站点那句话（后台 SEO 描述）：外文页面用配置片段 i18n 里的译文，没写时用中文。
+export async function getSiteDescription(lang: ContentLang = "zh") {
+  const [settings, config] = await Promise.all([getSiteSettings().catch(() => null), lang === "zh" ? null : getThemeConfig().catch(() => null)]);
+  const translated = config ? parseContentTranslations(config, lang).siteDescription : undefined;
+  return { text: translated ?? settings?.description ?? siteDescription, original: lang !== "zh" && !translated };
 }
 
 // 站点主题配置（后台配置片段 theme/sin-space，格式见 lib/theme-config.ts）。Core 保存片段不发 Webhook 事件，缓存设短一些；
@@ -256,15 +279,16 @@ export async function getThemeConfig(): Promise<unknown> {
 }
 
 // 时间线：全部已发布文章与公开手记，只取标题、日期和拼链接的字段，按发布时间倒序合并。
-export async function getTimeline() {
+export async function getTimeline(lang: ContentLang = "zh") {
   "use cache";
   cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
-  cacheTag("blog:posts", "blog:notes", "blog:categories");
-  const { data } = await getApiClient().aggregate.getTimeline({ sort: "desc" });
+  cacheTag("blog:posts", "blog:notes", "blog:categories", "blog:ai");
+  const [{ data }, names] = await Promise.all([getApiClient().aggregate.getTimeline({ sort: "desc" }), localizedNames(lang)]);
+  const title = (id: string, original: string) => names?.titles[id] ?? original;
   const posts = (data.posts ?? []).flatMap((post) => post.category
-    ? [{ kind: "post" as const, id: post.id, title: post.title, created: post.created, category: { name: post.category.name, slug: post.category.slug }, slug: post.slug }]
+    ? [{ kind: "post" as const, id: post.id, title: title(post.id, post.title), created: post.created, category: { name: names?.categories[post.category.slug] ?? post.category.name, slug: post.category.slug }, slug: post.slug }]
     : []);
-  const notes = (data.notes ?? []).map((note) => ({ kind: "note" as const, id: note.id, title: note.title, created: note.created, nid: note.nid }));
+  const notes = (data.notes ?? []).map((note) => ({ kind: "note" as const, id: note.id, title: title(note.id, note.title), created: note.created, nid: note.nid }));
   return [...posts, ...notes].sort((a, b) => Date.parse(b.created) - Date.parse(a.created));
 }
 
@@ -288,16 +312,23 @@ export type RecentActivity = {
   author?: string;
   avatar?: string;
   text?: string;
+  onThinking?: boolean;
+  deleted?: boolean;
+  image?: boolean;
 };
 
-export async function getRecentActivity() {
+// lang：文章、手记的标题换成译文（按时间线里的标题对照），评论、碎碎念、思考的内容保持中文。
+export async function getRecentActivity(lang: ContentLang = "zh") {
   "use cache";
   cacheLife({ stale: 60, revalidate: 120, expire: 600 });
-  cacheTag("blog:posts", "blog:notes", "blog:comments", "blog:recently", "blog:murmurs", "blog:categories");
-  const [data, timeline] = await Promise.all([getApiClient().activity.getRecentActivities(), getTimeline()]);
+  cacheTag("blog:posts", "blog:notes", "blog:comments", "blog:recently", "blog:murmurs", "blog:categories", "blog:ai");
+  const [data, timeline, zhTimeline] = await Promise.all([getApiClient().activity.getRecentActivities(), getTimeline(lang), getTimeline()]);
   const posts = new Map(timeline.flatMap((item) => item.kind === "post" ? [[item.slug, `/posts/${encodeURIComponent(item.category.slug)}/${encodeURIComponent(item.slug)}`]] : []));
+  // 动态里只有中文标题，按时间线的中文标题找到译文
+  const translatedTitle = new Map(zhTimeline.map((item, index) => [item.title, timeline[index].title]));
   const record = data as unknown as Record<string, Array<Record<string, unknown>>>;
   const text = (value: unknown) => typeof value === "string" ? value : undefined;
+  const title = (value: unknown) => { const original = text(value); return original && (translatedTitle.get(original) ?? original); };
   const href = (type: unknown, item: Record<string, unknown>) => {
     const kind = String(type).toLowerCase();
     if (kind.startsWith("note")) return item.nid ? `/notes/${item.nid}` : null;
@@ -309,13 +340,15 @@ export async function getRecentActivity() {
   const items: RecentActivity[] = [
     ...(record.comment ?? []).map((item) => ({
       key: `comment-${item.id}-${item.created}`, kind: "comment" as const, created: String(item.created),
-      title: text(item.title) ?? (String(item.type).toLowerCase().startsWith("recent") ? "一条思考" : undefined),
+      title: title(item.title),
+      // 评论在思考下面时 Core 不给标题，组件显示“一条思考”
+      onThinking: String(item.type).toLowerCase().startsWith("recent"),
       href: href(item.type, item), author: text(item.author), avatar: safeUrl(text(item.avatar)), text: excerpt(text(item.text), 80),
     })),
-    ...(record.like ?? []).map((item) => ({ key: `like-${item.id}`, kind: "like" as const, created: String(item.created), title: text(item.title) ?? "已删除的内容", href: href(item.type, item) })),
-    ...(record.post ?? []).map((item) => ({ key: `post-${item.id}`, kind: "post" as const, created: String(item.created), title: text(item.title), href: href("posts", item) })),
-    ...(record.note ?? []).map((item) => ({ key: `note-${item.id}`, kind: "note" as const, created: String(item.created), title: text(item.title), href: href("notes", item) })),
-    ...(record.murmur ?? []).map((item) => ({ key: `murmur-${item.id}`, kind: "murmur" as const, created: String(item.created), href: "/murmurs", text: excerpt(text(item.content), 80) || "（一张图）" })),
+    ...(record.like ?? []).map((item) => ({ key: `like-${item.id}`, kind: "like" as const, created: String(item.created), title: title(item.title), deleted: !text(item.title), href: href(item.type, item) })),
+    ...(record.post ?? []).map((item) => ({ key: `post-${item.id}`, kind: "post" as const, created: String(item.created), title: title(item.title), href: href("posts", item) })),
+    ...(record.note ?? []).map((item) => ({ key: `note-${item.id}`, kind: "note" as const, created: String(item.created), title: title(item.title), href: href("notes", item) })),
+    ...(record.murmur ?? []).map((item) => ({ key: `murmur-${item.id}`, kind: "murmur" as const, created: String(item.created), href: "/murmurs", text: excerpt(text(item.content), 80) || undefined, image: !excerpt(text(item.content), 80) })),
     ...(record.recent ?? []).map((item) => ({ key: `recent-${item.id}`, kind: "recent" as const, created: String(item.created), href: "/thinking", text: excerpt(text(item.content), 80) })),
   ];
   return items.sort((a, b) => Date.parse(b.created) - Date.parse(a.created)).slice(0, 12);
@@ -451,6 +484,55 @@ export async function getArticleAi(id: string, lang: "zh" | TranslationLanguage 
   };
 }
 
+// 站点内容的语言：中文是原文，en / ja 读 Core 里已有的译文。
+export type ContentLang = "zh" | TranslationLanguage;
+
+// 外文页面的“名字对照表”：文章、手记、页面的标题（AI 翻译），分类名、话题名、心情、天气（Core 的翻译条目）。
+// 时间线、导航面板、搜索结果、相邻文章这些 Core 不按语言返回的地方，用它把中文换成译文；没有译文的保持中文。
+// 唯一来源是 Core：列表接口带 ?lang= 时 Core 已把译文换进去，这里只是收集起来按 id 查。
+export type LocalizedNames = {
+  titles: Record<string, string>;
+  categories: Record<string, string>;
+  topics: Record<string, string>;
+  moods: Record<string, string>;
+  weathers: Record<string, string>;
+};
+
+export async function getLocalizedNames(lang: TranslationLanguage): Promise<LocalizedNames> {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheTag("blog:posts", "blog:notes", "blog:categories", "blog:pages", "blog:ai");
+  const client = getApiClient(lang);
+  const all = async <T>(load: (page: number) => Promise<{ data: T[]; pagination: { totalPage: number } }>) => {
+    const first = await load(1);
+    const rest = await Promise.all(Array.from({ length: Math.max(0, first.pagination.totalPage - 1) }, (_, index) => load(index + 2)));
+    return [first, ...rest].flatMap((result) => result.data);
+  };
+  const [posts, notes, sourceNotes, { data: categories }, pages] = await Promise.all([
+    all((page) => client.post.getList(page, 50)),
+    all((page) => client.note.getList(page, 50)),
+    all((page) => getApiClient().note.getList(page, 50)),
+    client.category.getAllCategories(),
+    all((page) => getApiClient().page.getList(page, 50)),
+  ]);
+  const pageTitles = await Promise.all(pages.map(async (page) => [page.id, (await getArticleTranslation(page.id, lang).catch(() => null))?.title ?? page.title] as const));
+  const source = new Map(sourceNotes.map((note) => [note.id, note]));
+  const pairs = (field: "mood" | "weather") => Object.fromEntries(notes.flatMap((note) => {
+    const original = source.get(note.id)?.[field];
+    return original && note[field] ? [[original, note[field]]] : [];
+  }));
+  return {
+    titles: Object.fromEntries([...[...posts, ...notes].map((item) => [item.id, item.title] as const), ...pageTitles]),
+    categories: Object.fromEntries(categories.map((category) => [category.slug, category.name])),
+    topics: Object.fromEntries(notes.flatMap((note) => (note.topic ? [[note.topic.id, note.topic.name]] : []))),
+    moods: pairs("mood"),
+    weathers: pairs("weather"),
+  };
+}
+
+// 中文不需要对照表
+const localizedNames = (lang: ContentLang) => (lang === "zh" ? Promise.resolve(null) : getLocalizedNames(lang).catch(() => null));
+
 export async function getArticleTranslation(id: string, lang: TranslationLanguage) {
   "use cache";
   cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
@@ -460,6 +542,8 @@ export async function getArticleTranslation(id: string, lang: TranslationLanguag
   const doc = translation as typeof translation & { contentFormat?: string; content?: string };
   return {
     title: doc.title,
+    subtitle: doc.subtitle,
+    summary: doc.summary,
     text: doc.text,
     contentFormat: doc.contentFormat,
     ...lexicalContent(doc),
@@ -468,6 +552,7 @@ export async function getArticleTranslation(id: string, lang: TranslationLanguag
   };
 }
 
+// 页面（关于我等）的正文译文由页面另取（getArticleTranslation），这里是中文原文。
 export async function getPage(slug: string) {
   "use cache";
   cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
@@ -488,31 +573,32 @@ export async function getPage(slug: string) {
 
 // 搜索关键词由访客输入；结果只含公开字段，文章/手记变动时随 Webhook 一并失效。
 // Core 搜索默认返回第一页 10 条。
-export async function searchPosts(keyword: string) {
+// 搜索在中文原文里匹配；外文页面把结果的标题和分类名换成译文。
+export async function searchPosts(keyword: string, lang: ContentLang = "zh") {
   "use cache";
   cacheLife({ stale: 60, revalidate: 60, expire: 300 });
-  cacheTag("blog:posts");
-  const { data, pagination } = await getApiClient().search.search("post", keyword);
+  cacheTag("blog:posts", "blog:ai");
+  const [{ data, pagination }, names] = await Promise.all([getApiClient().search.search("post", keyword), localizedNames(lang)]);
   return {
     total: pagination.total,
     data: data.map((post) => ({
       id: post.id,
-      title: post.title,
+      title: names?.titles[post.id] ?? post.title,
       created: post.created,
       slug: post.slug,
-      category: post.category ? { name: post.category.name, slug: post.category.slug } : null,
+      category: post.category ? { name: names?.categories[post.category.slug] ?? post.category.name, slug: post.category.slug } : null,
     })),
   };
 }
 
-export async function searchNotes(keyword: string) {
+export async function searchNotes(keyword: string, lang: ContentLang = "zh") {
   "use cache";
   cacheLife({ stale: 60, revalidate: 60, expire: 300 });
-  cacheTag("blog:notes");
-  const { data, pagination } = await getApiClient().search.search("note", keyword);
+  cacheTag("blog:notes", "blog:ai");
+  const [{ data, pagination }, names] = await Promise.all([getApiClient().search.search("note", keyword), localizedNames(lang)]);
   return {
     total: pagination.total,
-    data: data.map((note) => ({ id: note.id, nid: note.nid, title: note.title, created: note.created })),
+    data: data.map((note) => ({ id: note.id, nid: note.nid, title: names?.titles[note.id] ?? note.title, created: note.created })),
   };
 }
 
@@ -528,43 +614,43 @@ export async function getTags() {
 }
 
 // 标签名原样传给 Core（有的标签带空格）；没有文章时 Core 返回 404，这里转成空列表。
-export async function getPostsByTag(name: string) {
+export async function getPostsByTag(name: string, lang: ContentLang = "zh") {
   "use cache";
   cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
-  cacheTag("blog:posts");
-  const result = await orNotFound(getApiClient().category.getTagByName(name));
+  cacheTag("blog:posts", "blog:ai");
+  const [result, names] = await Promise.all([orNotFound(getApiClient().category.getTagByName(name)), localizedNames(lang)]);
   return (result?.data ?? []).map((post) => ({
     id: post.id,
-    title: post.title,
+    title: names?.titles[post.id] ?? post.title,
     created: post.created,
     slug: post.slug,
-    category: post.category ? { name: post.category.name, slug: post.category.slug } : null,
+    category: post.category ? { name: names?.categories[post.category.slug] ?? post.category.name, slug: post.category.slug } : null,
   }));
 }
 
 // 话题本身没有文章数，用每个话题第一页的分页总数统计；话题很少，请求数可以接受。
-export async function getTopics() {
+export async function getTopics(lang: ContentLang = "zh") {
   "use cache";
   cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
   cacheTag("blog:notes");
   const client = getApiClient();
-  const { data } = await client.topic.getAll();
+  const [{ data }, names] = await Promise.all([client.topic.getAll(), localizedNames(lang)]);
   const counts = await Promise.all(data.map((topic) => client.note.getNoteByTopicId(topic.id, 1, 1)));
   return data
-    .map((topic, index) => ({ id: topic.id, name: topic.name, slug: topic.slug, icon: safeUrl(topic.icon ?? undefined), count: counts[index].pagination.total }))
+    .map((topic, index) => ({ id: topic.id, name: names?.topics[topic.id] ?? topic.name, slug: topic.slug, icon: safeUrl(topic.icon ?? undefined), count: counts[index].pagination.total }))
     .filter((topic) => topic.count > 0)
     .sort((a, b) => b.count - a.count);
 }
 
 // ponytail: 一次取 50 条不分页，话题下手记超过 50 篇时再加分页。
-export async function getNotesByTopic(topicId: string) {
+export async function getNotesByTopic(topicId: string, lang: ContentLang = "zh") {
   "use cache";
   cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
-  cacheTag("blog:notes");
-  const { data, pagination } = await getApiClient().note.getNoteByTopicId(topicId, 1, 50, { sortBy: "created", sortOrder: -1 });
+  cacheTag("blog:notes", "blog:ai");
+  const [{ data, pagination }, names] = await Promise.all([getApiClient().note.getNoteByTopicId(topicId, 1, 50, { sortBy: "created", sortOrder: -1 }), localizedNames(lang)]);
   return {
     total: pagination.total,
-    data: data.map((note) => ({ id: note.id, nid: note.nid, title: note.title, created: note.created })),
+    data: data.map((note) => ({ id: note.id, nid: note.nid, title: names?.titles[note.id] ?? note.title, created: note.created })),
   };
 }
 
@@ -574,15 +660,15 @@ export async function getNotesByTopic(topicId: string) {
 // 建站天数在缓存函数里按当时时间算，最多晚一个缓存周期（1 小时）变化，跨零点那一会儿可能差一天。
 export type NavigationEntry = { id: string; title: string; created: string; href: string; kind: "post" | "note" };
 
-export async function getNavigationPanels() {
+export async function getNavigationPanels(lang: ContentLang = "zh") {
   "use cache";
   cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
-  cacheTag("blog:posts", "blog:notes", "blog:categories", "blog:navigation");
+  cacheTag("blog:posts", "blog:notes", "blog:categories", "blog:navigation", "blog:ai");
   const [site, categories, timeline, topics] = await Promise.all([
     getApiClient().proxy.aggregate.site_info.get<{ postCount?: number; noteCount?: number; totalWordCount?: number; firstPublishDate?: string }>(),
-    getCategories(),
-    getTimeline(),
-    getTopics().catch(() => []),
+    getCategories(lang),
+    getTimeline(lang),
+    getTopics(lang).catch(() => []),
   ]);
   const entry = (item: Awaited<ReturnType<typeof getTimeline>>[number]): NavigationEntry => ({
     id: item.id,
@@ -594,7 +680,7 @@ export async function getNavigationPanels() {
       : `/notes/${item.nid}`,
   });
   const posts = timeline.filter((item) => item.kind === "post");
-  const topicNotes = await Promise.all(topics.map((topic) => getNotesByTopic(topic.id).catch(() => ({ data: [] }))));
+  const topicNotes = await Promise.all(topics.map((topic) => getNotesByTopic(topic.id, lang).catch(() => ({ data: [] }))));
   const first = Date.parse(site.firstPublishDate ?? "");
   return {
     stats: {

@@ -13,7 +13,7 @@ import Comments from "./comments";
 import { ArticleNotifications, ReadingCount } from "./notifications";
 import IslandReading from "./island-reading";
 import NoteUnlock from "./note-unlock";
-import { getT } from "../lib/i18n/server";
+import { getLocale, getT } from "../lib/i18n/server";
 import "./post-detail.css";
 import LoadError from "./load-error";
 
@@ -24,7 +24,7 @@ export default async function NoteDetail({ params }: { params: Promise<{ nid: st
   const href = `/notes/${rawNid}`;
   let note: Awaited<ReturnType<typeof getNote>>;
   try {
-    note = await getNote(Number(rawNid));
+    note = await getNote(Number(rawNid), await getLocale());
   } catch (error) {
     unstable_rethrow(error);
     return <LoadError what={t.notes.title} href={href} />;

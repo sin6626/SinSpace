@@ -34,7 +34,7 @@ export default async function SayList({ searchParams }: { searchParams: Promise<
           <ul className="say-list">
             {says.map((say) => (
               <li key={say.id} className="say-card">
-                <blockquote>
+                <blockquote lang="zh-CN">
                   <p>{say.text}</p>
                   {(say.author || say.source) && (
                     <footer className="post-meta">

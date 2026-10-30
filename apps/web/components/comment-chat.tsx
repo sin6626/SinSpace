@@ -58,12 +58,12 @@ export async function ChatStream({ messages, canReply, truncated }: { messages: 
               </p>
               <div className="chat-bubble">
                 {message.quote && (
-                  <p className="chat-quote"><span>@{message.quote.author}</span>{message.quote.text}</p>
+                  <p className="chat-quote" lang="zh-CN"><span>@{message.quote.author}</span>{message.quote.text}</p>
                 )}
                 {message.deleted ? (
                   <p className="chat-deleted">{comments.deleted}</p>
                 ) : (
-                  <div className="chat-text"><Markdown allowedElements={allowedElements} unwrapDisallowed skipHtml>{message.text}</Markdown></div>
+                  <div className="chat-text" lang="zh-CN"><Markdown allowedElements={allowedElements} unwrapDisallowed skipHtml>{message.text}</Markdown></div>
                 )}
               </div>
               {canReply && !message.deleted && (

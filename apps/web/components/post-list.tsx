@@ -11,7 +11,7 @@ import Entry, { EntryTag, type EntryStats } from "./entry";
 import SidebarSearch from "./sidebar-search";
 import "./details-sidebar.css";
 import "./corners.css";
-import { getT } from "../lib/i18n/server";
+import { getLocale, getT } from "../lib/i18n/server";
 import LoadError from "./load-error";
 
 type PostListProps = {
@@ -29,6 +29,7 @@ export type PostCardData = {
   tags?: string[];
   created: string;
   pinned?: boolean;
+  original?: boolean;
   category: { name: string; slug: string } | null;
 };
 
@@ -41,6 +42,7 @@ export async function PostCard({ post, headingLevel = 2 }: { post: PostCardData;
       title={post.title}
       created={post.created}
       headingLevel={headingLevel}
+      lang={post.original ? "zh-CN" : undefined}
       excerpt={post.excerpt ?? post.summary}
       stats={post.stats}
       hashtags={post.tags}
@@ -83,10 +85,10 @@ export default async function PostList({ searchParams, params }: PostListProps) 
   let category: CategoryModel | undefined;
   let result: Awaited<ReturnType<typeof getPosts>>;
   try {
-    categories = await getCategories();
+    categories = await getCategories(await getLocale());
     category = route ? categories.find((item) => item.slug === slug) : undefined;
     if (route && !category) notFound();
-    result = await getPosts(page, category?.id);
+    result = await getPosts(page, category?.id, await getLocale());
     if (page > Math.max(1, result.pagination.totalPage)) notFound();
   } catch (error) {
     unstable_rethrow(error);

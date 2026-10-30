@@ -112,6 +112,9 @@ const en: Messages = {
     published: "Published",
     failed: "Couldn't load recent activity. Please refresh later.",
     quiet: "It's quiet here for now.",
+    aThinking: "a thought",
+    deleted: "something deleted",
+    photo: "(a photo)",
   },
   siteActions: {
     like: "Like this site",

@@ -24,3 +24,18 @@ export function parseTechStack(config: unknown): TechStackConfig | null {
   if (rows.length === 0) return null;
   return { title: text(value.title), description: text(value.description), rows };
 }
+
+// 后台内容里 Core 没有翻译功能的几样（站点描述、作品名和介绍）的外文版本，写在同一个配置片段的 i18n 下：
+// { "i18n": { "en": { "siteDescription": "…", "projects": { "<作品 id>": { "name": "…", "description": "…" } } }, "ja": { … } } }
+// 没写的项保持中文。翻译的唯一来源仍是 Core（这个片段存在 Core 里）。
+export type ContentTranslations = { siteDescription?: string; projects: Record<string, { name?: string; description?: string }> };
+
+export function parseContentTranslations(config: unknown, lang: string): ContentTranslations {
+  const i18n = isObject(config) && isObject(config.i18n) ? config.i18n : undefined;
+  const value = i18n && isObject(i18n[lang]) ? i18n[lang] : undefined;
+  const projects = value && isObject(value.projects) ? value.projects : {};
+  return {
+    siteDescription: value ? text(value.siteDescription) : undefined,
+    projects: Object.fromEntries(Object.entries(projects).flatMap(([id, item]) => (isObject(item) ? [[id, { name: text(item.name), description: text(item.description) }]] : []))),
+  };
+}

@@ -2,7 +2,7 @@ import Link from "./locale-provider";
 import { unstable_rethrow } from "next/navigation";
 import { getTimeline } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
-import { getT } from "../lib/i18n/server";
+import { getLocale, getT } from "../lib/i18n/server";
 import LoadError from "./load-error";
 
 type Item = Awaited<ReturnType<typeof getTimeline>>[number];
@@ -26,7 +26,7 @@ export default async function TimelineList({ kind }: { kind?: Item["kind"] }) {
   const label = (item: (typeof views)[number]) => (item.kind === "post" ? posts.title : item.kind === "note" ? notes.title : t.all);
   let all: Item[];
   try {
-    all = await getTimeline();
+    all = await getTimeline(await getLocale());
   } catch (error) {
     unstable_rethrow(error);
     // 重试用整页加载（普通 <a>），确保重新请求
