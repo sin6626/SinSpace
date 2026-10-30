@@ -218,6 +218,7 @@ patchedDependencies:
   '@haklex/rich-plugin-toolbar@0.0.85': 43da8a52c5b737ccac504d71a157b1bb65daf7d1cbad46c98acfd523d360b52c
   '@haklex/rich-static-renderer@0.0.85': 2a1ba91cf3dd96c992bc114366833bc8f8eb98e8f95316e69c72573632329f2f
   '@lexical/code@0.41.0': bd3e29adf8293ffdcb1d49ec445bf98877abf7435840deb5484e32bf749be408
+  next@16.4.2: ae67d7359b9e0656e075787117d831714cd6f15b7da1cbfee3daf19f6a1c6ae7
 
 importers:
 
@@ -267,7 +268,7 @@ importers:
         version: 5.4.8
       '@better-auth/passkey':
         specifier: 1.7.9
-        version: 1.7.9(@better-auth/core@1.7.9(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.0)(better-call@1.4.2(zod@4.3.6))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5))(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-auth@1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(happy-dom@20.8.3)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3)))(better-call@1.4.2(zod@4.3.6))(nanostores@1.5.5)
+        version: 1.7.9(84d5bda60da3b2d06b5bb35526d8ba9b)
       '@bytebase/vue-kbar':
         specifier: 0.1.8
         version: 0.1.8(vue@3.5.44(typescript@5.9.3))
@@ -381,7 +382,7 @@ importers:
         version: 6.0.6
       better-auth:
         specifier: 1.7.9
-        version: 1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(happy-dom@20.8.3)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3))
+        version: 1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(patch_hash=ae67d7359b9e0656e075787117d831714cd6f15b7da1cbfee3daf19f6a1c6ae7)(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(happy-dom@20.8.3)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3))
       blurhash:
         specifier: 2.0.5
         version: 2.0.5
@@ -628,10 +629,10 @@ importers:
         version: 7.29.0
       '@better-auth/api-key':
         specifier: 1.7.9
-        version: 1.7.9(@better-auth/core@1.7.9(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.0)(better-call@1.4.2(zod@4.3.6))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5))(@better-auth/utils@0.5.0)(better-auth@1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3)))(better-call@1.4.2(zod@4.3.6))
+        version: 1.7.9(@better-auth/core@1.7.9(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.0)(better-call@1.4.2(zod@4.3.6))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5))(@better-auth/utils@0.5.0)(better-auth@1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(patch_hash=ae67d7359b9e0656e075787117d831714cd6f15b7da1cbfee3daf19f6a1c6ae7)(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3)))(better-call@1.4.2(zod@4.3.6))
       '@better-auth/passkey':
         specifier: 1.7.9
-        version: 1.7.9(@better-auth/core@1.7.9(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.0)(better-call@1.4.2(zod@4.3.6))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5))(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-auth@1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3)))(better-call@1.4.2(zod@4.3.6))(nanostores@1.5.5)
+        version: 1.7.9(bfc3c6089cfdc5ff8135b22b4bc309b0)
       '@fastify/cookie':
         specifier: 11.0.2
         version: 11.0.2
@@ -739,7 +740,7 @@ importers:
         version: 3.0.3
       better-auth:
         specifier: 1.7.9
-        version: 1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3))
+        version: 1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(patch_hash=ae67d7359b9e0656e075787117d831714cd6f15b7da1cbfee3daf19f6a1c6ae7)(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3))
       blurhash:
         specifier: 2.0.5
         version: 2.0.5
@@ -1046,7 +1047,7 @@ importers:
         version: 14.6.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       next:
         specifier: 16.4.2
-        version: 16.4.2(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.9.0)(@types/node@20.19.43)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.51.0)
+        version: 16.4.2(patch_hash=ae67d7359b9e0656e075787117d831714cd6f15b7da1cbfee3daf19f6a1c6ae7)(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.9.0)(@types/node@20.19.43)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.51.0)
       react:
         specifier: 19.3.0
         version: 19.3.0
@@ -13262,11 +13263,11 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@better-auth/api-key@1.7.9(@better-auth/core@1.7.9(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.0)(better-call@1.4.2(zod@4.3.6))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5))(@better-auth/utils@0.5.0)(better-auth@1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3)))(better-call@1.4.2(zod@4.3.6))':
+  '@better-auth/api-key@1.7.9(@better-auth/core@1.7.9(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.0)(better-call@1.4.2(zod@4.3.6))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5))(@better-auth/utils@0.5.0)(better-auth@1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(patch_hash=ae67d7359b9e0656e075787117d831714cd6f15b7da1cbfee3daf19f6a1c6ae7)(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3)))(better-call@1.4.2(zod@4.3.6))':
     dependencies:
       '@better-auth/core': 1.7.9(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.0)(better-call@1.4.2(zod@4.3.6))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5)
       '@better-auth/utils': 0.5.0
-      better-auth: 1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3))
+      better-auth: 1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(patch_hash=ae67d7359b9e0656e075787117d831714cd6f15b7da1cbfee3daf19f6a1c6ae7)(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3))
       better-call: 1.4.2(zod@4.3.6)
       zod: 4.6.7
 
@@ -13308,26 +13309,26 @@ snapshots:
     optionalDependencies:
       mongodb: 7.0.0
 
-  '@better-auth/passkey@1.7.9(@better-auth/core@1.7.9(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.0)(better-call@1.4.2(zod@4.3.6))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5))(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-auth@1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3)))(better-call@1.4.2(zod@4.3.6))(nanostores@1.5.5)':
+  '@better-auth/passkey@1.7.9(84d5bda60da3b2d06b5bb35526d8ba9b)':
     dependencies:
       '@better-auth/core': 1.7.9(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.0)(better-call@1.4.2(zod@4.3.6))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5)
       '@better-auth/utils': 0.5.0
       '@better-fetch/fetch': 1.3.2
       '@simplewebauthn/browser': 13.3.0
       '@simplewebauthn/server': 13.3.3
-      better-auth: 1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3))
+      better-auth: 1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(patch_hash=ae67d7359b9e0656e075787117d831714cd6f15b7da1cbfee3daf19f6a1c6ae7)(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(happy-dom@20.8.3)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3))
       better-call: 1.4.2(zod@4.3.6)
       nanostores: 1.5.5
       zod: 4.6.7
 
-  '@better-auth/passkey@1.7.9(@better-auth/core@1.7.9(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.0)(better-call@1.4.2(zod@4.3.6))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5))(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-auth@1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(happy-dom@20.8.3)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3)))(better-call@1.4.2(zod@4.3.6))(nanostores@1.5.5)':
+  '@better-auth/passkey@1.7.9(bfc3c6089cfdc5ff8135b22b4bc309b0)':
     dependencies:
       '@better-auth/core': 1.7.9(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.0)(better-call@1.4.2(zod@4.3.6))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5)
       '@better-auth/utils': 0.5.0
       '@better-fetch/fetch': 1.3.2
       '@simplewebauthn/browser': 13.3.0
       '@simplewebauthn/server': 13.3.3
-      better-auth: 1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(happy-dom@20.8.3)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3))
+      better-auth: 1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(patch_hash=ae67d7359b9e0656e075787117d831714cd6f15b7da1cbfee3daf19f6a1c6ae7)(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3))
       better-call: 1.4.2(zod@4.3.6)
       nanostores: 1.5.5
       zod: 4.6.7
@@ -19493,7 +19494,7 @@ snapshots:
 
   before-after-hook@4.0.0: {}
 
-  better-auth@1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3)):
+  better-auth@1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(patch_hash=ae67d7359b9e0656e075787117d831714cd6f15b7da1cbfee3daf19f6a1c6ae7)(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3)):
     dependencies:
       '@better-auth/core': 1.7.9(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.0)(better-call@1.4.2(zod@4.3.6))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5)
       '@better-auth/drizzle-adapter': 1.7.9(@better-auth/core@1.7.9(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.0)(better-call@1.4.2(zod@4.3.6))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5))(@better-auth/utils@0.5.0)
@@ -19516,7 +19517,7 @@ snapshots:
       '@prisma/client': 7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3)
       mongodb: 7.0.0
       mysql2: 3.15.3
-      next: 16.4.2(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)
+      next: 16.4.2(patch_hash=ae67d7359b9e0656e075787117d831714cd6f15b7da1cbfee3daf19f6a1c6ae7)(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)
       prisma: 7.4.2(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.3))(react@19.2.3)(typescript@5.9.3)
       react: 19.2.3
       react-dom: 19.2.4(react@19.2.3)
@@ -19525,7 +19526,7 @@ snapshots:
     transitivePeerDependencies:
       - '@opentelemetry/api'
 
-  better-auth@1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(happy-dom@20.8.3)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3)):
+  better-auth@1.7.9(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.0.0)(mysql2@3.15.3)(next@16.4.2(patch_hash=ae67d7359b9e0656e075787117d831714cd6f15b7da1cbfee3daf19f6a1c6ae7)(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(happy-dom@20.8.3)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.44(typescript@5.9.3)):
     dependencies:
       '@better-auth/core': 1.7.9(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.0)(better-call@1.4.2(zod@4.3.6))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5)
       '@better-auth/drizzle-adapter': 1.7.9(@better-auth/core@1.7.9(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.0)(better-call@1.4.2(zod@4.3.6))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5))(@better-auth/utils@0.5.0)
@@ -19548,7 +19549,7 @@ snapshots:
       '@prisma/client': 7.4.2(prisma@7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3))(typescript@5.9.3)
       mongodb: 7.0.0
       mysql2: 3.15.3
-      next: 16.4.2(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      next: 16.4.2(patch_hash=ae67d7359b9e0656e075787117d831714cd6f15b7da1cbfee3daf19f6a1c6ae7)(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       prisma: 7.4.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3)
       react: 19.3.0
       react-dom: 19.3.0(react@19.3.0)
@@ -23370,7 +23371,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  next@16.4.2(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3):
+  next@16.4.2(patch_hash=ae67d7359b9e0656e075787117d831714cd6f15b7da1cbfee3daf19f6a1c6ae7)(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(react-dom@19.2.4(react@19.2.3))(react@19.2.3):
     dependencies:
       '@next/env': 16.4.2
       '@swc/helpers': 0.5.23
@@ -23397,7 +23398,7 @@ snapshots:
       - babel-plugin-macros
     optional: true
 
-  next@16.4.2(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
+  next@16.4.2(patch_hash=ae67d7359b9e0656e075787117d831714cd6f15b7da1cbfee3daf19f6a1c6ae7)(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
     dependencies:
       '@next/env': 16.4.2
       '@swc/helpers': 0.5.23
@@ -23424,7 +23425,7 @@ snapshots:
       - babel-plugin-macros
     optional: true
 
-  next@16.4.2(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.9.0)(@types/node@20.19.43)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.51.0):
+  next@16.4.2(patch_hash=ae67d7359b9e0656e075787117d831714cd6f15b7da1cbfee3daf19f6a1c6ae7)(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.9.0)(@types/node@20.19.43)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.51.0):
     dependencies:
       '@next/env': 16.4.2
       '@swc/helpers': 0.5.23

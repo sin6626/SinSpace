@@ -21,6 +21,7 @@ patchedDependencies:
   '@haklex/rich-ext-code-snippet@0.0.85': patches/@haklex__rich-ext-code-snippet@0.0.85.patch
   '@haklex/rich-plugin-table@0.0.85': patches/@haklex__rich-plugin-table@0.0.85.patch
   '@haklex/rich-ext-nested-doc@0.0.85': patches/@haklex__rich-ext-nested-doc@0.0.85.patch
+  next@16.4.2: patches/next@16.4.2.patch
 overrides:
   get-pixels@^3>request: ./apps/core/external/request
   pino: ./apps/core/external/pino

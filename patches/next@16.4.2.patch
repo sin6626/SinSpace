@@ -1,0 +1,144 @@
+diff --git a/dist/compiled/react-dom/cjs/react-dom-client.development.js b/dist/compiled/react-dom/cjs/react-dom-client.development.js
+index 9cb40b56ebb66b17f5e8ddd1b4e536b0bbb775df..739028f7bf7d661cb7c24530eddf7a06dbf8156e 100644
+--- a/dist/compiled/react-dom/cjs/react-dom-client.development.js
++++ b/dist/compiled/react-dom/cjs/react-dom-client.development.js
+@@ -24273,8 +24273,8 @@
+                 error.message ||
+               "Skipping view transition because viewport size changed." ===
+                 error.message ||
+-              "Transition was aborted because of invalid state" ===
+-                error.message
++              0 ===
++                error.message.indexOf("Transition was aborted because of invalid state")
+             )
+               return null;
+         }
+diff --git a/dist/compiled/react-dom/cjs/react-dom-client.production.js b/dist/compiled/react-dom/cjs/react-dom-client.production.js
+index 49b478252efd4b7a72cbd156d78ab8ae7a385091..b0e0acbedd369096d2607aa0a0e6b558ed49af4e 100644
+--- a/dist/compiled/react-dom/cjs/react-dom-client.production.js
++++ b/dist/compiled/react-dom/cjs/react-dom-client.production.js
+@@ -15886,8 +15886,8 @@ function startViewTransition(
+                     error.message ||
+                   "Skipping view transition because viewport size changed." ===
+                     error.message ||
+-                  "Transition was aborted because of invalid state" ===
+-                    error.message
++                  0 ===
++                    error.message.indexOf("Transition was aborted because of invalid state")
+                 )
+                   error = null;
+             }
+diff --git a/dist/compiled/react-dom/cjs/react-dom-profiling.development.js b/dist/compiled/react-dom/cjs/react-dom-profiling.development.js
+index c2b404c698ea39714797fc53784ac64e3901ba3b..2a032b36557fb4475ce9f273d4c96d7f60576cab 100644
+--- a/dist/compiled/react-dom/cjs/react-dom-profiling.development.js
++++ b/dist/compiled/react-dom/cjs/react-dom-profiling.development.js
+@@ -24281,8 +24281,8 @@
+                 error.message ||
+               "Skipping view transition because viewport size changed." ===
+                 error.message ||
+-              "Transition was aborted because of invalid state" ===
+-                error.message
++              0 ===
++                error.message.indexOf("Transition was aborted because of invalid state")
+             )
+               return null;
+         }
+diff --git a/dist/compiled/react-dom/cjs/react-dom-profiling.profiling.js b/dist/compiled/react-dom/cjs/react-dom-profiling.profiling.js
+index cc35e673f245ed52d7940f8b42ca13cb6782503c..29701413b5af2beae9786884a355acb670cd667b 100644
+--- a/dist/compiled/react-dom/cjs/react-dom-profiling.profiling.js
++++ b/dist/compiled/react-dom/cjs/react-dom-profiling.profiling.js
+@@ -17790,8 +17790,8 @@ function startViewTransition(
+                     error.message ||
+                   "Skipping view transition because viewport size changed." ===
+                     error.message ||
+-                  "Transition was aborted because of invalid state" ===
+-                    error.message
++                  0 ===
++                    error.message.indexOf("Transition was aborted because of invalid state")
+                 )
+                   error = null;
+             }
+diff --git a/dist/compiled/react-dom-experimental/cjs/react-dom-client.development.js b/dist/compiled/react-dom-experimental/cjs/react-dom-client.development.js
+index 161d6d1415e75c7af2ff944cd86f33b2607cd492..74269e90ad02babed6ef1d031ffdf7d93997462c 100644
+--- a/dist/compiled/react-dom-experimental/cjs/react-dom-client.development.js
++++ b/dist/compiled/react-dom-experimental/cjs/react-dom-client.development.js
+@@ -26345,8 +26345,8 @@
+                 error.message ||
+               "Skipping view transition because viewport size changed." ===
+                 error.message ||
+-              "Transition was aborted because of invalid state" ===
+-                error.message
++              0 ===
++                error.message.indexOf("Transition was aborted because of invalid state")
+             )
+               return null;
+         }
+diff --git a/dist/compiled/react-dom-experimental/cjs/react-dom-client.production.js b/dist/compiled/react-dom-experimental/cjs/react-dom-client.production.js
+index 2e14f4bb0797bfd42dafa7b321f91cb1f32111f4..f3100019e6d9745da52296d80cf647a18cc768fe 100644
+--- a/dist/compiled/react-dom-experimental/cjs/react-dom-client.production.js
++++ b/dist/compiled/react-dom-experimental/cjs/react-dom-client.production.js
+@@ -17415,7 +17415,7 @@ function customizeViewTransitionError(error, ignoreAbort) {
+             error.message ||
+           "Skipping view transition because viewport size changed." ===
+             error.message ||
+-          "Transition was aborted because of invalid state" === error.message
++          0 ===  error.message.indexOf("Transition was aborted because of invalid state")
+         )
+           return null;
+     }
+diff --git a/dist/compiled/react-dom-experimental/cjs/react-dom-profiling.development.js b/dist/compiled/react-dom-experimental/cjs/react-dom-profiling.development.js
+index 29430600e3922795911017f5155f1d51a11de351..d814fce34e599a7674aa46d19f7654669297011d 100644
+--- a/dist/compiled/react-dom-experimental/cjs/react-dom-profiling.development.js
++++ b/dist/compiled/react-dom-experimental/cjs/react-dom-profiling.development.js
+@@ -26353,8 +26353,8 @@
+                 error.message ||
+               "Skipping view transition because viewport size changed." ===
+                 error.message ||
+-              "Transition was aborted because of invalid state" ===
+-                error.message
++              0 ===
++                error.message.indexOf("Transition was aborted because of invalid state")
+             )
+               return null;
+         }
+diff --git a/dist/compiled/react-dom-experimental/cjs/react-dom-profiling.profiling.js b/dist/compiled/react-dom-experimental/cjs/react-dom-profiling.profiling.js
+index 0ca2a97aabf52eea34f249e775a49b913fb8a81b..bab498211e2694ba43af84b28022b4acc6946ee9 100644
+--- a/dist/compiled/react-dom-experimental/cjs/react-dom-profiling.profiling.js
++++ b/dist/compiled/react-dom-experimental/cjs/react-dom-profiling.profiling.js
+@@ -19461,7 +19461,7 @@ function customizeViewTransitionError(error, ignoreAbort) {
+             error.message ||
+           "Skipping view transition because viewport size changed." ===
+             error.message ||
+-          "Transition was aborted because of invalid state" === error.message
++          0 ===  error.message.indexOf("Transition was aborted because of invalid state")
+         )
+           return null;
+     }
+diff --git a/dist/compiled/react-dom-experimental/cjs/react-dom-unstable_testing.development.js b/dist/compiled/react-dom-experimental/cjs/react-dom-unstable_testing.development.js
+index 38bf00aa998170689d15e252cb382c7ec8658a68..5847b73707d186bede0b512e23bb8ffcf1175bbc 100644
+--- a/dist/compiled/react-dom-experimental/cjs/react-dom-unstable_testing.development.js
++++ b/dist/compiled/react-dom-experimental/cjs/react-dom-unstable_testing.development.js
+@@ -26568,8 +26568,8 @@
+                 error.message ||
+               "Skipping view transition because viewport size changed." ===
+                 error.message ||
+-              "Transition was aborted because of invalid state" ===
+-                error.message
++              0 ===
++                error.message.indexOf("Transition was aborted because of invalid state")
+             )
+               return null;
+         }
+diff --git a/dist/compiled/react-dom-experimental/cjs/react-dom-unstable_testing.production.js b/dist/compiled/react-dom-experimental/cjs/react-dom-unstable_testing.production.js
+index c7d5988e4379b27bf26dc51f2b0fb6829ae3a7fa..ca894a84cbfe0819f8c5e17d2212f8284fd618a5 100644
+--- a/dist/compiled/react-dom-experimental/cjs/react-dom-unstable_testing.production.js
++++ b/dist/compiled/react-dom-experimental/cjs/react-dom-unstable_testing.production.js
+@@ -17687,7 +17687,7 @@ function customizeViewTransitionError(error, ignoreAbort) {
+             error.message ||
+           "Skipping view transition because viewport size changed." ===
+             error.message ||
+-          "Transition was aborted because of invalid state" === error.message
++          0 ===  error.message.indexOf("Transition was aborted because of invalid state")
+         )
+           return null;
+     }
