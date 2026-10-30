@@ -1,42 +1,45 @@
 import { Sparkles } from "lucide-react";
-import Link from "./locale-provider";
-import { getArticleAi, getArticleTranslation, isTranslationLanguage, translationLanguages, type TranslationLanguage } from "../lib/blog-data";
+import { getArticleAi, getArticleTranslation, type TranslationLanguage } from "../lib/blog-data";
+import { localeNames, localizeHref, type Locale } from "../lib/i18n/config";
+import { getLocale, getT } from "../lib/i18n/server";
 
-// 文章、手记详情的 AI 摘要与翻译。?lang=en / ?lang=ja 切换到后台已生成的翻译；没有对应翻译时退回原文。
-export async function loadArticleAi(id: string, rawLang: unknown) {
-  const lang = isTranslationLanguage(rawLang) ? rawLang : null;
+// 文章、手记详情的 AI 摘要与翻译，跟着站点语言走：/en、/ja 下读后台已生成的翻译，没有翻译时显示中文原文并说明。
+export async function loadArticleAi(id: string) {
+  const locale = await getLocale();
+  const lang = locale === "zh" ? null : locale;
   const [ai, translation] = await Promise.all([
     getArticleAi(id, lang ?? "zh").catch(() => ({ summary: null, languages: [] as TranslationLanguage[] })),
     lang ? getArticleTranslation(id, lang).catch(() => null) : null,
   ]);
-  return { ...ai, lang: translation ? lang : null, translation };
+  // original：外文页面却只能显示中文原文时，标题和正文标 lang="zh-CN"
+  return { ...ai, locale, translation, original: lang && !translation ? "zh-CN" : undefined };
 }
 
 type Loaded = Awaited<ReturnType<typeof loadArticleAi>>;
 
-export function ArticleLanguages({ href, ai }: { href: string; ai: Loaded }) {
+// 这篇有哪些语言版本：中文原文 + 已生成的翻译，当前显示的那种高亮。换语言会换整站根布局，所以用普通链接整页跳转。
+export async function ArticleLanguages({ href, ai }: { href: string; ai: Loaded }) {
   if (!ai.languages.length) return null;
+  const t = (await getT()).article;
+  const current: Locale = ai.translation ? ai.locale : "zh";
   return (
-    <nav className="article-languages" aria-label="阅读语言">
-      <Link href={href} aria-current={ai.lang ? undefined : "page"}>原文</Link>
-      {ai.languages.map((lang) => (
-        <Link key={lang} href={`${href}?lang=${lang}`} hrefLang={lang} aria-current={ai.lang === lang ? "page" : undefined}>{translationLanguages[lang]}</Link>
+    <nav className="article-languages" aria-label={t.alsoIn}>
+      {(["zh", ...ai.languages] as Locale[]).map((lang) => (
+        <a key={lang} href={localizeHref(href, lang)} hrefLang={lang} lang={lang} aria-current={lang === current ? "page" : undefined}>{localeNames[lang]}</a>
       ))}
     </nav>
   );
 }
 
-export function ArticleAiNotes({ ai }: { ai: Loaded }) {
+export async function ArticleAiNotes({ ai }: { ai: Loaded }) {
+  const t = (await getT()).article;
   return (
     <>
-      {ai.translation && (
-        <p className="ai-note" role="note">
-          以下内容由 AI 从中文翻译{ai.translation.aiModel ? `（${ai.translation.aiModel}）` : ""}，可能与原文有出入。
-        </p>
-      )}
+      {ai.translation && <p className="ai-note" role="note">{t.aiTranslated(ai.translation.aiModel ?? null)}</p>}
+      {ai.original && <p className="ai-note" role="note">{t.onlyChinese}</p>}
       {ai.summary && (
-        <aside className="ai-summary" aria-label="AI 摘要" lang={ai.lang ?? undefined}>
-          <p className="ai-summary-label"><Sparkles size={14} aria-hidden="true" />AI 摘要</p>
+        <aside className="ai-summary" aria-label={t.aiSummary}>
+          <p className="ai-summary-label"><Sparkles size={14} aria-hidden="true" />{t.aiSummary}</p>
           <p>{ai.summary}</p>
         </aside>
       )}

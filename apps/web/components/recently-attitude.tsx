@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 import { refreshAfterWrite } from "./cache-actions";
+import { useT } from "./locale-provider";
 
 type Attitude = "up" | "down";
 const noSubscribe = () => () => {};
@@ -12,6 +13,7 @@ const noSubscribe = () => () => {};
 // 投票后先就地更新，再让列表缓存失效并刷新，拿到服务端的真实票数后丢掉本地推算（列表缓存里的旧票数不能在本地再加减，否则会出现负数）。
 export default function RecentlyAttitude({ apiUrl, id, up, down }: { apiUrl: string; id: string; up: number; down: number }) {
   const router = useRouter();
+  const t = useT().thinking;
   const key = `attitude:${id}`;
   const stored = useSyncExternalStore(noSubscribe, () => localStorage.getItem(key) as Attitude | null, () => null);
   const [local, setLocal] = useState<{ base: { up: number; down: number }; mine: Attitude | null; up: number; down: number } | null>(null);
@@ -42,8 +44,8 @@ export default function RecentlyAttitude({ apiUrl, id, up, down }: { apiUrl: str
 
   return (
     <>
-      <button className="toggle-chip" type="button" aria-pressed={current.mine === "up"} disabled={pending} onClick={() => vote("up")}>赞 {current.up}</button>
-      <button className="toggle-chip" type="button" aria-pressed={current.mine === "down"} disabled={pending} onClick={() => vote("down")}>踩 {current.down}</button>
+      <button className="toggle-chip" type="button" aria-pressed={current.mine === "up"} disabled={pending} onClick={() => vote("up")}>{t.up} {current.up}</button>
+      <button className="toggle-chip" type="button" aria-pressed={current.mine === "down"} disabled={pending} onClick={() => vote("down")}>{t.down} {current.down}</button>
     </>
   );
 }

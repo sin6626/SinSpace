@@ -2,14 +2,16 @@ import "server-only";
 import type { Metadata } from "next";
 import { unstable_rethrow } from "next/navigation";
 import { getCategories, getNote, getPage, getPost, siteName } from "./blog-data";
+import { ogLocale } from "./i18n/config";
+import { getLocale, getT } from "./i18n/server";
 
 // 详情页的 <title>、描述和分享卡片。复用页面正文同一份 "use cache" 数据，不会多请求一次 Core。
 // 地址非法、内容不存在或读取失败时退回布局的默认值，错误提示和 404 由正文负责。
 export { siteDescription, siteName } from "./blog-data";
 
-function describe(title: string, description?: string | null, type: "article" | "website" = "article"): Metadata {
+async function describe(title: string, description?: string | null, type: "article" | "website" = "article"): Promise<Metadata> {
   const text = description?.trim() || undefined;
-  return { title, description: text, openGraph: { siteName, title, description: text, type, locale: "zh_CN" } };
+  return { title, description: text, openGraph: { siteName, title, description: text, type, locale: ogLocale[await getLocale()] } };
 }
 
 async function safe(load: () => Promise<Metadata | null>): Promise<Metadata> {
@@ -55,6 +57,6 @@ export async function categoryMetadata(params: Promise<{ slug: string }>) {
   return safe(async () => {
     const decoded = decodeURIComponent(slug);
     const category = (await getCategories()).find((item) => item.slug === decoded);
-    return category ? describe(category.name, `分类“${category.name}”下的文章。`, "website") : null;
+    return category ? describe(category.name, (await getT()).posts.categoryDescription(category.name), "website") : null;
   });
 }

@@ -8,6 +8,7 @@ import { useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { EmbeddedTweet, TweetSkeleton, useTweet, type TwitterComponents } from "react-tweet";
 import type { Tweet as TweetData } from "react-tweet/api";
+import { useT } from "./locale-provider";
 
 function normalizeTweet(tweet: TweetData): TweetData {
   const normalized = structuredClone(tweet);
@@ -31,9 +32,10 @@ const components: TwitterComponents = {
 };
 
 function TweetLink({ id }: { id: string }) {
+  const t = useT().tweet;
   return (
     <a href={`https://x.com/i/status/${encodeURIComponent(id)}`} target="_blank" rel="noopener noreferrer">
-      在 X / Twitter 查看原帖
+      {t.view}
     </a>
   );
 }
@@ -59,6 +61,7 @@ function Tweet({ id }: { id: string }) {
 // 富文本里的推文嵌入节点只给 url，这里解析出推文 ID。
 export function TweetEmbed({ url }: { url: string }) {
   const id = /^https?:\/\/(?:www\.)?(?:x|twitter)\.com\/(?:[^/]+|i\/web)\/status\/(\d+)(?:[/?#]|$)/.exec(url)?.[1];
-  if (!id) return <span>推文链接无效</span>;
+  const t = useT().tweet;
+  if (!id) return <span>{t.invalid}</span>;
   return <Tweet id={id} />;
 }

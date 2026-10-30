@@ -13,10 +13,13 @@ import Comments from "./comments";
 import { ArticleNotifications, ReadingCount } from "./notifications";
 import IslandReading from "./island-reading";
 import NoteUnlock from "./note-unlock";
+import { getT } from "../lib/i18n/server";
 import "./post-detail.css";
+import LoadError from "./load-error";
 
-export default async function NoteDetail({ params, searchParams }: { params: Promise<{ nid: string }>; searchParams?: Promise<{ lang?: string | string[] }> }) {
+export default async function NoteDetail({ params }: { params: Promise<{ nid: string }> }) {
   const { nid: rawNid } = await params;
+  const t = await getT();
   if (!/^[1-9]\d*$/.test(rawNid) || !Number.isSafeInteger(Number(rawNid))) notFound();
   const href = `/notes/${rawNid}`;
   let note: Awaited<ReturnType<typeof getNote>>;
@@ -24,7 +27,7 @@ export default async function NoteDetail({ params, searchParams }: { params: Pro
     note = await getNote(Number(rawNid));
   } catch (error) {
     unstable_rethrow(error);
-    return <p className="post-list-content" role="alert">手记读取失败。<a href={href}>重试</a></p>;
+    return <LoadError what={t.notes.title} href={href} />;
   }
   if (!note) notFound();
   // Core 对加密手记返回 403，标题也拿不到；输入密码后由服务端函数带密码读取正文。
@@ -32,8 +35,8 @@ export default async function NoteDetail({ params, searchParams }: { params: Pro
     return (
       <article className="post-detail">
         <header className="page-heading">
-          <Link href="/notes">返回手记列表</Link>
-          <h1 className="post-detail-title">加密手记</h1>
+          <Link href="/notes">{t.notes.backToList}</Link>
+          <h1 className="post-detail-title">{t.notes.locked}</h1>
         </header>
         <div className="post-list-content">
           <NoteUnlock nid={Number(rawNid)} />
@@ -42,38 +45,38 @@ export default async function NoteDetail({ params, searchParams }: { params: Pro
     );
   }
 
-  const ai = await loadArticleAi(note.id, (await searchParams)?.lang);
+  const ai = await loadArticleAi(note.id);
   const body = ai.translation ?? note;
   return (
-    <article className="post-detail note-detail" lang={ai.lang ?? undefined}>
+    <article className="post-detail note-detail">
       <ArticleNotifications id={note.id} />
       <IslandReading title={body.title} kind="note" date={formatDate(note.created)} />
       <header className="page-heading">
-        <nav className="detail-crumb" aria-label="位置">
-          <Link href="/notes">手记</Link>
+        <nav className="detail-crumb" aria-label={t.list.crumb}>
+          <Link href="/notes">{t.notes.title}</Link>
           {note.topic && <><span aria-hidden="true">/</span><span>{note.topic}</span></>}
         </nav>
-        <h1 className="post-detail-title">{body.title}</h1>
+        <h1 className="post-detail-title" lang={ai.original}>{body.title}</h1>
         <div className="post-meta detail-meta">
           <time dateTime={note.created}>{formatDate(note.created)}</time>
-          {note.mood && <span>心情 · {note.mood}</span>}
-          {note.weather && <span>天气 · {note.weather}</span>}
-          <span>阅读 {note.count.read}</span>
+          {note.mood && <span>{t.list.mood(note.mood)}</span>}
+          {note.weather && <span>{t.list.weather(note.weather)}</span>}
+          <span>{t.list.reads(note.count.read)}</span>
           <ReadingCount apiUrl={getApiUrl()} id={note.id} />
           <ArticleLanguages href={href} ai={ai} />
         </div>
       </header>
       <div className="post-list-content">
         <ArticleAiNotes ai={ai} />
-        <ArticleBody text={body.text} contentFormat={body.contentFormat} content={body.content} emptyText="这篇手记暂时没有可展示的正文。" variant="note" />
+        <div lang={ai.original}><ArticleBody text={body.text} contentFormat={body.contentFormat} content={body.content} emptyText={t.notes.noBody} variant="note" /></div>
         <div className="article-end"><ArticleStats apiUrl={getApiUrl()} id={note.id} type="note" like={note.count.like} /></div>
         {(note.newer || note.older) && (
-          <nav className="neighbor-nav" aria-label="相邻手记">
-            {note.newer ? <Link href={`/notes/${note.newer.nid}`}><span className="neighbor-label"><ArrowLeft size={14} aria-hidden="true" />较新</span><span className="neighbor-title">{note.newer.title}</span></Link> : <span />}
-            {note.older ? <Link className="is-older" href={`/notes/${note.older.nid}`}><span className="neighbor-label">较早<ArrowRight size={14} aria-hidden="true" /></span><span className="neighbor-title">{note.older.title}</span></Link> : <span />}
+          <nav className="neighbor-nav" aria-label={t.notes.neighbors}>
+            {note.newer ? <Link href={`/notes/${note.newer.nid}`}><span className="neighbor-label"><ArrowLeft size={14} aria-hidden="true" />{t.list.newer}</span><span className="neighbor-title">{note.newer.title}</span></Link> : <span />}
+            {note.older ? <Link className="is-older" href={`/notes/${note.older.nid}`}><span className="neighbor-label">{t.list.older}<ArrowRight size={14} aria-hidden="true" /></span><span className="neighbor-title">{note.older.title}</span></Link> : <span />}
           </nav>
         )}
-        <Suspense fallback={<p className="post-meta" role="status">正在读取评论…</p>}>
+        <Suspense fallback={<p className="post-meta" role="status">{t.list.loadingComments}</p>}>
           <Comments refId={note.id} refType="Note" allowComment={note.allowComment} />
         </Suspense>
       </div>

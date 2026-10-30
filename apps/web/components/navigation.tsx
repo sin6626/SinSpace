@@ -3,6 +3,7 @@ import { unstable_rethrow } from "next/navigation";
 import { getNavigationData, getNavigationPanels, getOwner } from "../lib/blog-data";
 import { SocialIcon } from "./iconify-icon";
 import NavigationMenu, { type NavigationState } from "./navigation-menu";
+import { getT } from "../lib/i18n/server";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -44,9 +45,9 @@ async function NavigationData({ account }: { account?: ReactNode }) {
   return <NavigationMenu state={state} account={account} />;
 }
 
-export default function Navigation({ account }: { account?: ReactNode }) {
+export default async function Navigation({ account }: { account?: ReactNode }) {
   return (
-    <Suspense fallback={<p className="navigation-message" role="status">正在读取导航…</p>}>
+    <Suspense fallback={<p className="navigation-message" role="status">{(await getT()).nav.loading}</p>}>
       <NavigationData account={account} />
     </Suspense>
   );

@@ -2,6 +2,7 @@ import { notFound, unstable_rethrow } from "next/navigation";
 import { getNotesByTopic, getTopics, searchNotes } from "../lib/blog-data";
 import type { ReactNode } from "react";
 import ResultList from "./result-list";
+import { getT } from "../lib/i18n/server";
 
 type Note = { id: string; nid: number; title: string; created: string };
 const toItems = (notes: Note[]) => notes.map((note) => ({ key: note.id, href: `/notes/${note.nid}`, title: note.title, created: note.created }));
@@ -13,10 +14,9 @@ export async function NoteSearch({ keyword, search, filters }: { keyword: string
   } catch (error) {
     unstable_rethrow(error);
   }
-  const summary = result
-    ? `搜索“${keyword}”，共 ${result.total} 篇${result.total > result.data.length ? `，显示前 ${result.data.length} 篇` : ""}`
-    : `搜索“${keyword}”`;
-  return <ResultList title="搜索手记" summary={summary} items={result && toItems(result.data)} emptyText="没有匹配的手记，换个关键词试试。" search={search} filters={filters} />;
+  const { notes: t, list } = await getT();
+  const summary = result ? list.searchSummary(keyword, result.total, result.data.length) : list.searchQuery(keyword);
+  return <ResultList title={t.search} summary={summary} items={result && toItems(result.data)} emptyText={t.searchEmpty} search={search} filters={filters} />;
 }
 
 export async function NotesByTopic({ slug, search, filters }: { slug: string; search: ReactNode; filters: ReactNode }) {
@@ -37,5 +37,6 @@ export async function NotesByTopic({ slug, search, filters }: { slug: string; se
       unstable_rethrow(error);
     }
   }
-  return <ResultList title={topic ? `话题：${topic.name}` : "话题"} summary={result ? `共 ${result.total} 篇` : ""} items={result && toItems(result.data)} emptyText="这个话题下还没有公开的手记。" search={search} filters={filters} />;
+  const { notes: t, list } = await getT();
+  return <ResultList title={topic ? t.topic(topic.name) : t.topics} summary={result ? list.total(result.total) : ""} items={result && toItems(result.data)} emptyText={t.topicEmpty} search={search} filters={filters} />;
 }

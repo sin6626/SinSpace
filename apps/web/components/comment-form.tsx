@@ -6,6 +6,8 @@ import { useIsland } from "../lib/island-store";
 import { refreshAfterWrite } from "./cache-actions";
 import { LogIn } from "lucide-react";
 import { openLoginDialog } from "./account-menu";
+import { useLocale, useT } from "./locale-provider";
+import type { Messages } from "../lib/i18n/messages/zh";
 import { signOut, useLoginError, useReaderSession, type LoginProvider } from "./reader-session";
 
 export type CommentRefType = "Post" | "Note" | "Page" | "Recently";
@@ -15,17 +17,20 @@ export type CommentRefType = "Post" | "Note" | "Page" | "Recently";
 // 回复对象由悬浮窗管理，发出或取消后调用 onDone。
 type Props = { apiUrl: string; allowGuest: boolean; providers: LoginProvider[]; variant?: "chat"; onDone?: () => void } & ({ refId: string; refType: CommentRefType; replyTo?: never } | { replyTo: { id: string; author: string }; refId?: never; refType?: never });
 
-// Core 的报错格式是 { message: string | string[] }，表单校验错误是数组。
-async function readError(response: Response) {
+// Core 的报错格式是 { message: string | string[] }，表单校验错误是数组；Core 的说明是中文，只在中文页面直接显示。
+async function readError(response: Response, chinese: boolean, t: Messages["commentForm"]) {
+  if (!chinese) return t.failed(response.status);
   const body = await response.json().catch(() => null) as { message?: unknown } | null;
   const message = Array.isArray(body?.message) ? body.message.join("；") : body?.message;
-  return typeof message === "string" && message ? message : `提交失败（HTTP ${response.status}）`;
+  return typeof message === "string" && message ? message : t.failed(response.status);
 }
 
 // 评论直接从浏览器提交到 Core：Core 按访客 IP 做垃圾过滤、归属地和频率限制，经 Next 转发会全变成服务器 IP。
 // 游客填昵称、邮箱、网址（交给浏览器自动填充，不在本地另存）；GitHub 登录后的读者走读者接口，身份取自 Core 的登录 Cookie。
 export default function CommentForm({ apiUrl, allowGuest, providers, refId, refType, replyTo, variant, onDone }: Props) {
   const chat = variant === "chat";
+  const t = useT().commentForm;
+  const chinese = useLocale() === "zh";
   const push = useIsland((state) => state.push);
   const id = useId();
   const router = useRouter();
@@ -56,23 +61,21 @@ export default function CommentForm({ apiUrl, allowGuest, providers, refId, refT
         // 读者评论要带上 Core 的登录 Cookie；游客不带，避免站长在同一浏览器登录后台时被当成站长发言。
         credentials: reader ? "include" : "omit",
       });
-      if (!response.ok) return setStatus({ type: "error", message: await readError(response) });
+      if (!response.ok) return setStatus({ type: "error", message: await readError(response, chinese, t) });
       form.reset();
       if (chat) {
-        push({ icon: "comment", title: body.isWhispers ? "悄悄话已发送" : "评论已发送", detail: body.isWhispers ? "只有站长能看到" : "站长开启审核时，通过后才会显示", duration: 3200 });
+        push({ icon: "comment", title: body.isWhispers ? t.whisperSent : t.sent, detail: body.isWhispers ? t.whisperDetail : t.sentDetail, duration: 3200 });
         setStatus({ type: "idle" });
       } else setStatus({
         type: "done",
-        message: body.isWhispers
-          ? "悄悄话已发送，只有站长能看到。"
-          : "评论已发送。站长开启审核时，通过后才会显示。",
+        message: body.isWhispers ? t.whisperDone : t.done,
       });
       // 列表有缓存，发完让评论与思考列表的缓存立即失效并刷新，否则看起来像没发出去（再点会被 Core 的 20 秒防重拦成 409）。
       await refreshAfterWrite(["comments", "recently"]);
       router.refresh();
       onDone?.();
     } catch {
-      setStatus({ type: "error", message: "网络错误，评论没有发出去，请稍后重试。" });
+      setStatus({ type: "error", message: t.network });
     }
   }
 
@@ -80,49 +83,49 @@ export default function CommentForm({ apiUrl, allowGuest, providers, refId, refT
   const login = () => openLoginDialog(chat ? undefined : "comments");
 
   if (replyTo && !open) {
-    return <button className="btn btn-ghost btn-sm comment-reply-button" type="button" onClick={() => setOpen(true)}>回复</button>;
+    return <button className="btn btn-ghost btn-sm comment-reply-button" type="button" onClick={() => setOpen(true)}>{t.reply}</button>;
   }
   // 不允许游客评论时，未登录的访客只能先登录。
   if (!reader && !allowGuest) {
     if (session.status === "loading" || !providers.length) return null;
     return (
       <div className="comment-identity">
-        <button className="btn" type="button" onClick={login}><LogIn size={16} strokeWidth={1.75} aria-hidden="true" />登录后评论</button>
+        <button className="btn" type="button" onClick={login}><LogIn size={16} strokeWidth={1.75} aria-hidden="true" />{t.loginToComment}</button>
         {status.type === "error" && <p className="post-meta" role="alert">{status.message}</p>}
         {!replyTo && loginError && <p className="post-meta" role="alert">{loginError}</p>}
       </div>
     );
   }
   return (
-    <form className="comment-form" data-variant={variant} onSubmit={submit} aria-label={replyTo ? `回复 ${replyTo.author}` : "发表评论"}>
+    <form className="comment-form" data-variant={variant} onSubmit={submit} aria-label={replyTo ? t.replyTo(replyTo.author) : t.label}>
       {reader ? (
         <div className="comment-identity">
           {/* eslint-disable-next-line @next/next/no-img-element -- GitHub / Google 头像，不走 next/image 白名单 */}
           {reader.image && <img className="comment-avatar" src={reader.image} alt="" width={28} height={28} />}
-          <span>以 <strong>{reader.name}</strong> 的身份评论</span>
-          {!replyTo && <button className="btn btn-ghost btn-sm" type="button" onClick={() => void signOut(apiUrl)}>退出</button>}
+          <span>{t.asBefore}<strong>{reader.name}</strong>{t.asAfter}</span>
+          {!replyTo && <button className="btn btn-ghost btn-sm" type="button" onClick={() => void signOut(apiUrl)}>{t.logout}</button>}
         </div>
       ) : !replyTo && providers.length > 0 && session.status === "guest" && (
         <div className="comment-identity">
-          <button className="btn" type="button" onClick={login}><LogIn size={16} strokeWidth={1.75} aria-hidden="true" />登录</button>
-          <span className="post-meta">或以游客身份填写下方信息</span>
+          <button className="btn" type="button" onClick={login}><LogIn size={16} strokeWidth={1.75} aria-hidden="true" />{t.login}</button>
+          <span className="post-meta">{t.orGuest}</span>
         </div>
       )}
       {!replyTo && loginError && <p className="post-meta" role="alert">{loginError}</p>}
       {!reader && <div className="comment-fields">
-        <label htmlFor={`${id}-author`}>昵称</label>
-        <input className="field" id={`${id}-author`} name="author" required maxLength={20} autoComplete="nickname" placeholder={chat ? "昵称" : undefined} />
-        <label htmlFor={`${id}-mail`}>邮箱（不公开）</label>
-        <input className="field" id={`${id}-mail`} name="mail" type="email" required maxLength={50} autoComplete="email" placeholder={chat ? "邮箱" : "用于头像和回复通知"} title={chat ? "邮箱不公开，用于头像和回复通知" : undefined} />
-        <label htmlFor={`${id}-url`}>网站（可选）</label>
-        <input className="field" id={`${id}-url`} name="url" type="url" maxLength={50} autoComplete="url" placeholder={chat ? "网站（选填）" : "https://"} />
+        <label htmlFor={`${id}-author`}>{t.nickname}</label>
+        <input className="field" id={`${id}-author`} name="author" required maxLength={20} autoComplete="nickname" placeholder={chat ? t.nickname : undefined} />
+        <label htmlFor={`${id}-mail`}>{t.mail}</label>
+        <input className="field" id={`${id}-mail`} name="mail" type="email" required maxLength={50} autoComplete="email" placeholder={chat ? t.mailShort : t.mailPlaceholder} title={chat ? t.mailTitle : undefined} />
+        <label htmlFor={`${id}-url`}>{t.url}</label>
+        <input className="field" id={`${id}-url`} name="url" type="url" maxLength={50} autoComplete="url" placeholder={chat ? t.urlShort : "https://"} />
       </div>}
-      <label htmlFor={`${id}-text`}>{replyTo ? `回复 @${replyTo.author}` : "评论内容"}</label>
-      <textarea className="field" id={`${id}-text`} name="text" required maxLength={500} rows={chat ? 2 : replyTo ? 3 : 4} placeholder={chat ? "说点什么…（支持 Markdown）" : "支持 Markdown，最多 500 字"} />
+      <label htmlFor={`${id}-text`}>{replyTo ? t.replyTo(`@${replyTo.author}`) : t.text}</label>
+      <textarea className="field" id={`${id}-text`} name="text" required maxLength={500} rows={chat ? 2 : replyTo ? 3 : 4} placeholder={chat ? t.chatPlaceholder : t.placeholder} />
       <div className="comment-actions">
-        <label><input type="checkbox" name="whisper" /> 悄悄话（仅站长可见）</label>
-        {replyTo && !chat && <button className="btn btn-ghost" type="button" onClick={() => { setOpen(false); setStatus({ type: "idle" }); }}>取消</button>}
-        <button className={chat ? "btn btn-primary btn-sm" : "btn btn-primary"} type="submit" disabled={status.type === "sending"}>{status.type === "sending" ? "发送中…" : "发送"}</button>
+        <label><input type="checkbox" name="whisper" /> {t.whisper}</label>
+        {replyTo && !chat && <button className="btn btn-ghost" type="button" onClick={() => { setOpen(false); setStatus({ type: "idle" }); }}>{t.cancel}</button>}
+        <button className={chat ? "btn btn-primary btn-sm" : "btn btn-primary"} type="submit" disabled={status.type === "sending"}>{status.type === "sending" ? t.sending : t.send}</button>
       </div>
       {(status.type === "done" || status.type === "error") && (
         <p className="post-meta" role={status.type === "error" ? "alert" : "status"}>{status.message}</p>

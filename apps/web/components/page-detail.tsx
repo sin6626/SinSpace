@@ -6,10 +6,13 @@ import ArticleAside from "./article-aside";
 import "./post-detail.css";
 import { Suspense } from "react";
 import Comments from "./comments";
+import { getT } from "../lib/i18n/server";
+import LoadError from "./load-error";
 
 // 后台“页面”（如关于我、关于本站），地址是 /<slug>。
 export default async function PageDetail({ params }: { params: Promise<{ slug: string }> }) {
   const route = await params;
+  const t = await getT();
   let slug: string;
   try {
     slug = encodeURIComponent(decodeURIComponent(route.slug));
@@ -21,7 +24,7 @@ export default async function PageDetail({ params }: { params: Promise<{ slug: s
     page = await getPage(slug);
   } catch (error) {
     unstable_rethrow(error);
-    return <p className="post-list-content" role="alert">页面读取失败。<a href={`/${slug}`}>重试</a></p>;
+    return <LoadError what={t.pages.title} href={`/${slug}`} />;
   }
   if (!page) notFound();
 
@@ -33,8 +36,8 @@ export default async function PageDetail({ params }: { params: Promise<{ slug: s
         {page.subtitle && <p className="post-meta">{page.subtitle}</p>}
       </header>
       <div className="post-list-content">
-        <ArticleBody text={page.text} contentFormat={page.contentFormat} content={page.content} emptyText="这个页面暂时没有可展示的正文。" />
-        <Suspense fallback={<p className="post-meta" role="status">正在读取评论…</p>}>
+        <ArticleBody text={page.text} contentFormat={page.contentFormat} content={page.content} emptyText={t.pages.noBody} />
+        <Suspense fallback={<p className="post-meta" role="status">{t.list.loadingComments}</p>}>
           <Comments refId={page.id} refType="Page" allowComment={page.allowComment} />
         </Suspense>
       </div>

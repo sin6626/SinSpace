@@ -2,18 +2,21 @@ import { ArrowUpRight } from "lucide-react";
 import { unstable_rethrow } from "next/navigation";
 import { getProjects } from "../lib/blog-data";
 import { safeUrl } from "../lib/safe-url";
+import { getT } from "../lib/i18n/server";
 import "./corners.css";
+import LoadError from "./load-error";
 
 type Project = Awaited<ReturnType<typeof getProjects>>[number];
 
 // 作品的角落：像挂在墙上的卡片，图标（没有图标时用名字首字）、名字、一句话描述和链接。首页预览复用。
-export function ProjectCard({ project, headingLevel = 2 }: { project: Project; headingLevel?: 2 | 3 }) {
+export async function ProjectCard({ project, headingLevel = 2 }: { project: Project; headingLevel?: 2 | 3 }) {
+  const t = (await getT()).projects;
   const Heading = headingLevel === 2 ? "h2" : "h3";
   const avatar = safeUrl(project.avatar);
   const links = [
-    { label: "项目地址", href: safeUrl(project.projectUrl) },
-    { label: "在线预览", href: safeUrl(project.previewUrl) },
-    { label: "文档", href: safeUrl(project.docUrl) },
+    { label: t.repo, href: safeUrl(project.projectUrl) },
+    { label: t.preview, href: safeUrl(project.previewUrl) },
+    { label: t.docs, href: safeUrl(project.docUrl) },
   ].filter((link) => link.href);
   return (
     <article className="project-card">
@@ -35,28 +38,28 @@ export function ProjectCard({ project, headingLevel = 2 }: { project: Project; h
 }
 
 export default async function ProjectList() {
+  const { projects: t } = await getT();
   let projects: Awaited<ReturnType<typeof getProjects>>;
   try {
     projects = await getProjects();
   } catch (error) {
     unstable_rethrow(error);
     // 重试用整页加载，确保重新请求；不用客户端路由。
-    // eslint-disable-next-line @next/next/no-html-link-for-pages
-    return <p className="post-list-content" role="alert">作品读取失败。<a href="/projects">重试</a></p>;
+    return <LoadError what={t.title} href={"/projects"} />;
   }
 
   return (
     <>
       <header className="page-heading">
-        <h1>作品</h1>
-        <p className="post-meta">共 {projects.length} 个作品</p>
+        <h1>{t.title}</h1>
+        <p className="post-meta">{t.count(projects.length)}</p>
       </header>
       <div className="post-list-content">
         {projects.length ? (
           <ul className="project-grid">
             {projects.map((project) => <li key={project.id}><ProjectCard project={project} /></li>)}
           </ul>
-        ) : <p className="post-empty">还没有作品。</p>}
+        ) : <p className="post-empty">{t.empty}</p>}
       </div>
     </>
   );

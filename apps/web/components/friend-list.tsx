@@ -5,6 +5,8 @@ import { getApiUrl } from "../lib/config";
 import { safeUrl } from "../lib/safe-url";
 import LinkApplyForm from "./link-apply-form";
 import "./corners.css";
+import { getT } from "../lib/i18n/server";
+import LoadError from "./load-error";
 
 type Link = Awaited<ReturnType<typeof getLinks>>[number];
 
@@ -37,13 +39,14 @@ function LinkCards({ links }: { links: Link[] }) {
 }
 
 export default async function FriendList() {
+  const { friends: t } = await getT();
   let links: Link[];
   try {
     links = await getLinks();
   } catch (error) {
     unstable_rethrow(error);
-    // eslint-disable-next-line @next/next/no-html-link-for-pages -- 重试用整页加载，确保重新请求
-    return <p className="post-list-content" role="alert">友链读取失败。<a href="/friends">重试</a></p>;
+    // 重试用整页加载，确保重新请求
+    return <LoadError what={t.title} href={"/friends"} />;
   }
   const visible = links.filter((link) => !link.hide);
   const passed = visible.filter((link) => link.state === LinkState.Pass);
@@ -54,26 +57,26 @@ export default async function FriendList() {
   return (
     <>
       <header className="page-heading">
-        <h1>友链</h1>
-        <p className="post-meta">海内存知己，天涯若比邻</p>
+        <h1>{t.title}</h1>
+        <p className="post-meta">{t.motto}</p>
       </header>
       <div className="post-list-content">
-        {!friends.length && !collections.length && !outdated.length && <p className="post-empty">还没有友链。</p>}
+        {!friends.length && !collections.length && !outdated.length && <p className="post-empty">{t.empty}</p>}
         {friends.length > 0 && (
           <section className="friend-section" aria-labelledby="friends-heading">
-            <h2 id="friends-heading">我的朋友</h2>
+            <h2 id="friends-heading">{t.mine}</h2>
             <LinkCards links={friends} />
           </section>
         )}
         {collections.length > 0 && (
           <section className="friend-section" aria-labelledby="collections-heading">
-            <h2 id="collections-heading">我的收藏</h2>
+            <h2 id="collections-heading">{t.collections}</h2>
             <LinkCards links={collections} />
           </section>
         )}
         {outdated.length > 0 && (
           <details className="friend-outdated">
-            <summary>以下站点无法访问，已失联</summary>
+            <summary>{t.outdated}</summary>
             <ul>{outdated.map((link) => <li key={link.id}>{link.name}</li>)}</ul>
           </details>
         )}
@@ -85,18 +88,18 @@ export default async function FriendList() {
 
 // 申请区：先给出本站信息方便对方回加，再给申请表单。开关读取失败时按“未开放”处理，不影响上面的友链列表。
 async function LinkApply() {
-  const [open, site] = await Promise.all([getLinkApplyOpen().catch(() => false), getSiteSettings().catch(() => null)]);
+  const [open, site, { friends: t }] = await Promise.all([getLinkApplyOpen().catch(() => false), getSiteSettings().catch(() => null), getT()]);
   return (
     <section className="link-apply" aria-labelledby="link-apply-heading">
-      <h2 id="link-apply-heading">申请友链</h2>
+      <h2 id="link-apply-heading">{t.apply}</h2>
       {site && (
         <dl className="post-meta">
-          <dt>站点名称</dt><dd>{site.name}</dd>
-          <dt>站点地址</dt><dd>{site.siteUrl}</dd>
-          <dt>一句话介绍</dt><dd>{site.description}</dd>
+          <dt>{t.siteName}</dt><dd>{site.name}</dd>
+          <dt>{t.siteUrl}</dt><dd>{site.siteUrl}</dd>
+          <dt>{t.intro}</dt><dd>{site.description}</dd>
         </dl>
       )}
-      {open ? <LinkApplyForm apiUrl={getApiUrl()} /> : <p className="post-meta">暂未开放友链申请。</p>}
+      {open ? <LinkApplyForm apiUrl={getApiUrl()} /> : <p className="post-meta">{t.closed}</p>}
     </section>
   );
 }

@@ -10,15 +10,15 @@ import ArticleBody from "./article-body";
 import ArticleAside from "./article-aside";
 import { ArticleAiNotes, ArticleLanguages, loadArticleAi } from "./article-ai";
 import ArticleStats from "./article-stats";
+import { getT } from "../lib/i18n/server";
 import "./post-detail.css";
 import { Suspense } from "react";
 import Comments from "./comments";
+import LoadError from "./load-error";
 
-export default async function PostDetail({ params, searchParams }: {
-  params: Promise<{ category: string; slug: string }>;
-  searchParams?: Promise<{ lang?: string | string[] }>;
-}) {
+export default async function PostDetail({ params }: { params: Promise<{ category: string; slug: string }> }) {
   const route = await params;
+  const t = await getT();
   let category: string;
   let slug: string;
   try {
@@ -33,37 +33,37 @@ export default async function PostDetail({ params, searchParams }: {
     post = await getPost(category, slug);
   } catch (error) {
     unstable_rethrow(error);
-    return <p className="post-list-content" role="alert">文章读取失败。<a href={href}>重试</a></p>;
+    return <LoadError what={t.posts.title} href={href} />;
   }
   if (!post) notFound();
-  const ai = await loadArticleAi(post.id, (await searchParams)?.lang);
+  const ai = await loadArticleAi(post.id);
   const body = ai.translation ?? post;
 
   return (
-    <article className="post-detail" lang={ai.lang ?? undefined}>
+    <article className="post-detail">
       <ArticleNotifications id={post.id} />
       <IslandReading title={body.title} kind="post" date={formatDate(post.created)} />
       <header className="page-heading">
-        <nav className="detail-crumb" aria-label="位置">
-          <Link href="/posts">文章</Link>
+        <nav className="detail-crumb" aria-label={t.list.crumb}>
+          <Link href="/posts">{t.posts.title}</Link>
           {post.category && <><span aria-hidden="true">/</span><Link href={`/categories/${encodeURIComponent(post.category.slug)}`}>{post.category.name}</Link></>}
         </nav>
-        <h1 className="post-detail-title">{body.title}</h1>
+        <h1 className="post-detail-title" lang={ai.original}>{body.title}</h1>
         <div className="post-meta detail-meta">
           <time dateTime={post.created}>{formatDate(post.created)}</time>
-          <span>阅读 {post.count.read}</span>
+          <span>{t.list.reads(post.count.read)}</span>
           <ReadingCount apiUrl={getApiUrl()} id={post.id} />
           <ArticleLanguages href={href} ai={ai} />
         </div>
       </header>
       <div className="post-list-content">
         <ArticleAiNotes ai={ai} />
-        <ArticleBody text={body.text} contentFormat={body.contentFormat} content={body.content} emptyText="这篇文章暂时没有可展示的正文。" />
+        <div lang={ai.original}><ArticleBody text={body.text} contentFormat={body.contentFormat} content={body.content} emptyText={t.posts.noBody} /></div>
         <div className="article-end"><ArticleStats apiUrl={getApiUrl()} id={post.id} type="post" like={post.count.like} /></div>
         <Suspense fallback={null}>
           <PostNeighbors id={post.id} />
         </Suspense>
-        <Suspense fallback={<p className="post-meta" role="status">正在读取评论…</p>}>
+        <Suspense fallback={<p className="post-meta" role="status">{t.list.loadingComments}</p>}>
           <Comments refId={post.id} refType="Post" allowComment={post.allowComment} />
         </Suspense>
       </div>
@@ -82,10 +82,11 @@ async function PostNeighbors({ id }: { id: string }) {
   const newer = posts[index - 1];
   const older = posts[index + 1];
   if (!newer && !older) return null;
+  const { list: t, posts: copy } = await getT();
   return (
-    <nav className="neighbor-nav" aria-label="相邻文章">
-      {newer ? <Link href={href(newer)}><span className="neighbor-label"><ArrowLeft size={14} aria-hidden="true" />较新</span><span className="neighbor-title">{newer.title}</span></Link> : <span />}
-      {older ? <Link className="is-older" href={href(older)}><span className="neighbor-label">较早<ArrowRight size={14} aria-hidden="true" /></span><span className="neighbor-title">{older.title}</span></Link> : <span />}
+    <nav className="neighbor-nav" aria-label={copy.neighbors}>
+      {newer ? <Link href={href(newer)}><span className="neighbor-label"><ArrowLeft size={14} aria-hidden="true" />{t.newer}</span><span className="neighbor-title">{newer.title}</span></Link> : <span />}
+      {older ? <Link className="is-older" href={href(older)}><span className="neighbor-label">{t.older}<ArrowRight size={14} aria-hidden="true" /></span><span className="neighbor-title">{older.title}</span></Link> : <span />}
     </nav>
   );
 }

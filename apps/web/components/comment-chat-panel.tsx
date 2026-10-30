@@ -5,6 +5,7 @@ import { MessagesSquare, X } from "lucide-react";
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import CommentForm, { type CommentRefType } from "./comment-form";
 import type { FormOptions } from "./comments";
+import { useT } from "./locale-provider";
 
 type ReplyTarget = { id: string; author: string };
 
@@ -20,6 +21,7 @@ export default function CommentChatPanel({ title, total, form, closedReason, tar
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const t = useT().chat;
   const [replyTo, setReplyTo] = useState<ReplyTarget | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const composer = useRef<HTMLDivElement>(null);
@@ -49,7 +51,7 @@ export default function CommentChatPanel({ title, total, form, closedReason, tar
         if (!next) setReplyTo(null);
       }}
     >
-      <Popover.Trigger className="article-action" aria-label={total ? `评论（${total} 条）` : "评论"} title="边读边聊">
+      <Popover.Trigger className="article-action" aria-label={t.trigger(total)} title={t.title}>
         <MessagesSquare size={18} strokeWidth={1.75} aria-hidden="true" />
         {total > 0 && <span className="article-action-count">{total}</span>}
       </Popover.Trigger>
@@ -58,10 +60,10 @@ export default function CommentChatPanel({ title, total, form, closedReason, tar
           <Popover.Popup className="chat-popup" initialFocus={(type) => (type === "touch" ? true : textarea() ?? true)}>
             <header className="chat-header">
               <div className="chat-heading">
-                <Popover.Title className="chat-title">边读边聊{total > 0 && <span>{total}</span>}</Popover.Title>
+                <Popover.Title className="chat-title">{t.title}{total > 0 && <span>{total}</span>}</Popover.Title>
                 <Popover.Description className="chat-subtitle">{title}</Popover.Description>
               </div>
-              <Popover.Close className="chat-close" aria-label="关闭评论">
+              <Popover.Close className="chat-close" aria-label={t.close}>
                 <X size={18} strokeWidth={1.75} aria-hidden="true" />
               </Popover.Close>
             </header>
@@ -73,8 +75,8 @@ export default function CommentChatPanel({ title, total, form, closedReason, tar
                 <>
                   {replyTo && (
                     <p className="chat-replying">
-                      <span>回复 <strong>@{replyTo.author}</strong></span>
-                      <button type="button" onClick={() => setReplyTo(null)} aria-label="取消回复"><X size={14} strokeWidth={2} aria-hidden="true" /></button>
+                      <span>{t.replyingTo} <strong>@{replyTo.author}</strong></span>
+                      <button type="button" onClick={() => setReplyTo(null)} aria-label={t.cancelReply}><X size={14} strokeWidth={2} aria-hidden="true" /></button>
                     </p>
                   )}
                   <CommentForm key={replyTo?.id ?? "new"} {...form} variant="chat" onDone={() => setReplyTo(null)} {...(replyTo ? { replyTo } : target)} />

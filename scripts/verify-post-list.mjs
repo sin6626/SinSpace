@@ -2,9 +2,11 @@ import assert from 'node:assert/strict'
 import { createRequire } from 'node:module'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
+import { i18nServer } from './lib/i18n-mock.mjs'
 
 const require = createRequire(new URL('../apps/web/package.json', import.meta.url))
 const ts = require('typescript')
+const i18n = i18nServer(ts)
 const source = readFileSync(new URL('../apps/web/components/post-list.tsx', import.meta.url), 'utf8')
 const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText
 let request
@@ -20,7 +22,7 @@ const api = {
 const module = { exports: {} }
 vm.runInNewContext(code, {
   module, exports: module.exports,
-  require: (id) => id.endsWith('.css') ? {} : id === './post-sidebar' ? { default: function PostSidebar() {} } : id === './sidebar-search' ? { default: function SidebarSearch() {} } : id === './entry' ? { default: function Entry() {}, EntryTag: function EntryTag() {} } : id === '../lib/date' ? { formatDate: (v) => String(v) } : id === '../lib/search-params' ? { readText: (v, max = 50) => typeof v === 'string' ? v.trim().slice(0, max) : '' } : id === './post-filter' ? { PostSearch: function PostSearch() {}, PostsByTag: function PostsByTag() {} } : id === '../lib/blog-data' ? { getCategories: async () => (await api.category.getAllCategories()).data, getPosts: (page, id) => api.post.getList(page, 10, { categoryIds: id ? [id] : undefined }) } : require(id),
+  require: (id) => id.endsWith('.css') ? {} : id === '../lib/i18n/server' ? i18n : id === './load-error' ? { default: function LoadError() {} } : id === './locale-provider' ? { default: (props) => require('react').createElement('a', props) } : id === './post-sidebar' ? { default: function PostSidebar() {} } : id === './sidebar-search' ? { default: function SidebarSearch() {} } : id === './entry' ? { default: function Entry() {}, EntryTag: function EntryTag() {} } : id === '../lib/date' ? { formatDate: (v) => String(v) } : id === '../lib/search-params' ? { readText: (v, max = 50) => typeof v === 'string' ? v.trim().slice(0, max) : '' } : id === './post-filter' ? { PostSearch: function PostSearch() {}, PostsByTag: function PostsByTag() {} } : id === '../lib/blog-data' ? { getCategories: async () => (await api.category.getAllCategories()).data, getPosts: (page, id) => api.post.getList(page, 10, { categoryIds: id ? [id] : undefined }) } : require(id),
 })
 const render = (page, slug) => module.exports.default({ searchParams: Promise.resolve(page === undefined ? {} : { page }), params: slug === undefined ? undefined : Promise.resolve({ slug }) })
 const is404 = (error) => error.digest === 'NEXT_HTTP_ERROR_FALLBACK;404'
@@ -43,6 +45,6 @@ const categoryView = await withParams({ q: 'Plate' }, 'study%26think')
 assert.notEqual(categoryView.type?.name, 'PostSearch')
 failure = true
 const errorView = await render('1', 'study&think')
-assert.equal(errorView.props.role, 'alert')
-assert.equal(errorView.props.children[1].props.href, '/categories/study%26think')
+assert.equal(errorView.type.name, 'LoadError')
+assert.equal(errorView.props.href, '/categories/study%26think')
 console.log('PASS post list category selection, page validation, empty page,404, error retry target, search and raw tag routing')

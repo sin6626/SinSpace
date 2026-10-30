@@ -1,12 +1,15 @@
 "use client";
 
 import { useId, useState, type FormEvent } from "react";
+import { useLocale, useT } from "./locale-provider";
 import "./comments.css";
 
 // 友链申请：直接提交到 Core（POST /links/audit），新申请一律是“待审核”，审核结果由 Core 发邮件通知。
 // 字段与长度限制照 Core 的校验：名字和站点名 20 字、描述 50 字、网址必须 https。
 export default function LinkApplyForm({ apiUrl }: { apiUrl: string }) {
   const id = useId();
+  const t = useT().friends;
+  const chinese = useLocale() === "zh";
   const [status, setStatus] = useState<{ type: "idle" | "sending" } | { type: "done" | "error"; message: string }>({ type: "idle" });
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -25,35 +28,35 @@ export default function LinkApplyForm({ apiUrl }: { apiUrl: string }) {
       if (!response.ok) {
         const body = await response.json().catch(() => null) as { message?: unknown } | null;
         const message = Array.isArray(body?.message) ? body.message.join("；") : body?.message;
-        return setStatus({ type: "error", message: typeof message === "string" && message ? message : `提交失败（HTTP ${response.status}）` });
+        return setStatus({ type: "error", message: chinese && typeof message === "string" && message ? message : t.failed(response.status) });
       }
       form.reset();
-      setStatus({ type: "done", message: "申请已提交，审核通过后会出现在这里；填了邮箱会收到审核结果。" });
+      setStatus({ type: "done", message: t.done });
     } catch {
-      setStatus({ type: "error", message: "网络错误，申请没有发出去，请稍后重试。" });
+      setStatus({ type: "error", message: t.network });
     }
   }
 
   return (
-    <form className="comment-form" onSubmit={submit} aria-label="申请友链">
+    <form className="comment-form" onSubmit={submit} aria-label={t.apply}>
       <div className="comment-fields">
-        <label htmlFor={`${id}-author`}>你的名字</label>
+        <label htmlFor={`${id}-author`}>{t.yourName}</label>
         <input className="field" id={`${id}-author`} name="author" required maxLength={20} autoComplete="nickname" />
-        <label htmlFor={`${id}-name`}>站点名称</label>
+        <label htmlFor={`${id}-name`}>{t.siteName}</label>
         <input className="field" id={`${id}-name`} name="name" required maxLength={20} autoComplete="off" />
-        <label htmlFor={`${id}-url`}>站点地址</label>
-        <input className="field" id={`${id}-url`} name="url" type="url" required pattern="https://.+" title="需要以 https:// 开头" placeholder="https://" autoComplete="url" />
+        <label htmlFor={`${id}-url`}>{t.siteUrl}</label>
+        <input className="field" id={`${id}-url`} name="url" type="url" required pattern="https://.+" title={t.httpsOnly} placeholder="https://" autoComplete="url" />
       </div>
       <div className="comment-fields">
-        <label htmlFor={`${id}-avatar`}>头像地址（可选）</label>
+        <label htmlFor={`${id}-avatar`}>{t.avatar}</label>
         <input className="field" id={`${id}-avatar`} name="avatar" type="url" maxLength={200} placeholder="https://" autoComplete="off" />
-        <label htmlFor={`${id}-description`}>一句话介绍（可选）</label>
+        <label htmlFor={`${id}-description`}>{t.introOptional}</label>
         <input className="field" id={`${id}-description`} name="description" maxLength={50} autoComplete="off" />
-        <label htmlFor={`${id}-email`}>邮箱（可选，不公开）</label>
-        <input className="field" id={`${id}-email`} name="email" type="email" maxLength={50} placeholder="接收审核结果" autoComplete="email" />
+        <label htmlFor={`${id}-email`}>{t.email}</label>
+        <input className="field" id={`${id}-email`} name="email" type="email" maxLength={50} placeholder={t.emailPlaceholder} autoComplete="email" />
       </div>
       <div className="comment-actions">
-        <button className="btn btn-primary" type="submit" disabled={status.type === "sending"}>{status.type === "sending" ? "提交中…" : "提交申请"}</button>
+        <button className="btn btn-primary" type="submit" disabled={status.type === "sending"}>{status.type === "sending" ? t.sending : t.submit}</button>
       </div>
       {(status.type === "done" || status.type === "error") && (
         <p className="post-meta" role={status.type === "error" ? "alert" : "status"}>{status.message}</p>

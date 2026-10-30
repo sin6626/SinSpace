@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import SayList from "@/components/say-list";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "一言" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.says.title };
+}
 
-export default function SayListPage({ searchParams }: PageProps<"/[locale]/says">) {
+export default async function SayListPage({ searchParams }: PageProps<"/[locale]/says">) {
   return (
-    <Suspense fallback={<p className="post-list-content" role="status">正在读取一言…</p>}>
+    <Suspense fallback={<p className="post-list-content" role="status">{(await getT()).common.loading}</p>}>
       <SayList searchParams={searchParams} />
     </Suspense>
   );

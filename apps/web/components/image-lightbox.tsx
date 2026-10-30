@@ -3,6 +3,7 @@
 import { Dialog } from "@base-ui/react/dialog";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useState, type MouseEvent, type ReactNode } from "react";
+import { useT } from "./locale-provider";
 import "./image-lightbox.css";
 
 type Shown = { images: { src: string; alt: string }[]; index: number };
@@ -12,6 +13,7 @@ type Shown = { images: { src: string; alt: string }[]; index: number };
 export default function ImageLightbox({ itemSelector, groupSelector, children }: { itemSelector: string; groupSelector: string; children: ReactNode }) {
   const [shown, setShown] = useState<Shown | null>(null);
   const [open, setOpen] = useState(false);
+  const t = useT().lightbox;
 
   const onClick = (event: MouseEvent) => {
     const item = (event.target as Element).closest(itemSelector);
@@ -40,7 +42,7 @@ export default function ImageLightbox({ itemSelector, groupSelector, children }:
           <Dialog.Backdrop className="lightbox-backdrop" />
           <Dialog.Popup
             className="lightbox"
-            aria-label="查看图片"
+            aria-label={t.view}
             onKeyDown={(event) => {
               if (!many) return;
               if (event.key === "ArrowLeft") step(-1);
@@ -49,20 +51,20 @@ export default function ImageLightbox({ itemSelector, groupSelector, children }:
             // 点按钮以外的任何地方（空白处或图片本身）都关闭
             onClick={(event) => !(event.target as Element).closest("button") && setOpen(false)}
           >
-            <Dialog.Title className="sr-only">查看图片</Dialog.Title>
+            <Dialog.Title className="sr-only">{t.view}</Dialog.Title>
             {image && (
               // eslint-disable-next-line @next/next/no-img-element -- 放大原图，地址来自正文
               <img key={image.src} className="lightbox-image" src={image.src} alt={image.alt} />
             )}
-            <Dialog.Close className="lightbox-button lightbox-close" aria-label="关闭">
+            <Dialog.Close className="lightbox-button lightbox-close" aria-label={t.close}>
               <X size={20} />
             </Dialog.Close>
             {many && shown && (
               <>
-                <button type="button" className="lightbox-button lightbox-prev" aria-label="上一张" onClick={() => step(-1)}>
+                <button type="button" className="lightbox-button lightbox-prev" aria-label={t.prev} onClick={() => step(-1)}>
                   <ChevronLeft size={22} />
                 </button>
-                <button type="button" className="lightbox-button lightbox-next" aria-label="下一张" onClick={() => step(1)}>
+                <button type="button" className="lightbox-button lightbox-next" aria-label={t.next} onClick={() => step(1)}>
                   <ChevronRight size={22} />
                 </button>
                 <p className="lightbox-count" aria-live="polite">{shown.index + 1} / {shown.images.length}</p>

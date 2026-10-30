@@ -5,14 +5,15 @@ import { safeUrl } from "../lib/safe-url";
 import CommentChatPanel from "./comment-chat-panel";
 import type { CommentRefType } from "./comment-form";
 import { allowedElements, loadComments, type Thread } from "./comments";
+import { getT } from "../lib/i18n/server";
 import "./comment-chat.css";
 
 type Item = Omit<Thread, "replies" | "hiddenReplies">;
 export type ChatMessage = Item & { quote?: { author: string; text: string } };
 
 // 回复不再缩进成楼中楼：按时间排成一条消息流，回复在气泡顶部引用被回复的那句话（像聊天软件那样）
-export function toMessages(threads: Thread[]): ChatMessage[] {
-  const snippet = (item: Item) => (item.deleted ? "该评论已删除" : item.text.replace(/[`*_>#~[\]()!-]/g, "").replace(/\s+/g, " ").trim().slice(0, 60));
+export function toMessages(threads: Thread[], deletedText = "该评论已删除"): ChatMessage[] {
+  const snippet = (item: Item) => (item.deleted ? deletedText : item.text.replace(/[`*_>#~[\]()!-]/g, "").replace(/\s+/g, " ").trim().slice(0, 60));
   return threads
     .flatMap((thread) => {
       const byId = new Map<string, Item>([thread, ...thread.replies].map((item) => [item.id, item]));
@@ -25,19 +26,20 @@ export function toMessages(threads: Thread[]): ChatMessage[] {
 }
 
 // 服务端渲染消息流（Markdown 不进浏览器包），交给客户端的悬浮窗外壳；“回复”按钮靠 data-reply-* 让外壳接手
-export function ChatStream({ messages, canReply, truncated }: { messages: ChatMessage[]; canReply: boolean; truncated: boolean }) {
+export async function ChatStream({ messages, canReply, truncated }: { messages: ChatMessage[]; canReply: boolean; truncated: boolean }) {
+  const { chat: t, comments, list } = await getT();
   if (!messages.length) {
     return (
       <div className="chat-empty">
         <span className="chat-empty-stars" aria-hidden="true" />
-        <p>还没有人说话</p>
-        <p className="chat-empty-hint">第一句，留给正在读的你。</p>
+        <p>{t.silent}</p>
+        <p className="chat-empty-hint">{t.silentHint}</p>
       </div>
     );
   }
   return (
-    <ol className="chat-stream" aria-label="评论消息">
-      {truncated && <li className="chat-day"><span>更早的评论在文末评论区</span></li>}
+    <ol className="chat-stream" aria-label={t.stream}>
+      {truncated && <li className="chat-day"><span>{t.earlier}</span></li>}
       {messages.flatMap((message, index) => {
         const date = formatDate(message.created);
         const separator = index === 0 || formatDate(messages[index - 1].created) !== date ? [<li key={`day-${date}`} className="chat-day"><span>{date}</span></li>] : [];
@@ -50,22 +52,22 @@ export function ChatStream({ messages, canReply, truncated }: { messages: ChatMe
             <div className="chat-body">
               <p className="chat-meta">
                 <strong>{site ? <a href={site} target="_blank" rel="noopener noreferrer nofollow ugc">{message.author}</a> : message.author}</strong>
-                {message.owner && <span className="chat-badge">站长</span>}
-                {message.pinned && <span className="chat-badge">置顶</span>}
-                <time dateTime={message.created} title={message.location ? `来自 ${message.location}` : undefined}>{formatTime(message.created)}</time>
+                {message.owner && <span className="chat-badge">{comments.owner}</span>}
+                {message.pinned && <span className="chat-badge">{list.pinned}</span>}
+                <time dateTime={message.created} title={message.location ? comments.from(message.location) : undefined}>{formatTime(message.created)}</time>
               </p>
               <div className="chat-bubble">
                 {message.quote && (
                   <p className="chat-quote"><span>@{message.quote.author}</span>{message.quote.text}</p>
                 )}
                 {message.deleted ? (
-                  <p className="chat-deleted">该评论已删除。</p>
+                  <p className="chat-deleted">{comments.deleted}</p>
                 ) : (
                   <div className="chat-text"><Markdown allowedElements={allowedElements} unwrapDisallowed skipHtml>{message.text}</Markdown></div>
                 )}
               </div>
               {canReply && !message.deleted && (
-                <button type="button" className="chat-reply" data-reply-id={message.id} data-reply-author={message.author}>回复</button>
+                <button type="button" className="chat-reply" data-reply-id={message.id} data-reply-author={message.author}>{t.reply}</button>
               )}
             </div>
           </li>
@@ -85,10 +87,11 @@ export default async function CommentChat({ refId, refType, allowComment, title 
     return null;
   }
   const { data, pagination, form, closedReason } = loaded;
+  const t = await getT();
   const truncated = pagination.totalPage > 1 || data.some((thread) => thread.hiddenReplies > 0);
   return (
     <CommentChatPanel title={title} total={pagination.total} form={form} closedReason={closedReason} target={{ refId, refType }}>
-      <ChatStream messages={toMessages(data)} canReply={!closedReason} truncated={truncated} />
+      <ChatStream messages={toMessages(data, t.comments.deletedSnippet)} canReply={!closedReason} truncated={truncated} />
     </CommentChatPanel>
   );
 }

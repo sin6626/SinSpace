@@ -3,6 +3,7 @@
 import { Heart } from "lucide-react";
 import { useEffect } from "react";
 import { useArticleLike } from "../lib/use-article-like";
+import { useT } from "./locale-provider";
 
 type Props = { apiUrl: string; id: string; type: "post" | "note"; like: number };
 
@@ -10,6 +11,7 @@ type Props = { apiUrl: string; id: string; type: "post" | "note"; like: number }
 // 阅读上报直接发到 Core；Core 不去重，这里每个浏览器标签页只报一次。
 export default function ArticleStats({ apiUrl, id, type, like }: Props) {
   const { liked, likes, message, thumbsUp } = useArticleLike({ apiUrl, id, type, like });
+  const t = useT().article;
 
   useEffect(() => {
     // 开发环境不上报，免得本地调试把日常库的阅读数刷高。
@@ -28,7 +30,7 @@ export default function ArticleStats({ apiUrl, id, type, like }: Props) {
     <>
       <button className="like-button" type="button" onClick={thumbsUp} aria-pressed={liked} disabled={liked}>
         <Heart size={18} aria-hidden="true" />
-        <span>{liked ? "谢谢你的喜欢" : "喜欢这篇"}</span>
+        <span>{liked ? t.thanks : t.likeThis}</span>
         <span className="like-count">{likes}</span>
       </button>
       {message && <span role="alert">{message}</span>}

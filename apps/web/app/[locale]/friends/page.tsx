@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import FriendList from "@/components/friend-list";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "友链" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.friends.title };
+}
 
-export default function FriendListPage() {
+export default async function FriendListPage() {
   return (
-    <Suspense fallback={<p className="post-list-content" role="status">正在读取友链…</p>}>
+    <Suspense fallback={<p className="post-list-content" role="status">{(await getT()).common.loading}</p>}>
       <FriendList />
     </Suspense>
   );

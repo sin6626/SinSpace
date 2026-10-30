@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useSyncExternalStore, type MouseEvent, type ReactNode } from "react";
+import { useT } from "./locale-provider";
 import "./article-toc.css";
 
 // 文章目录：读取正文里实际渲染出来的标题。
@@ -76,6 +77,7 @@ export default function ArticleToc({ children = null }: { children?: ReactNode }
   const entries = useSyncExternalStore<Entry[] | null>(subscribeContent, getEntries, () => null);
   const activeId = useSyncExternalStore(subscribeScroll, getActiveId, () => null);
   const nav = useRef<HTMLElement>(null);
+  const t = useT().article;
   // 目录比屏幕长时自己滚动（article-actions.css），当前章节保持在目录可见范围里；只滚目录，不动整页
   useEffect(() => {
     const box = nav.current;
@@ -89,7 +91,7 @@ export default function ArticleToc({ children = null }: { children?: ReactNode }
   const minLevel = Math.min(...entries.map((entry) => entry.level));
   return (
     <nav ref={nav} className="article-toc" aria-labelledby="article-toc-heading">
-      <h2 id="article-toc-heading">目录</h2>
+      <h2 id="article-toc-heading">{t.toc}</h2>
       <ol>
         {entries.map((entry) => (
           <li key={entry.id} data-depth={Math.min(entry.level - minLevel, 3)}>
