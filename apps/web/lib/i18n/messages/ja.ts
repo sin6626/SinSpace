@@ -421,7 +421,7 @@ const ja: Messages = {
     countAll: (posts: number, notes: number) => `記事 ${posts} 本・手記 ${notes} 本`,
     items: (count: number) => `${count} 本`,
     month: (month: number) => ({ number: String(month), unit: "月" }),
-    day: (day: number) => `${day}日`,
+    day: (day: string) => `${day}日`,
     note: "手記",
     empty: "まだ何もありません。",
   },

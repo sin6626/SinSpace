@@ -421,7 +421,7 @@ const zh = {
     countAll: (posts: number, notes: number) => `共 ${posts} 篇文章、${notes} 篇手记`,
     items: (count: number) => `${count} 篇`,
     month: (month: number) => ({ number: String(month), unit: "月" }),
-    day: (day: number) => `${day} 日`,
+    day: (day: string) => `${day} 日`,
     note: "手记",
     empty: "还没有内容。",
   },

@@ -71,7 +71,7 @@ export default async function TimelineList({ kind }: { kind?: Item["kind"] }) {
                   {entries.map(({ item, day }) => (
                     <li key={`${item.kind}-${item.id}`} className="timeline-item" data-kind={item.kind}>
                       <span className="timeline-node" aria-hidden="true" />
-                      <time dateTime={item.created}>{t.day(Number(day))}</time>
+                      <time dateTime={item.created}>{t.day(day)}</time>
                       <Link className="card-link" href={href(item)}>{item.title}</Link>
                       <span className="post-meta">{item.kind === "post" ? item.category.name : t.note}</span>
                     </li>

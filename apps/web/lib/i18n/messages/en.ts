@@ -421,7 +421,7 @@ const en: Messages = {
     countAll: (posts: number, notes: number) => `${posts} ${posts === 1 ? "post" : "posts"} and ${notes} ${notes === 1 ? "note" : "notes"}`,
     items: (count: number) => `${count}`,
     month: (month: number) => ({ number: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][month - 1], unit: "" }),
-    day: (day: number) => String(day),
+    day: (day: string) => day,
     note: "Note",
     empty: "Nothing here yet.",
   },
