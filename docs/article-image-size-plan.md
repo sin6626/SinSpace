@@ -16,7 +16,7 @@
 
 ## 已做（先顶上）
 
-前台样式给文章正文里的图片设最大高度（屏幕高度的一定比例），太高的图等比缩小、居中；宽图不受影响。只改前台 CSS，已有文章立即生效，不动数据。
+前台样式给文章正文里的图片设最大高度 min(70vh, 42rem)，太高的图等比缩小、居中；宽图和比栏窄的小图不受影响。只改前台 CSS（apps/web/components/post-detail.css），已有文章立即生效，不动数据。富文本图片的外框宽度和比例是 Haklex 写的行内样式，要用 `width: fit-content !important` 覆盖，而且只在加载完（`.rr-image-loaded`）后生效，否则加载前占位框会塌；Markdown 图片直接给 img 设 max-height + width: auto（比栏窄的 Markdown 小图因此从靠左变成居中，和富文本一致）。回归测试 scripts/e2e/article-tall-images.mjs。
 
 ## 以后真要做时的方案
 

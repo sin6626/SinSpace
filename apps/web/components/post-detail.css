@@ -14,6 +14,15 @@
   outline-offset: 2px;
 }
 
+/* 高图限高（如人物全身照）：等比缩到最高 min(70vh, 42rem) 并居中，宽图和比栏窄的小图不受影响。
+   Haklex 把外框宽度（原图宽）、比例写在行内样式里，只能用 !important 覆盖：fit-content 让外框跟着图片的实际宽度走，
+   max-height 再经比例反推出宽度。只在加载完（rr-image-loaded）后生效：加载前图片没有尺寸，fit-content 会让占位框塌掉。
+   以后想按张调大小见 docs/article-image-size-plan.md */
+.article-rich .rr-image-frame.rr-image-loaded {
+  width: fit-content !important;
+  max-height: min(70vh, 42rem);
+}
+
 /* 图片加载失败：透明的 <img> 仍占满宽度，会把提示挤到框外，让它脱离排版后提示才能居中 */
 .article-rich .rr-image-frame.rr-image-error {
   border: 1px solid var(--border);
@@ -142,6 +151,8 @@
 .article-body td { padding: var(--space-2) var(--space-3); border: 1px solid var(--border); }
 .article-body th { background: var(--muted); font-weight: 600; }
 .article-body img { max-width: 100%; height: auto; border-radius: var(--radius-sm); }
+/* 高图限高，规则同上面的富文本图片 */
+.article-body img { display: block; max-height: min(70vh, 42rem); width: auto; margin-inline: auto; }
 
 /* 详情页标题区：元信息、阅读数和点赞在一行里垂直居中 */
 .post-detail .page-heading .post-meta {
