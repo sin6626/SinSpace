@@ -72,6 +72,8 @@ const zh = {
     timeline: "时间线",
     friends: "友链",
     online: (count: number) => `此刻有 ${count} 人在这里`,
+    sky: (year: number, month: number) => `从 ${year} 年 ${month} 月到今天，每天刷题和写代码的星星`,
+    skyLegend: "星星的颜色",
   },
   hero: {
     avatarAlt: "Sin 的头像",

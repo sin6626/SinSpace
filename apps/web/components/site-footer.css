@@ -1,0 +1,103 @@
+/* 页脚：最上面是一条星带（components/footer-sky.tsx，每天刷题和写代码的记录，铺满页脚宽度），
+   下面左右两栏：左边月亮加那句话、细字英文落款；右边几个小链接和在线人数。手机上合成一栏居中。 */
+.site-footer {
+  position: relative;
+  margin-top: var(--space-16);
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--primary) 5%, var(--background)));
+}
+
+.site-footer::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border-strong), transparent);
+}
+
+.site-footer-inner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: var(--space-8) var(--space-6);
+  max-width: var(--article-max-width);
+  margin-inline: auto;
+  padding: var(--space-12) var(--space-6);
+}
+
+.site-footer-inner > .footer-sky {
+  grid-column: 1 / -1;
+}
+
+.site-footer-about,
+.site-footer-side {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.site-footer-side {
+  justify-items: end;
+}
+
+.site-footer-motto {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: color-mix(in srgb, var(--foreground) 80%, transparent);
+  font-size: var(--text-sm);
+  letter-spacing: 0.12em;
+}
+
+.site-footer-motto svg {
+  color: var(--primary);
+}
+
+.site-footer-links {
+  display: flex;
+  gap: var(--space-6);
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+}
+
+.site-footer-links a {
+  transition: color var(--duration-fast);
+}
+
+@media (hover: hover) {
+  .site-footer-links a:hover {
+    color: var(--primary);
+  }
+}
+
+.site-footer-about .site-footer-sign,
+.site-footer-side .site-online {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+}
+
+@media (max-width: 639px) {
+  .site-footer-inner {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .site-footer-about,
+  .site-footer-side {
+    justify-items: center;
+  }
+}
+
+/* 英文落款：Nunito ExtraLight，字距放开 */
+.site-footer-sign {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-weight: 200;
+  letter-spacing: 0.12em;
+}
+
+.site-footer-sign svg {
+  color: var(--love);
+  fill: currentColor;
+  stroke: none;
+}

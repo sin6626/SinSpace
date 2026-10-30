@@ -72,6 +72,8 @@ const en: Messages = {
     timeline: "Timeline",
     friends: "Friends",
     online: (count: number) => `${count} ${count === 1 ? "person is" : "people are"} here right now`,
+    sky: (year: number, month: number) => `A star for each day of LeetCode and coding since ${["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][month - 1]} ${year}`,
+    skyLegend: "Star colors",
   },
   hero: {
     avatarAlt: "Sin's avatar",
