@@ -5,8 +5,11 @@ export function plainText(markdown: string | null | undefined) {
     .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/&#?\w+;/g, " ")
-    .replace(/^\s{0,3}(#{1,6}|>|[-*+]|\d+\.)\s+/gm, "")
-    .replace(/[*_`~|#>]/g, "")
+    // 引用符号只在行首去掉（可能嵌套），正文里提到的 <head>、a > b 保留
+    .replace(/^\s{0,3}(?:(?:>\s*)+|(?:#{1,6}|[-*+]|\d+\.)\s+)/gm, "")
+    // 删除线只去掉成对的 ~~，句尾单独的 ~~ 是语气，保留
+    .replace(/~~(\S(?:.*?\S)?)~~/g, "$1")
+    .replace(/[*_`|#]/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }

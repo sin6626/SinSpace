@@ -3,7 +3,8 @@ import remarkGfm from "remark-gfm";
 import { murmurImageWidth } from "../lib/murmur";
 import { safeUrl } from "../lib/safe-url";
 
-// 碎碎念正文：Markdown 只放行段落级元素（不渲染 HTML、标题），图片按后台拖好的宽度显示（占气泡宽度的百分比）。
+// 碎碎念正文：Markdown 只放行段落级元素（不渲染标题），图片按后台拖好的宽度显示（占气泡宽度的百分比）。
+// 正文里写的 HTML（常是在聊 <head>、<b> 这些标签）原样显示成文字：不开 skipHtml，react-markdown 会把它转成纯文本，不会变成元素。
 const components: Components = {
   img: ({ src, alt, title }) => {
     const href = safeUrl(typeof src === "string" ? src : undefined);
@@ -19,7 +20,7 @@ const components: Components = {
 export default function MurmurBody({ content }: { content: string }) {
   return (
     <div className="murmur-body">
-      <Markdown remarkPlugins={[remarkGfm]} components={components} skipHtml allowedElements={["p", "a", "img", "strong", "em", "del", "code", "pre", "ul", "ol", "li", "blockquote", "br"]} unwrapDisallowed>
+      <Markdown remarkPlugins={[remarkGfm]} components={components} allowedElements={["p", "a", "img", "strong", "em", "del", "code", "pre", "ul", "ol", "li", "blockquote", "br"]} unwrapDisallowed>
         {content}
       </Markdown>
     </div>

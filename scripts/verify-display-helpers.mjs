@@ -45,6 +45,12 @@ assert.equal(moonInfo(Date.UTC(2024, 0, 11, 11, 57)).name, '新月')
 assert.equal(excerpt('|*&#32;两个月的暑假*\n\n## 刚进出租屋\n\n看[这篇](https://a.b/c)和![图](x.png)'), '两个月的暑假 刚进出租屋 看这篇和')
 assert.equal(excerpt('> 引用\n- 列表 `code`\n```js\nconst a = 1\n```\n结尾'), '引用 列表 code 结尾')
 assert.equal(excerpt('一二三四五', 3), '一二三…')
+// 正文里提到的标签和比较符号要保留，只去掉行首的引用符号（含嵌套）
+assert.equal(excerpt('脚本放在<head> 中，a > b'), '脚本放在<head> 中，a > b')
+assert.equal(excerpt('> > 嵌套引用'), '嵌套引用')
+// 波浪号只在成对包住文字（删除线）时去掉，句尾撒娇的 ~~ 保留
+assert.equal(excerpt('都是为了爱~~'), '都是为了爱~~')
+assert.equal(excerpt('~~删掉~~的字'), '删掉的字')
 assert.equal(excerpt(null), '')
 // 列表信息行的阅读时长：按纯文本约 400 字一分钟，至少 1 分钟（代码块、链接地址不算字数）
 assert.equal(readingMinutes('哈'), 1)

@@ -18,7 +18,8 @@ try {
     }))
     const ratios = [...stream.querySelectorAll('.murmur-image')].map((img) => Math.round((img.offsetWidth / img.closest('.murmur-body').offsetWidth) * 100))
     const first = stream.querySelector('.murmur-bubble')
-    return { days, ratios, time: first.querySelector('time').textContent, code: !!stream.querySelector('.murmur-body code'), link: stream.querySelector('.murmur-body a')?.target }
+    const third = stream.querySelectorAll('.murmur-bubble')[2].querySelector('.murmur-body')
+    return { days, ratios, time: first.querySelector('time').textContent, code: !!stream.querySelector('.murmur-body code'), link: stream.querySelector('.murmur-body a')?.target, html: { text: third.textContent, elements: third.querySelectorAll('b, head').length } }
   })()`)
   assert.deepEqual(sample.days, [
     { date: '202610月29日周四', bubbles: 3 },
@@ -29,6 +30,8 @@ try {
   assert.equal(sample.time, '22:20', '时间按东八区显示')
   assert.equal(sample.code, true, '行内代码照常渲染')
   assert.equal(sample.link, '_blank', '外链新窗口打开')
+  // 碎碎念常聊到标签名：<head>、<b> 要原样显示成文字，不能被吞掉，也不能真的变成元素
+  assert.deepEqual(sample.html, { text: '今天好困。读取脚本要放在 <head> 里，<b>这里不会加粗</b>', elements: 0 })
 
   await b.goto(`${base}/murmurs`)
   const page = await b.evaluate(`({
