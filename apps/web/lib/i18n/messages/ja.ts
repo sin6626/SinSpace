@@ -74,6 +74,7 @@ const ja: Messages = {
     online: (count: number) => `いま ${count} 人がここにいます`,
     sky: (year: number, month: number) => `${year} 年 ${month} 月から今日まで、LeetCode とコードを書いた日の星`,
     skyLegend: "星の色",
+    skyToggle: (name: string, shown: boolean) => `${name} の星を${shown ? "隠す" : "表示する"}`,
   },
   hero: {
     avatarAlt: "Sin のアバター",

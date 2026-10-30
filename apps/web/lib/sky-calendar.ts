@@ -2,7 +2,8 @@
 // 不依赖 Next，检查脚本 scripts/verify-sky-calendar.mjs 直接加载。
 
 export type SkySource = "leetcode" | "github";
-export type SkyDay = { date: string; leetcode: number; github: number; level: number; kind: SkySource | "both" | null };
+// levels：两边各自的亮度档（0–4），level 是两者中较亮的那个；页脚图例关掉一边时按另一边的档显示
+export type SkyDay = { date: string; leetcode: number; github: number; levels: Record<SkySource, number>; level: number; kind: SkySource | "both" | null };
 export type Sky = { days: (SkyDay | null)[]; weeks: number; years: { year: string; week: number }[] };
 
 const dayMs = 86_400_000;
@@ -60,7 +61,8 @@ export function buildSky(leetcode: Map<string, number>, github: Map<string, numb
     }
     const counts = { leetcode: leetcode.get(date) ?? 0, github: github.get(date) ?? 0 };
     const kind = counts.leetcode && counts.github ? "both" : counts.leetcode ? "leetcode" : counts.github ? "github" : null;
-    days.push({ date, ...counts, level: Math.max(level.leetcode(counts.leetcode), level.github(counts.github)), kind });
+    const levels = { leetcode: level.leetcode(counts.leetcode), github: level.github(counts.github) };
+    days.push({ date, ...counts, levels, level: Math.max(levels.leetcode, levels.github), kind });
   }
   // 第一年如果离下一个 1 月 1 日太近（不到 8 周），只留后面那个刻度，免得两个年份挤在一起
   if (years.length > 1 && years[1].week < 8) years.shift();

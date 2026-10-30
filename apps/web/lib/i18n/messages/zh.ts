@@ -74,6 +74,7 @@ const zh = {
     online: (count: number) => `此刻有 ${count} 人在这里`,
     sky: (year: number, month: number) => `从 ${year} 年 ${month} 月到今天，每天刷题和写代码的星星`,
     skyLegend: "星星的颜色",
+    skyToggle: (name: string, shown: boolean) => (shown ? `隐藏 ${name} 的星星` : `显示 ${name} 的星星`),
   },
   hero: {
     avatarAlt: "Sin 的头像",

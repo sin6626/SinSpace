@@ -4,10 +4,20 @@
   --sky-leetcode: var(--moonlight);
   --sky-github: var(--primary);
   --sky-both: color-mix(in oklab, var(--sky-leetcode), var(--sky-github));
+  --on-leetcode: 1;
+  --on-github: 1;
   display: grid;
   gap: var(--space-2);
   width: 100%;
   margin: 0;
+}
+
+.footer-sky[data-hide~="leetcode"] {
+  --on-leetcode: 0;
+}
+
+.footer-sky[data-hide~="github"] {
+  --on-github: 0;
 }
 
 .footer-sky-years {
@@ -32,6 +42,10 @@
 }
 
 .footer-sky-band i {
+  /* --lc / --gh：这一天力扣、GitHub 各自的亮度档（0–4，行内样式给出）；图例关掉的那一边乘 0，显示的是开着那边里较亮的档 */
+  --lc: 0;
+  --gh: 0;
+  --lvl: max(calc(var(--lc) * var(--on-leetcode)), calc(var(--gh) * var(--on-github)));
   display: grid;
   place-items: center;
   aspect-ratio: 1;
@@ -54,13 +68,20 @@
   translate: -18% -16%;
 }
 
+/* 档位 0 是很淡的远星；1–4 档越来越大、越来越亮，第 4 档带一圈光。关掉一边时这些值跟着变，过渡 0.3 秒 */
 .footer-sky-band i::before {
   content: "";
-  width: 16%;
+  width: calc(16% + var(--lvl) * 8.5%);
   aspect-ratio: 1;
   border-radius: var(--radius-full);
-  background: var(--foreground);
-  opacity: 0.1;
+  background: color-mix(in srgb, currentColor calc(min(var(--lvl), 1) * 100%), var(--foreground));
+  opacity: calc(0.1 + min(var(--lvl), 1) * 0.15 + var(--lvl) * 0.1875);
+  box-shadow: 0 0 calc(max(var(--lvl) - 3, 0) * 0.35rem) currentColor;
+  transition:
+    width 300ms var(--ease-out),
+    opacity 300ms var(--ease-out),
+    background-color 300ms var(--ease-out),
+    box-shadow 300ms var(--ease-out);
 }
 
 .footer-sky-band .is-future::before {
@@ -79,31 +100,15 @@
   color: var(--sky-both);
 }
 
-.footer-sky-band [data-level]::before {
-  background: currentColor;
+.footer-sky[data-hide~="leetcode"] .is-both {
+  color: var(--sky-github);
 }
 
-.footer-sky-band [data-level="1"]::before {
-  width: 26%;
-  opacity: 0.45;
+.footer-sky[data-hide~="github"] .is-both {
+  color: var(--sky-leetcode);
 }
 
-.footer-sky-band [data-level="2"]::before {
-  width: 34%;
-  opacity: 0.65;
-}
-
-.footer-sky-band [data-level="3"]::before {
-  width: 42%;
-  opacity: 0.85;
-}
-
-.footer-sky-band [data-level="4"]::before {
-  width: 50%;
-  opacity: 1;
-  box-shadow: 0 0 0.35rem currentColor;
-}
-
+/* 最亮那档慢慢闪：动的是整格的透明度（乘在星星自己的透明度上），被关掉时星已经很淡，闪也看不出来 */
 @keyframes footer-sky-twinkle {
   50% {
     opacity: 0.55;
@@ -111,7 +116,7 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .footer-sky-band [data-level="4"]::before {
+  .footer-sky-band [data-level="4"] {
     animation: footer-sky-twinkle 4.8s ease-in-out calc(var(--twinkle) * -0.53s) infinite;
   }
 }
@@ -119,37 +124,59 @@
 .footer-sky-legend {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-4);
+  gap: var(--space-2);
   font-size: var(--text-xs);
 }
 
-.footer-sky-legend a {
+/* 图例是开关：开着是实心色点，关掉后色点变空心、文字变淡加删除线（统计图表的常见做法） */
+.footer-sky-legend button {
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
-  color: var(--muted-foreground);
-  text-decoration: none;
-  transition: color var(--duration-fast);
-}
-
-.footer-sky-legend a::before {
-  content: "";
-  width: 0.4rem;
-  aspect-ratio: 1;
+  padding: 0.125rem 0.375rem;
+  border: 0;
   border-radius: var(--radius-full);
-  background: currentColor;
+  background: none;
+  color: var(--muted-foreground);
+  font: inherit;
+  cursor: pointer;
+  transition: color var(--duration-fast), opacity var(--duration-fast);
 }
 
-.footer-sky-legend .is-leetcode::before {
-  background: var(--sky-leetcode);
+.footer-sky-legend button::before {
+  content: "";
+  width: 0.45rem;
+  aspect-ratio: 1;
+  border: 1.5px solid var(--dot);
+  border-radius: var(--radius-full);
+  background: var(--dot);
+  transition: background-color var(--duration-fast);
 }
 
-.footer-sky-legend .is-github::before {
-  background: var(--sky-github);
+.footer-sky-legend .is-leetcode {
+  --dot: var(--sky-leetcode);
+}
+
+.footer-sky-legend .is-github {
+  --dot: var(--sky-github);
+}
+
+.footer-sky-legend [aria-pressed="false"] {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+.footer-sky-legend [aria-pressed="false"]::before {
+  background: transparent;
+}
+
+.footer-sky-legend button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
 
 @media (hover: hover) {
-  .footer-sky-legend a:hover {
+  .footer-sky-legend button:hover {
     color: var(--foreground);
   }
 }
