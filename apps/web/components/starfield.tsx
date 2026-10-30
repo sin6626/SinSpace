@@ -22,13 +22,16 @@ uniform float uLight;   // 0 夜里，1 黄昏
 uniform float uPhase;   // 月相：0 新月，0.5 满月
 uniform vec3 uMoon;     // 月亮圆心（像素）和半径（像素）
 uniform float uSpin;    // 星空绕北天极转过的角度（弧度）
-// 配色（下面的 palettes，夜紫 / 墨黑）：天空渐变、地平线的光、银河、星星的色温与多少、月亮的光晕与暗面
+// 配色（下面的 palettes，夜紫 / 墨黑 / 银河）：天空渐变、地平线的光、银河、星星的色温与多少、月亮的光晕与暗面
 uniform vec3 uNightTop, uNightLow, uDuskTop, uDuskLow, uHorizonNight, uHorizonDusk;
 uniform vec3 uNebulaA, uNebulaB;
 uniform float uNebula;
 uniform vec3 uTintA, uTintB, uTintC;
 uniform float uStars, uStarGain, uSpikes;
 uniform vec3 uMoonGlow, uMoonDark;
+// 银河的形状：倾斜度、宽窄（越大越窄）、核心的亮光（颜色与强度）、横穿银河的暗色尘埃带（0 为没有）
+uniform float uBandTilt, uBandWidth, uCore, uDust;
+uniform vec3 uCoreColor;
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 vec2 hash2(vec2 p) { return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453); }
@@ -86,9 +89,15 @@ void main() {
 
   // 星云：一条斜着的银河，噪声让它有云絮感
   vec2 q = sp * 1.6;
-  float band = exp(-pow((suv.y - 0.45 - (suv.x - 0.5) * 0.55) * 3.2, 2.0));
+  float band = exp(-pow((suv.y - 0.45 - (suv.x - 0.5) * uBandTilt) * uBandWidth, 2.0));
   float cloud = fbm(q * 2.0 + fbm(q * 1.3));
-  vec3 nebula = mix(uNebulaA, uNebulaB, cloud) * band * pow(cloud, 2.4) * uNebula;
+  // 尘埃带：另一层噪声里浓的地方把银河的光和星星压暗，银河才有立体感
+  float lanes = smoothstep(0.48, 0.72, fbm(q * 3.1 + 7.0)) * band * uDust;
+  vec3 nebula = mix(uNebulaA, uNebulaB, cloud) * band * pow(cloud, 2.4) * uNebula * (1.0 - lanes);
+  // 核心：银河正中最亮的那一线光
+  nebula += uCoreColor * pow(band, 4.0) * smoothstep(0.3, 0.85, cloud) * uCore * (1.0 - lanes);
+  // 银河会随星空转动，转到画面最上面时会压在导航文字后面：亮银河（有尘埃带的配色）在顶部两成渐渐收淡，保证导航看得清
+  nebula *= 1.0 - smoothstep(0.78, 0.97, uv.y) * 0.75 * min(uDust, 1.0);
   sky += nebula * (1.0 - uLight * 0.8);
 
   // 三层星星：远处的小而密，近处的大而疏；银河里星星更多
@@ -96,7 +105,7 @@ void main() {
   vec3 stars = starLayer(sp, 140.0, 0.10 + band * 0.22, 0.06, t, 0.0) * 0.8
              + starLayer(sp + 3.1, 70.0, 0.08 + band * 0.12, 0.07, t * 0.8, 0.0)
              + starLayer(sp + 7.7, 26.0, 0.07, 0.06, t * 0.6, uSpikes) * 1.5;
-  sky += stars * starAmount * uStarGain;
+  sky += stars * starAmount * uStarGain * (1.0 - lanes * 0.6);
 
   // 流星：每 23 秒一颗，划过约 1 秒，起点和方向每次不同
   float period = 23.0;
@@ -139,11 +148,11 @@ void main() {
 }
 `;
 
-// 两套配色（2026-10-29 对比用，<html data-palette> 由地址参数决定，见 layout.tsx）：
+// 三套配色（2026-10-29 起对比用，<html data-palette> 由地址参数决定，见 layout.tsx）：
 // night = 原来的夜紫（紫黑天空、粉紫银河、偏粉的星）；ink = 墨黑，人眼看到的真实夜空：中性的黑，地平线附近一点冷灰的大气辉光，
 // 银河是很淡的灰白雾，星星几乎纯白（零星极淡的蓝白和暖白），数量、亮度与夜紫相同（用户 10-29：加多加亮显得刻意），少数亮星带细十字星芒，月亮光晕不带颜色。
 type Vec3 = [number, number, number];
-const palettes: Record<"night" | "ink", Record<string, Vec3 | number>> = {
+const palettes: Record<"night" | "ink" | "galaxy", Record<string, Vec3 | number>> = {
   night: {
     uNightTop: [0.016, 0.012, 0.043], uNightLow: [0.082, 0.055, 0.16], uDuskTop: [0.62, 0.55, 0.82], uDuskLow: [1.0, 0.8, 0.78],
     uHorizonNight: [0.12, 0.05, 0.16], uHorizonDusk: [0.18, 0.08, 0.04],
@@ -151,6 +160,7 @@ const palettes: Record<"night" | "ink", Record<string, Vec3 | number>> = {
     uTintA: [1.0, 0.97, 1.0], uTintB: [0.78, 0.84, 1.0], uTintC: [1.0, 0.82, 0.95],
     uStars: 1, uStarGain: 1, uSpikes: 0,
     uMoonGlow: [0.95, 0.85, 1.0], uMoonDark: [0.14, 0.12, 0.2],
+    uBandTilt: 0.55, uBandWidth: 3.2, uCore: 0, uDust: 0, uCoreColor: [0, 0, 0],
   },
   ink: {
     uNightTop: [0.003, 0.003, 0.004], uNightLow: [0.02, 0.022, 0.028], uDuskTop: [0.8, 0.82, 0.86], uDuskLow: [0.94, 0.94, 0.95],
@@ -159,6 +169,18 @@ const palettes: Record<"night" | "ink", Record<string, Vec3 | number>> = {
     uTintA: [1.0, 1.0, 1.0], uTintB: [0.88, 0.92, 1.0], uTintC: [1.0, 0.96, 0.88],
     uStars: 1, uStarGain: 1, uSpikes: 1,
     uMoonGlow: [0.9, 0.9, 0.92], uMoonDark: [0.05, 0.05, 0.06],
+    uBandTilt: 0.55, uBandWidth: 3.2, uCore: 0, uDust: 0, uCoreColor: [0, 0, 0],
+  },
+  // 银河（2026-10-30，按朋友给的一张星空图：只取天空，不要图里的行星）：深海军蓝的天到地平线的淡紫雾，
+  // 一条从左上斜下来的亮银河（蓝色外缘、粉紫核心、暗色尘埃带），星星密且偏蓝白、少数偏粉
+  galaxy: {
+    uNightTop: [0.008, 0.02, 0.07], uNightLow: [0.06, 0.07, 0.2], uDuskTop: [0.5, 0.55, 0.85], uDuskLow: [0.92, 0.84, 0.96],
+    uHorizonNight: [0.22, 0.12, 0.3], uHorizonDusk: [0.15, 0.1, 0.15],
+    uNebulaA: [0.2, 0.32, 0.9], uNebulaB: [0.9, 0.5, 0.95], uNebula: 1.1,
+    uTintA: [0.92, 0.96, 1.0], uTintB: [0.62, 0.78, 1.0], uTintC: [1.0, 0.72, 0.9],
+    uStars: 1.7, uStarGain: 1.35, uSpikes: 0,
+    uMoonGlow: [0.85, 0.85, 1.0], uMoonDark: [0.06, 0.07, 0.16],
+    uBandTilt: -2.2, uBandWidth: 5.5, uCore: 0.9, uDust: 1.0, uCoreColor: [1.0, 0.86, 0.96],
   },
 };
 
@@ -226,7 +248,8 @@ export default function Starfield() {
     };
     gl.uniform1f(uniforms.phase, moonPhase(Date.now()));
     // 配色在页面打开时由地址参数定下（layout.tsx 的 themeScript），这里读一次
-    const palette = palettes[document.documentElement.dataset.palette === "ink" ? "ink" : "night"];
+    const chosen = document.documentElement.dataset.palette;
+    const palette = palettes[chosen === "ink" || chosen === "galaxy" ? chosen : "night"];
     for (const [name, value] of Object.entries(palette)) {
       const location = gl.getUniformLocation(program, name);
       if (typeof value === "number") gl.uniform1f(location, value);

@@ -149,6 +149,42 @@
   --shadow-popup: 0 2px 6px light-dark(rgb(0 0 0 / 8%), rgb(0 0 0 / 55%)), 0 16px 40px -12px light-dark(rgb(0 0 0 / 22%), rgb(0 0 0 / 80%));
 }
 
+/* 银河配色（2026-10-30，参照朋友给的星空图，与夜紫、墨黑对比用，地址带 ?palette=galaxy）：
+   深海军蓝的夜到地平线的淡紫雾，强调色取银河核心的薰衣草紫；开灯时是淡蓝紫的清晨。只覆盖颜色，星空在 starfield.tsx 的 palettes.galaxy。 */
+:root[data-palette="galaxy"] {
+  --background: light-dark(#f4f4fb, #090c22);
+  --surface: light-dark(#ffffff, #111534);
+  --foreground: light-dark(#1b1d3a, #e9ebff);
+  --muted: light-dark(#ececf7, #0d1130);
+  --muted-foreground: light-dark(#5f6390, #9ea3cf);
+  --border: light-dark(rgb(27 29 58 / 12%), rgb(233 235 255 / 11%));
+  --border-strong: light-dark(rgb(27 29 58 / 22%), rgb(233 235 255 / 20%));
+  --accent: light-dark(#e8e7f8, #181d43);
+  --accent-active: light-dark(#dcdaf3, #222853);
+  --primary: light-dark(#5848c2, #c4b2ff);
+  --primary-foreground: light-dark(#ffffff, #15113a);
+  --glass-popup: light-dark(rgb(255 255 255 / 94%), rgb(15 19 46 / 94%));
+  --glass-border: light-dark(rgb(27 29 58 / 10%), rgb(233 235 255 / 12%));
+  --constellation-line: light-dark(rgb(27 29 58 / 14%), rgb(233 235 255 / 14%));
+  --island-bg: rgb(8 10 30 / 92%);
+  --island-fg: #e9ebff;
+  --island-muted: #9ea3cf;
+  --island-primary: #c4b2ff;
+  --island-border: rgb(233 235 255 / 12%);
+  --moonlight: light-dark(#3b2f8f, #f1ecff);
+  --moonlight-glow: light-dark(rgb(255 255 255 / 60%), rgb(196 178 255 / 38%));
+  --evening-star: light-dark(#ffffff, #f1ecff);
+  --band-sky: light-dark(#e3e2f7, #131943);
+  --band-star: light-dark(rgb(255 255 255 / 90%), rgb(235 240 255 / 88%));
+  --sky-fallback-top: light-dark(#8f93d6, #04071a);
+  --sky-fallback-low: light-dark(#e6dbf5, #2a1d4d);
+  --badge-from: light-dark(#6d5ce0, #c4b2ff);
+  --badge-to: light-dark(#4054c8, #7f8cff);
+  --badge-foreground: light-dark(#ffffff, #15113a);
+  --shadow-soft: 0 1px 2px light-dark(rgb(27 29 58 / 6%), rgb(0 0 0 / 35%)), 0 8px 24px -12px light-dark(rgb(88 72 194 / 22%), rgb(140 150 255 / 18%));
+  --shadow-popup: 0 2px 6px light-dark(rgb(27 29 58 / 8%), rgb(0 0 0 / 45%)), 0 16px 40px -12px light-dark(rgb(88 72 194 / 28%), rgb(140 150 255 / 22%));
+}
+
 :root[data-theme="light"] {
   color-scheme: light;
 }

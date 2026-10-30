@@ -1,4 +1,4 @@
-// 浏览器回归测试：配色对比开关（2026-10-29，夜紫 / 墨黑二选一之前临时用，见 layout.tsx 的 themeScript）。
+// 浏览器回归测试：配色对比开关（2026-10-29 起，夜紫 / 墨黑 / 银河选定之前临时用，见 layout.tsx 的 themeScript）。
 // 地址带 ?palette=ink 切到墨黑（<html data-palette="ink">，背景是中性的黑），之后站内点链接、整页打开别的页面都保持；
 // ?palette=night 切回夜紫。记在 sessionStorage，所以只影响当前标签页，另开的标签页各自独立。
 // 需要先运行 pnpm dev（默认 http://127.0.0.1:2323，可用 WEB_URL 覆盖）。用法：pnpm e2e
@@ -30,11 +30,20 @@ try {
   await browser.goto(`${base}/timeline`, 3500);
   assert.equal((await state()).palette, "ink", "同一标签页再打开别的页面应当保持墨黑");
 
+  // 银河（2026-10-30）：深海军蓝底，蓝分量明显高于红
+  await browser.goto(`${base}/posts?palette=galaxy`, 3500);
+  const galaxy = await state();
+  assert.equal(galaxy.palette, "galaxy", "带 ?palette=galaxy 应当切到银河");
+  const [r, , b] = galaxy.background.match(/[\d.]+/g).map(Number);
+  assert.ok(b > r + 15, `银河的背景应当是深海军蓝：${galaxy.background}`);
+  await browser.goto(`${base}/timeline`, 3500);
+  assert.equal((await state()).palette, "galaxy", "同一标签页再打开别的页面应当保持银河");
+
   await browser.goto(`${base}/?palette=night`, 3500);
   assert.equal((await state()).palette, "night", "?palette=night 应当切回夜紫");
   await browser.goto(`${base}/posts`, 3500);
   assert.equal((await state()).palette, "night", "切回后再打开别的页面应当保持夜紫");
-  console.log(`PASS 配色开关：?palette=ink 切到墨黑（背景 ${ink.background}），站内跳转与整页打开都保持，?palette=night 切回夜紫（背景 ${night.background}）`);
+  console.log(`PASS 配色开关：?palette=ink 切到墨黑（背景 ${ink.background}），?palette=galaxy 切到银河（背景 ${galaxy.background}），站内跳转与整页打开都保持，?palette=night 切回夜紫（背景 ${night.background}）`);
 } finally {
   browser.close();
 }
