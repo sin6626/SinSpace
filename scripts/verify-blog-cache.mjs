@@ -15,7 +15,7 @@ const project = { id: 'project-id', name: '作品', description: '简介', avata
 let invalidNavigation = false
 let detailError
 const api = {
-  aggregate: { getAggregateData: async () => ({ categories: invalidNavigation ? null : [category], pageMeta: [], user: { privateField: 'not for cache' } }) },
+  aggregate: { getAggregateData: async () => ({ categories: invalidNavigation ? null : [category], pageMeta: [{ id: 'page-id', title: '关于我', slug: 'about' }], user: { privateField: 'not for cache' } }) },
   category: {
     getAllCategories: async () => ({ data: [category] }),
     getAllTags: async () => ({ data: [{ name: 'Vue', count: 1, extra: 'x' }, { name: ' 前端', count: 3 }] }),
@@ -40,7 +40,7 @@ const api = {
   },
   search: { search: async (type, keyword) => { calls.push(['search', type, keyword]); return type === 'post' ? { data: [{ ...post, text: 'leak' }], pagination: { total: 1 } } : { data: [{ ...note, text: 'leak' }], pagination: { total: 1 } } } },
   topic: { getAll: async () => ({ data: [{ id: 't1', name: '近况', slug: 'now', introduce: 'unused' }, { id: 't2', name: '空话题', slug: 'empty' }] }) },
-  page: { getBySlug: async () => detailError ? Promise.reject(detailError) : ({ id: 'page-id', title: '关于我', subtitle: 'about me', text: 'page body', contentFormat: 'lexical', content: 'unused JSON', allowComment: true }) },
+  page: { getList: async () => ({ data: [{ id: 'page-id', subtitle: ' about me ' }] }), getBySlug: async () => detailError ? Promise.reject(detailError) : ({ id: 'page-id', title: '关于我', subtitle: 'about me', text: 'page body', contentFormat: 'lexical', content: 'unused JSON', allowComment: true }) },
   post: {
     getList: async (...args) => { calls.push(args); return { data: [post], pagination: { total: 1 } } },
     getPost: async () => { if (detailError) throw detailError; return post },
@@ -52,7 +52,9 @@ vm.runInNewContext(code, {
   require: (id) => id === 'server-only' ? {} : id === './excerpt' ? { excerpt: (value) => value ?? '', readingMinutes: () => 1 } : id === './social' ? { socialLinks: () => [] } : id === './theme-config' ? { parseContentTranslations: () => ({ projects: {} }) } : id === './safe-url' ? { safeUrl: (value) => value && /^https?:\/\//i.test(value) ? value : undefined } : id === './api' ? { getApiClient: () => api } : id === 'next/cache' ? { cacheLife: (value) => lifetimes.push(value), cacheTag: (...value) => tags.push(...value) } : require(id),
 })
 const cache = module.exports
-assert.equal('user' in await cache.getNavigationData(), false)
+const navigation = await cache.getNavigationData()
+assert.equal('user' in navigation, false)
+assert.equal(navigation.pageMeta[0].subtitle, 'about me', '导航“首页”面板的页面副标题取自后台页面')
 assert.equal((await cache.getCategories())[0].slug, 'technology')
 const list = await cache.getPosts(2, 'category-id')
 assert.equal(calls[0][0], 2)

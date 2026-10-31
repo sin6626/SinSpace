@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import Link from "@/components/locale-provider";
 import { notFound } from "next/navigation";
 import ArticleBody from "@/components/article-body";
@@ -14,7 +13,6 @@ import RecentlyAttitude from "@/components/recently-attitude";
 import SubscribeForm from "@/components/subscribe-form";
 import { getApiUrl } from "@/lib/config";
 import SocialIconsPreview from "./social-icons";
-import HomePanelDrafts from "./home-panel-drafts";
 import StyleGuide from "./style-guide";
 import IslandButtons from "./island-buttons";
 import ToastButtons from "./toast-buttons";
@@ -92,11 +90,6 @@ export default function DebugPage() {
             <BlogNavigation state={{ status: "error" }} />
             <p className="post-meta">没有页面、面板数据读取失败</p>
             <BlogNavigation state={{ status: "ready", pages: [], panels: null, socials: [] }} />
-          </li>
-          <li>
-            <h2>导航“首页”面板候选</h2>
-            <p className="post-meta">原来的“此间三个数字 + 页面网格”和 Innei 撞了，两个候选排版对比（真实数据；页面下面那句说明是暂写的）。现在线上的样子见上面导航菜单悬停“首页”。</p>
-            <Suspense fallback={<p className="post-meta" role="status">正在读取…</p>}><HomePanelDrafts /></Suspense>
           </li>
           <li>
             <h2>文章列表</h2>

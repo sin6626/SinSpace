@@ -39,8 +39,26 @@ try {
   }
 
   await hover("首页");
-  const stats = await browser.evaluate(`[...document.querySelectorAll(".nav-stats dd")].map((d) => Number(d.textContent))`);
-  assert.ok(stats.length >= 2 && stats[0] > 0 && stats[1] > 0, `“此间”的数字不对：${stats.join(", ")}`);
+  // 首页面板（2026-10-31 改为海报大字）：左边旧式数字的“第几夜”，篇数和字数横排在下面；右边页面带后台填的副标题
+  const home = await browser.evaluate(`(async () => {
+    const count = document.querySelector(".nav-night-count b");
+    await document.fonts.ready;
+    const foot = [...document.querySelectorAll(".nav-night-foot span")];
+    const [a, b] = foot.map((span) => span.getBoundingClientRect());
+    return {
+      nights: Number(count.textContent),
+      font: getComputedStyle(count).fontFamily,
+      oldstyle: [...document.fonts].some((font) => font.family.includes("Cormorant") && font.status === "loaded"),
+      foot: foot.map((span) => span.textContent),
+      sameRow: Boolean(a && b && Math.abs(a.top - b.top) < 2),
+      pages: [...document.querySelectorAll(".navigation-Popup .nav-home-page")].map((page) => page.textContent),
+    };
+  })()`);
+  assert.ok(home.nights > 0, `“第几夜”的数字不对：${home.nights}`);
+  assert.ok(/Cormorant/.test(home.font) && home.oldstyle, `“第几夜”应使用旧式数字字体：${home.font}`);
+  assert.ok(home.foot.length === 2 && home.foot.every((text) => /\d/.test(text)) && home.sameRow, `篇数与字数应横排：${JSON.stringify(home.foot)}`);
+  assert.ok(home.pages.length > 0, "首页面板应列出后台页面");
+  const stats = [home.nights, ...home.foot];
   assert.notEqual(await browser.evaluate(`getComputedStyle(document.querySelector(".navigation-Popup")).backdropFilter`), "none", "弹层背景没有模糊");
 
   await hover("文章");
@@ -79,7 +97,7 @@ try {
   }
   assert.deepEqual(broken, [], `面板里有链接打开是 404：${broken.join("；")}`);
 
-  console.log(`PASS 面板内 ${hrefs.size} 个链接都能打开；导航顺序、五个悬停面板、此间数字 ${stats.join("/")}、弹层模糊、文章面板随分类切换（${before} → ${after}）`);
+  console.log(`PASS 面板内 ${hrefs.size} 个链接都能打开；导航顺序、五个悬停面板、第 ${home.nights} 夜（旧式数字）、${home.foot.join(" · ")}、弹层模糊、文章面板随分类切换（${before} → ${after}）`);
 } finally {
   browser.close();
 }

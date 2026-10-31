@@ -35,14 +35,24 @@ export async function getNavigationData(lang: ContentLang = "zh") {
   "use cache";
   cacheLife({ stale: 300, revalidate: 3600, expire: 86400 });
   cacheTag("blog:navigation", "blog:categories", "blog:pages", "blog:ai");
-  const [data, names] = await Promise.all([getApiClient().aggregate.getAggregateData(), localizedNames(lang)]);
+  // 聚合接口的页面只有标题，副标题（导航“首页”面板里每个页面下面那句）从页面列表补上
+  const [data, names, pages] = await Promise.all([
+    getApiClient().aggregate.getAggregateData(),
+    localizedNames(lang),
+    getApiClient().page.getList(1, 50).then(({ data }) => data, () => []),
+  ]);
   if (!Array.isArray(data.categories) || !Array.isArray(data.pageMeta)) {
     throw new Error("导航数据缺少分类或页面。");
   }
+  const subtitles = new Map(pages.map((page) => [page.id, page.subtitle]));
   return {
     categories: data.categories.map(({ name, slug }) => ({ name: names?.categories[slug] ?? name, slug })),
     // 后台页面按“排序”字段排列（关于我在关于本站前面）。
-    pageMeta: [...data.pageMeta].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map(({ id, title, slug }) => ({ title: names?.titles[id] ?? title, slug })),
+    pageMeta: [...data.pageMeta].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map(({ id, title, slug }) => ({
+      title: names?.titles[id] ?? title,
+      subtitle: (names?.subtitles[id] ?? subtitles.get(id))?.trim() || null,
+      slug,
+    })),
   };
 }
 
@@ -494,6 +504,7 @@ export type ContentLang = "zh" | TranslationLanguage;
 // 唯一来源是 Core：列表接口带 ?lang= 时 Core 已把译文换进去，这里只是收集起来按 id 查。
 export type LocalizedNames = {
   titles: Record<string, string>;
+  subtitles: Record<string, string>;
   categories: Record<string, string>;
   topics: Record<string, string>;
   moods: Record<string, string>;
@@ -517,7 +528,8 @@ export async function getLocalizedNames(lang: TranslationLanguage): Promise<Loca
     client.category.getAllCategories(),
     all((page) => getApiClient().page.getList(page, 50)),
   ]);
-  const pageTitles = await Promise.all(pages.map(async (page) => [page.id, (await getArticleTranslation(page.id, lang).catch(() => null))?.title ?? page.title] as const));
+  const pageTranslations = await Promise.all(pages.map(async (page) => ({ page, translation: await getArticleTranslation(page.id, lang).catch(() => null) })));
+  const pageTitles = pageTranslations.map(({ page, translation }) => [page.id, translation?.title ?? page.title] as const);
   const source = new Map(sourceNotes.map((note) => [note.id, note]));
   const pairs = (field: "mood" | "weather") => Object.fromEntries(notes.flatMap((note) => {
     const original = source.get(note.id)?.[field];
@@ -525,6 +537,10 @@ export async function getLocalizedNames(lang: TranslationLanguage): Promise<Loca
   }));
   return {
     titles: Object.fromEntries([...[...posts, ...notes].map((item) => [item.id, item.title] as const), ...pageTitles]),
+    subtitles: Object.fromEntries(pageTranslations.flatMap(({ page, translation }) => {
+      const subtitle = translation?.subtitle ?? page.subtitle;
+      return subtitle ? [[page.id, subtitle]] : [];
+    })),
     categories: Object.fromEntries(categories.map((category) => [category.slug, category.name])),
     topics: Object.fromEntries(notes.flatMap((note) => (note.topic ? [[note.topic.id, note.topic.name]] : []))),
     moods: pairs("mood"),

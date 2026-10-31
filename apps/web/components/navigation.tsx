@@ -19,7 +19,8 @@ function links(value: unknown, labelKey: "name" | "title", prefix: string) {
       typeof label !== "string" || !label.trim() ||
       typeof slug !== "string" || !slug.trim() || slug === "." || slug === ".."
     ) throw new Error("导航条目格式错误");
-    return { label, href: `${prefix}${encodeURIComponent(slug)}` };
+    const note = typeof item.subtitle === "string" && item.subtitle.trim() ? item.subtitle.trim() : undefined;
+    return { label, href: `${prefix}${encodeURIComponent(slug)}`, note };
   });
 }
 

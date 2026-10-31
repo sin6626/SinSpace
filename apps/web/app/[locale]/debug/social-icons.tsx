@@ -31,15 +31,14 @@ export default function SocialIconsPreview() {
         </ul>
       </div>
 
-      <p className="post-meta">导航“首页”面板左栏的样子（照真实面板的类名拼出来，统计数字是示例；悬停同样换成品牌色）</p>
+      <p className="post-meta">导航“首页”面板的样子（照真实面板的类名拼出来，数字和页面是示例；社交账号在右下角，悬停同样换成品牌色）</p>
       <div className="nav-panel is-home debug-social-panel">
-        <section className="nav-panel-side">
-          <p className="nav-panel-label">此间</p>
-          <dl className="nav-stats">
-            <div><dt>篇文字</dt><dd>24</dd></div>
-            <div><dt>万字</dt><dd>7.3</dd></div>
-            <div><dt>天</dt><dd>194</dd></div>
-          </dl>
+        <section className="nav-panel-side nav-night">
+          <p className="nav-night-count"><b>194</b><span>夜</span></p>
+          <p className="nav-night-foot"><span>24 篇</span><span>7.3 万字</span></p>
+        </section>
+        <section className="nav-panel-main nav-home-main">
+          <p className="nav-panel-empty">（页面列表）</p>
           <ul className="nav-socials">
             {samples.map((social) => (
               <li key={social.key} data-dark={social.dark ? "" : undefined} style={{ "--brand": social.color } as CSSProperties}>
@@ -49,9 +48,6 @@ export default function SocialIconsPreview() {
               </li>
             ))}
           </ul>
-        </section>
-        <section className="nav-panel-main">
-          <p className="nav-panel-label">页面</p>
         </section>
       </div>
 

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ViewTransition } from "react";
-import { Geist_Mono, Noto_Sans_SC, Noto_Serif_SC, Nunito } from "next/font/google";
+import { Cormorant_Garamond, Geist_Mono, Noto_Sans_SC, Noto_Serif_SC, Nunito } from "next/font/google";
 import Notifications from "@/components/notifications";
 import { getApiUrl } from "@/lib/config";
 import { getSiteDescription, getSiteSettings, siteName } from "@/lib/blog-data";
@@ -22,6 +22,16 @@ import "../globals.css";
 const nunito = Nunito({
   variable: "--font-latin",
   subsets: ["latin"],
+  display: "swap",
+});
+
+// 旧式数字（高低错落的书刊数字）：只用在导航“首页”面板的“第几夜”大数字上。Nunito 没有旧式数字，
+// 带 onum 的几款在 Google Fonts 版本里多被去掉了这个特性；Cormorant Garamond 的数字本身就是旧式的，细体 300 和站内的细字一致。
+const oldstyle = Cormorant_Garamond({
+  variable: "--font-oldstyle",
+  subsets: ["latin"],
+  weight: "300",
+  preload: false,
   display: "swap",
 });
 
@@ -90,7 +100,7 @@ export default async function RootLayout({ children }: LayoutProps<"/[locale]">)
     <html
       lang={htmlLang[locale]}
       data-theme="dark"
-      className={`${nunito.variable} ${notoSans.variable} ${geistMono.variable} ${notoSerif.variable} h-full antialiased`}
+      className={`${nunito.variable} ${notoSans.variable} ${geistMono.variable} ${notoSerif.variable} ${oldstyle.variable} h-full antialiased`}
       // 下面的脚本会在水合前设置 data-theme，属性与服务端不同是预期的。
       suppressHydrationWarning
     >

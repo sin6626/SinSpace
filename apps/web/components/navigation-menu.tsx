@@ -13,7 +13,8 @@ import { formatDate } from "../lib/date";
 import MobileMenu from "./mobile-menu";
 import "./navigation-menu.css";
 
-type NavigationLink = { label: string; href: string };
+// note：后台页面的副标题（首页面板里页面名下面那句）
+type NavigationLink = { label: string; href: string; note?: string };
 type Panels = Awaited<ReturnType<typeof getNavigationPanels>>;
 export type NavigationState =
   | { status: "loading" | "error" }
@@ -93,44 +94,50 @@ function PanelFooter({ href, label, aside }: { href: string; label: string; asid
   );
 }
 
-// 首页面板：左边“此间”（全站篇数、字数、建站天数和社交账号），右边后台页面
+// 首页面板（海报大字，2026-10-31 定）：左边一个旧式数字的大字“第几夜”（建站天数），篇数和字数横排在下面当注脚；
+// 右边后台页面一行一个（页面名 + 后台填的副标题 + 箭头），社交账号在右下角。原来“此间三个数字 + 页面网格”和 Innei 太像。
 function HomePanel({ state, pathname }: { state: Extract<NavigationState, { status: "ready" }>; pathname: string }) {
   const t = useT().nav;
   const stats = state.panels?.stats;
-  // 全站字数：中文、日文一万以上写成“7.3 万字”，英文按千
-  const words = stats && t.words(stats.words);
   return (
     <div className="nav-panel is-home">
-      {stats && (
-        <section className="nav-panel-side">
-          <p className="nav-panel-label">{t.here}</p>
-          <dl className="nav-stats">
-            <div><dt>{t.writings}</dt><dd>{stats.writings}</dd></div>
-            {words && <div><dt>{words.unit}</dt><dd>{words.value}</dd></div>}
-            {stats.days && <div><dt>{t.days}</dt><dd>{stats.days}</dd></div>}
-          </dl>
-          {state.socials.length > 0 && (
-            <ul className="nav-socials">
-              {state.socials.map((social) => (
-                <li key={social.href} data-dark={social.dark ? "" : undefined} style={{ "--brand": social.color } as CSSProperties}>
-                  <a href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label} title={social.label}>{social.icon}</a>
-                </li>
-              ))}
-            </ul>
-          )}
+      {stats?.days && (
+        <section className="nav-panel-side nav-night">
+          <p className="nav-night-count" aria-label={t.nightLabel(stats.days)}>
+            <b aria-hidden="true">{stats.days}</b>
+            <span aria-hidden="true">{t.night}</span>
+          </p>
+          <p className="nav-night-foot">
+            <span>{t.pieces(stats.writings)}</span>
+            <span>{t.words(stats.words)}</span>
+          </p>
         </section>
       )}
-      <section className="nav-panel-main">
-        <p className="nav-panel-label">{t.pages}</p>
+      <section className="nav-panel-main nav-home-main">
         {state.pages.length ? (
-          <ul className="nav-page-grid">
+          <ul className="nav-home-pages">
             {state.pages.map((page) => (
               <li key={page.href}>
-                <PanelLink href={page.href} className="nav-link" current={pathname === page.href}>{page.label}</PanelLink>
+                <PanelLink href={page.href} className="nav-home-page" current={pathname === page.href}>
+                  <span className="nav-home-page-text">
+                    <span className="nav-home-page-title">{page.label}</span>
+                    {page.note && <span className="nav-home-page-note">{page.note}</span>}
+                  </span>
+                  <ArrowRight size={16} aria-hidden="true" />
+                </PanelLink>
               </li>
             ))}
           </ul>
         ) : <p className="nav-panel-empty">{t.noPages}</p>}
+        {state.socials.length > 0 && (
+          <ul className="nav-socials">
+            {state.socials.map((social) => (
+              <li key={social.href} data-dark={social.dark ? "" : undefined} style={{ "--brand": social.color } as CSSProperties}>
+                <a href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label} title={social.label}>{social.icon}</a>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </div>
   );

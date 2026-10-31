@@ -303,7 +303,7 @@
 .nav-panel.is-home {
   grid-template-columns: auto minmax(14rem, 1fr);
   gap: 0;
-  width: 32rem;
+  width: 30rem;
 }
 
 .nav-panel.is-posts { width: 38rem; }
@@ -350,7 +350,7 @@
 }
 
 /* 面板里所有可点的行：默认淡色，悬停变亮；聚焦有焦点框 */
-.nav-link,
+.nav-home-page,
 .nav-category,
 .nav-entry,
 .nav-more-link,
@@ -379,32 +379,104 @@
   }
 }
 
-/* 首页面板：此间的三个数字 */
-.nav-stats {
-  display: grid;
+/* 首页面板：左边旧式数字的大字“第几夜”（建站天数），篇数、字数横排在下面当注脚；右边一行一个页面，社交账号在右下角 */
+.nav-night {
+  align-content: space-between;
+  gap: var(--space-6);
+}
+
+.nav-night-count {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0;
+
+  b {
+    color: var(--foreground);
+    font-family: var(--font-oldstyle), var(--font-latin), serif;
+    font-size: 4.5rem;
+    font-weight: 300;
+    line-height: 0.9;
+    font-variant-numeric: oldstyle-nums;
+  }
+
+  span {
+    margin-top: 0.5rem;
+    color: var(--muted-foreground);
+    font-size: var(--text-sm);
+    letter-spacing: 0.3em;
+    writing-mode: vertical-rl;
+  }
+
+  /* 英文的 nights 不竖排，放在数字右下 */
+  &:lang(en) span {
+    align-self: flex-end;
+    margin: 0 0 0.5rem;
+    letter-spacing: 0.06em;
+    writing-mode: horizontal-tb;
+  }
+}
+
+.nav-night-foot {
+  display: flex;
   gap: var(--space-3);
   margin: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--glass-border);
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  white-space: nowrap;
 }
 
-.nav-stats div {
-  display: flex;
-  flex-direction: row-reverse;
-  justify-content: flex-end;
-  align-items: baseline;
-  gap: var(--space-2);
+.nav-home-main {
+  align-content: space-between;
+  gap: var(--space-4);
 }
 
-.nav-stats dd {
+.nav-home-pages {
+  display: grid;
+  gap: 2px;
   margin: 0;
-  color: var(--foreground);
-  font-family: var(--font-latin), sans-serif;
-  font-size: 1.75rem;
-  font-weight: 300;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
+  padding: 0;
+  list-style: none;
 }
 
-.nav-stats dt {
+.nav-home-page {
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-inline: calc(var(--space-3) * -1);
+  padding: var(--space-2) var(--space-3);
+  color: var(--foreground);
+  transition: background-color var(--duration-fast), color var(--duration-fast);
+
+  svg {
+    flex: none;
+    color: var(--muted-foreground);
+    transition: transform var(--duration-fast), color var(--duration-fast);
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      background: var(--accent);
+
+      svg {
+        color: var(--foreground);
+        transform: translateX(2px);
+      }
+    }
+  }
+}
+
+.nav-home-page-text {
+  display: grid;
+  gap: 2px;
+}
+
+.nav-home-page-title {
+  font-size: var(--text-base);
+}
+
+.nav-home-page-note {
   color: var(--muted-foreground);
   font-size: var(--text-xs);
 }
@@ -412,11 +484,11 @@
 .nav-socials {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: var(--space-2);
-  margin: var(--space-3) 0 0;
-  padding: var(--space-3) 0 0;
+  margin: 0;
+  padding: 0;
   list-style: none;
-  border-top: 1px solid var(--glass-border);
 }
 
 .nav-socials a {
@@ -455,21 +527,6 @@
 :root[data-theme="dark"] .nav-socials li[data-dark] a:focus-visible {
   background: var(--brand);
   color: #fff;
-}
-
-.nav-page-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-1) var(--space-6);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.nav-link {
-  padding: 0.375rem 0;
-  font-size: var(--text-sm);
-  letter-spacing: 0.04em;
 }
 
 /* 分类、话题：名字在左（前面一颗小星），篇数靠右 */
