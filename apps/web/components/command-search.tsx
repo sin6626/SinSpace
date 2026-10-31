@@ -17,12 +17,22 @@ type QuickLink = { label: string; href: string; note?: string };
 type Item = { key: string; label: ReactNode; href?: string; meta?: string; note?: string; date?: string; run?: () => void; more?: boolean };
 type Group = { label: string; items: Item[] };
 
-// 全站只有一个搜索弹窗（页头那份挂载），快捷键、页头放大镜、调试页按钮都打开同一个
-const useSearchDialog = create<{ open: boolean; setOpen: (open: boolean) => void }>()((set) => ({
+// 全站只有一个搜索弹窗（页头那份挂载），快捷键、页头放大镜、调试页按钮都打开同一个。
+// returnTo：打开前有焦点的元素，关闭时焦点只还给它；打开前什么都没聚焦就不动焦点。
+// 不交给 Base UI 默认处理：没有 Dialog.Trigger、打开前焦点在 body 时，它会退回全局“之前聚焦过的元素”，
+// 把焦点还给早先聚焦过的别的东西（首页的月亮曾因此亮圈弹出月相），键盘关闭时还会强制显示焦点框。
+const useSearchDialog = create<{ open: boolean; returnTo: HTMLElement | null; setOpen: (open: boolean) => void }>()((set) => ({
   open: false,
-  setOpen: (open) => set({ open }),
+  returnTo: null,
+  setOpen: (open) => set(open
+    ? { open, returnTo: document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null }
+    : { open }),
 }));
 export const openSearch = () => useSearchDialog.getState().setOpen(true);
+const returnFocus = () => {
+  const target = useSearchDialog.getState().returnTo;
+  return target?.isConnected ? target : false;
+};
 
 // 快捷键的写法跟着系统走：Mac 是 ⌘K，其他是 Ctrl K。服务端不知道系统，先不显示
 const noop = () => () => {};
@@ -159,7 +169,7 @@ export default function CommandSearch({ links }: { links: QuickLink[] }) {
       >
         <Dialog.Portal>
           <Dialog.Backdrop className="search-backdrop" />
-          <Dialog.Popup className="search-dialog" initialFocus={input} aria-busy={searching}>
+          <Dialog.Popup className="search-dialog" initialFocus={input} finalFocus={returnFocus} aria-busy={searching}>
             <Dialog.Title className="sr-only">{t.label}</Dialog.Title>
             <div className="search-field">
               <Search size={18} strokeWidth={1.75} aria-hidden="true" />
