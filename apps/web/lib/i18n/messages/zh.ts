@@ -40,10 +40,11 @@ const zh = {
       says: { label: "一言", note: "言语的碎片" },
       thinking: { label: "思考", note: "读到的、看到的和我的看法" },
     },
-    words: (words: number) => (words >= 10000 ? `${(words / 10000).toFixed(1)} 万字` : `${words} 字`),
+    // 首页面板左栏的字数、篇数：[数字, 单位]，数字用旧式数字显示
+    words: (words: number): [string, string] => (words >= 10000 ? [(words / 10000).toFixed(1), "万字"] : [String(words), "字"]),
     night: "夜",
     nightLabel: (nights: number) => `第 ${nights} 夜`,
-    pieces: (count: number) => `${count} 篇`,
+    pieces: (count: number): [string, string] => [String(count), "篇"],
     empty: "还没有内容",
     pages: "页面",
     noPages: "还没有页面",

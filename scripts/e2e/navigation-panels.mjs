@@ -4,7 +4,7 @@
 // ④ 文章面板里鼠标移到另一个分类，右边的“X · 最近”跟着换；⑤ 弹层背景真的有模糊（backdrop-filter 曾被构建工具吞掉）；
 // ⑦ 时间线面板里鼠标移到“手记”，右边换成“手记 · 最近”且只列手记（曾经右边固定是混排的近期动态，悬停不变）；
 // ⑥ 五个面板里的每个链接打开后都不是站内 404（手记面板的话题链接曾用话题名拼地址，而手记页按 slug 筛选，结果全是 404）；
-// ⑧ 首页面板在页面很多时分栏、不会拉得很长（/debug 的示例）。
+// ⑧ 首页面板在页面很多时分栏、不会拉得很长（/debug 的示例）；⑨ 分栏时悬停底色和箭头不碰到邻栏。
 // 需要先运行 pnpm dev（默认 http://127.0.0.1:2323，可用 WEB_URL 覆盖）。用法：pnpm e2e
 import assert from "node:assert/strict";
 import { openBrowser, sleep } from "../headless-browser.mjs";
@@ -40,26 +40,28 @@ try {
   }
 
   await hover("首页");
-  // 首页面板（2026-10-31 改为海报大字）：左边旧式数字的“第几夜”，篇数和字数横排在下面；右边页面带后台填的副标题
+  // 首页面板（2026-10-31 改为海报大字）：左边旧式数字的“第几夜”，篇数、字数在它下面上下排开（也是旧式数字）；右边页面带后台填的副标题
   const home = await browser.evaluate(`(async () => {
     const count = document.querySelector(".nav-night-count b");
     await document.fonts.ready;
-    const foot = [...document.querySelectorAll(".nav-night-foot span")];
-    const [a, b] = foot.map((span) => span.getBoundingClientRect());
+    const stats = [...document.querySelectorAll(".navigation-Popup .nav-night-stat")];
+    const rows = [count, ...stats].map((el) => el.getBoundingClientRect());
     return {
       nights: Number(count.textContent),
       font: getComputedStyle(count).fontFamily,
+      statFonts: stats.map((stat) => getComputedStyle(stat.querySelector("b")).fontFamily),
       oldstyle: [...document.fonts].some((font) => font.family.includes("Cormorant") && font.status === "loaded"),
-      foot: foot.map((span) => span.textContent),
-      sameRow: Boolean(a && b && Math.abs(a.top - b.top) < 2),
+      foot: stats.map((stat) => stat.textContent),
+      stacked: rows.every((rect, i) => i === 0 || rect.top >= rows[i - 1].bottom),
       pages: [...document.querySelectorAll(".navigation-Popup .nav-home-page")].map((page) => page.textContent),
     };
   })()`);
   assert.ok(home.nights > 0, `“第几夜”的数字不对：${home.nights}`);
   assert.ok(/Cormorant/.test(home.font) && home.oldstyle, `“第几夜”应使用旧式数字字体：${home.font}`);
-  assert.ok(home.foot.length === 2 && home.foot.every((text) => /\d/.test(text)) && home.sameRow, `篇数与字数应横排：${JSON.stringify(home.foot)}`);
+  assert.ok(home.foot.length === 2 && home.foot.every((text) => /\d/.test(text)), `应有篇数与字数：${JSON.stringify(home.foot)}`);
+  assert.ok(home.stacked, `“第几夜”、篇数、字数应上下排开：${JSON.stringify(home.foot)}`);
+  assert.ok(home.statFonts.every((font) => /Cormorant/.test(font)), `篇数、字数也应使用旧式数字：${home.statFonts}`);
   assert.ok(home.pages.length > 0, "首页面板应列出后台页面");
-  const stats = [home.nights, ...home.foot];
   assert.notEqual(await browser.evaluate(`getComputedStyle(document.querySelector(".navigation-Popup")).backdropFilter`), "none", "弹层背景没有模糊");
 
   await hover("文章");
@@ -107,7 +109,31 @@ try {
   assert.deepEqual(grow.map(({ columns }) => columns), [1, 2, 3], `首页面板的页面没有随数量分栏：${JSON.stringify(grow)}`);
   for (const panel of grow) assert.ok(panel.height < 520, `${panel.pages} 个页面时面板高 ${panel.height}px，太高了`);
 
-  console.log(`PASS 面板内 ${hrefs.size} 个链接都能打开；导航顺序、五个悬停面板、第 ${home.nights} 夜（旧式数字）、${home.foot.join(" · ")}、弹层模糊、文章面板随分类切换（${before} → ${after}）、首页面板 ${grow.map(({ pages, columns, height }) => `${pages} 页 ${columns} 栏 ${height}px`).join(" / ")}`);
+  // ⑨ 分栏时鼠标停在左栏一格：它的悬停底色和箭头不能碰到右边那一栏（曾因列间距变量不存在，两栏紧贴，箭头贴着右栏的字）
+  const [hx, hy] = await browser.evaluate(`(() => {
+    const item = document.querySelectorAll(".debug-home-panel")[1].querySelectorAll(".nav-home-page")[2];
+    item.scrollIntoView({ block: "center" });
+    const r = item.getBoundingClientRect();
+    return [r.x + r.width / 2, r.y + r.height / 2];
+  })()`);
+  await browser.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: hx, y: hy });
+  await sleep(400);
+  const touch = await browser.evaluate(`(() => {
+    const items = document.querySelectorAll(".debug-home-panel")[1].querySelectorAll(".nav-home-page");
+    const [hovered, neighbor] = [items[2], items[3]];
+    const box = hovered.getBoundingClientRect();
+    const arrow = hovered.querySelector("svg");
+    return {
+      arrowShown: Number(getComputedStyle(arrow).opacity) > 0.9,
+      boxGap: Math.round(neighbor.getBoundingClientRect().left - box.right),
+      arrowGap: Math.round(neighbor.querySelector(".nav-home-page-title").getBoundingClientRect().left - arrow.getBoundingClientRect().right),
+    };
+  })()`);
+  assert.ok(touch.arrowShown, "悬停那一格应显示箭头");
+  assert.ok(touch.boxGap >= 4, `悬停底色碰到了右边一栏（间隔 ${touch.boxGap}px）`);
+  assert.ok(touch.arrowGap >= 16, `箭头离右边一栏的字太近（${touch.arrowGap}px）`);
+
+  console.log(`PASS 面板内 ${hrefs.size} 个链接都能打开；导航顺序、五个悬停面板、第 ${home.nights} 夜（旧式数字）、${home.foot.join(" · ")}、弹层模糊、文章面板随分类切换（${before} → ${after}）、首页面板 ${grow.map(({ pages, columns, height }) => `${pages} 页 ${columns} 栏 ${height}px`).join(" / ")}、悬停箭头离邻栏 ${touch.arrowGap}px`);
 } finally {
   browser.close();
 }

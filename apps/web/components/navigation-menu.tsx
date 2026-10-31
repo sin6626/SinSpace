@@ -94,7 +94,7 @@ function PanelFooter({ href, label, aside }: { href: string; label: string; asid
   );
 }
 
-// 首页面板（海报大字，2026-10-31 定）：左边一个旧式数字的大字“第几夜”（建站天数），篇数和字数横排在下面当注脚；
+// 首页面板（海报大字，2026-10-31 定）：左边一个旧式数字的大字“第几夜”（建站天数），篇数和字数在下面上下排开、撑满左栏；
 // 右边后台页面（页面名 + 后台填的副标题 + 箭头；5 个起分两栏、13 个起分三栏，面板跟着变宽），社交账号在页面下面、多了换行。
 // 原来“此间三个数字 + 页面网格”和 Innei 太像。
 type HomePanelProps = { pages: NavigationLink[]; socials: Extract<NavigationState, { status: "ready" }>["socials"]; stats?: Panels["stats"]; pathname: string };
@@ -109,10 +109,9 @@ function HomePanel({ pages, socials, stats, pathname }: HomePanelProps) {
             <b aria-hidden="true">{stats.days}</b>
             <span aria-hidden="true">{t.night}</span>
           </p>
-          <p className="nav-night-foot">
-            <span>{t.pieces(stats.writings)}</span>
-            <span>{t.words(stats.words)}</span>
-          </p>
+          {[t.pieces(stats.writings), t.words(stats.words)].map(([value, unit]) => (
+            <p key={unit} className="nav-night-stat"><b>{value}</b> <span>{unit}</span></p>
+          ))}
         </section>
       )}
       <section className="nav-panel-main nav-home-main">
