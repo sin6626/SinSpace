@@ -444,6 +444,25 @@ const ja: Messages = {
     view: "X / Twitter で元の投稿を見る",
     invalid: "ポストのリンクが無効です",
   },
+  search: {
+    open: "検索",
+    shortcut: (keys: string) => `検索（${keys}）`,
+    label: "記事とノートを検索",
+    placeholder: "記事やノートを検索…",
+    close: "閉じる",
+    goTo: "移動",
+    actions: "操作",
+    posts: "記事",
+    notes: "ノート",
+    searching: "検索中…",
+    failed: "検索に失敗しました。しばらくしてからもう一度お試しください。",
+    empty: (keyword: string) => `「${keyword}」に関する内容は見つかりませんでした`,
+    more: (count: number) => `すべて表示（${count} 件）`,
+    toggleTheme: "ダーク / ライトを切り替え",
+    hintMove: "選択",
+    hintOpen: "開く",
+    hintClose: "閉じる",
+  },
 };
 
 export default ja;

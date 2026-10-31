@@ -82,7 +82,8 @@ function useScrolled() {
 
 // account：读者登录入口（header-account.tsx），放在主题按钮左边
 // activityIcons：播报用的图标（island-icons.tsx，服务端渲染好传进来）
-export default function SiteHeader({ brand, nav, account, activityIcons }: { brand: ReactNode; nav: ReactNode; account?: ReactNode; activityIcons: Record<IslandActivityIcon, ReactNode> }) {
+// search：⌘K 搜索（header-search.tsx），放在最左边
+export default function SiteHeader({ brand, nav, search, account, activityIcons }: { brand: ReactNode; nav: ReactNode; search?: ReactNode; account?: ReactNode; activityIcons: Record<IslandActivityIcon, ReactNode> }) {
   const t = useT().header;
   const scrolled = useScrolled();
   const [hovered, setHovered] = useState(false);
@@ -263,6 +264,7 @@ export default function SiteHeader({ brand, nav, account, activityIcons }: { bra
           </AnimatePresence>
 
           <motion.div layout="position" transition={spring} className="site-header-tools island-tools">
+            {search}
             {account}
             <LanguageMenu host />
             <ThemeToggle />

@@ -447,6 +447,26 @@ const zh = {
     view: "在 X / Twitter 查看原帖",
     invalid: "推文链接无效",
   },
+  // ⌘K 搜索弹窗（command-search.tsx）
+  search: {
+    open: "搜索",
+    shortcut: (keys: string) => `搜索（${keys}）`,
+    label: "搜索文章和手记",
+    placeholder: "搜索文章、手记……",
+    close: "关闭",
+    goTo: "去处",
+    actions: "操作",
+    posts: "文章",
+    notes: "手记",
+    searching: "正在搜索……",
+    failed: "搜索失败了，稍后再试一次。",
+    empty: (keyword: string) => `没有找到和“${keyword}”有关的内容`,
+    more: (count: number) => `查看全部 ${count} 篇`,
+    toggleTheme: "切换深色 / 浅色主题",
+    hintMove: "选择",
+    hintOpen: "打开",
+    hintClose: "关闭",
+  },
 };
 
 export type Messages = typeof zh;

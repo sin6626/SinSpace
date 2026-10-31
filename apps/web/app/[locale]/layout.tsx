@@ -10,6 +10,7 @@ import { islandIcons } from "@/components/island-icons";
 import Navigation from "@/components/navigation";
 import SiteFooter from "@/components/site-footer";
 import SiteHeader from "@/components/site-header";
+import HeaderSearch from "@/components/header-search";
 import { getOwner } from "@/lib/blog-data";
 import { LocaleProvider } from "@/components/locale-provider";
 import { htmlLang, locales, ogLocale } from "@/lib/i18n/config";
@@ -121,6 +122,7 @@ export default async function RootLayout({ children }: LayoutProps<"/[locale]">)
             <SiteHeader
               brand={<Suspense fallback={<span className="site-brand-name">{siteName}</span>}><SiteBrand /></Suspense>}
               nav={<Navigation account={<Suspense fallback={null}><HeaderAccount side="top" /></Suspense>} />}
+              search={<Suspense fallback={<span className="icon-button" aria-hidden="true" />}><HeaderSearch /></Suspense>}
               account={<Suspense fallback={<span className="account-trigger" aria-hidden="true" />}><HeaderAccount host /></Suspense>}
               activityIcons={islandIcons}
             />

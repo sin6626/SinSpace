@@ -444,6 +444,25 @@ const en: Messages = {
     view: "View on X / Twitter",
     invalid: "Invalid tweet link",
   },
+  search: {
+    open: "Search",
+    shortcut: (keys: string) => `Search (${keys})`,
+    label: "Search posts and notes",
+    placeholder: "Search posts, notes…",
+    close: "Close",
+    goTo: "Go to",
+    actions: "Actions",
+    posts: "Posts",
+    notes: "Notes",
+    searching: "Searching…",
+    failed: "Search failed. Please try again in a moment.",
+    empty: (keyword: string) => `Nothing found for “${keyword}”`,
+    more: (count: number) => `View all ${count}`,
+    toggleTheme: "Toggle dark / light theme",
+    hintMove: "select",
+    hintOpen: "open",
+    hintClose: "close",
+  },
 };
 
 export default en;

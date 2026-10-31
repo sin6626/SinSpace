@@ -1,12 +1,13 @@
 "use client";
 
 import { Dialog } from "@base-ui/react/dialog";
-import { Menu } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import Link, { useLocalePathname, useT } from "./locale-provider";
 import { useState, type ReactNode } from "react";
 import { OnlineCount } from "./notifications";
 import LanguageMenu from "./language-menu";
 import ThemeToggle from "./theme-switcher";
+import { openSearch } from "./command-search";
 import "./mobile-menu.css";
 
 type MenuLink = { label: string; href: string };
@@ -16,6 +17,7 @@ export default function MobileMenu({ corners, more, account }: { corners: MenuLi
   const pathname = useLocalePathname();
   const t = useT().mobileMenu;
   const nav = useT().nav;
+  const search = useT().search;
   const [open, setOpen] = useState(false);
   // 跳转后收起菜单（渲染期比较上一次路径，不用 effect）。
   const [lastPathname, setLastPathname] = useState(pathname);
@@ -53,6 +55,10 @@ export default function MobileMenu({ corners, more, account }: { corners: MenuLi
             </ul>
           </nav>
           <div className="mobile-menu-bottom">
+            {/* 手机上页头没有工具区，搜索从这里打开：先收起菜单，再弹出同一个搜索弹窗 */}
+            <button type="button" className="icon-button" onClick={() => { setOpen(false); openSearch(); }} aria-label={search.open}>
+              <Search size={18} strokeWidth={1.75} aria-hidden="true" />
+            </button>
             {account}
             <LanguageMenu side="top" />
             <ThemeToggle />

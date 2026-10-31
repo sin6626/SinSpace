@@ -36,7 +36,7 @@ function subscribe(onChange: () => void) {
 
 // 整页颜色约 0.6 秒渐变（视图过渡，类型 theme，样式在 globals.css 末尾）；
 // 不支持视图过渡或开了“减少动态效果”时直接切换。
-function toggle() {
+export function toggleTheme() {
   const next: Theme = read() === "dark" ? "light" : "dark";
   try {
     if (next === "dark") localStorage.removeItem(storageKey);
@@ -59,7 +59,7 @@ export default function ThemeToggle() {
   const theme = useTheme();
   const t = useT().theme;
   return (
-    <button type="button" className="icon-button theme-toggle" onClick={toggle} aria-label={theme === "dark" ? t.toLight : t.toDark}>
+    <button type="button" className="icon-button theme-toggle" onClick={toggleTheme} aria-label={theme === "dark" ? t.toLight : t.toDark}>
       {theme === "dark" ? <Moon size={18} strokeWidth={1.75} aria-hidden="true" /> : <Sun size={18} strokeWidth={1.75} aria-hidden="true" />}
     </button>
   );

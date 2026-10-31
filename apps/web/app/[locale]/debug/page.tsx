@@ -14,6 +14,7 @@ import SubscribeForm from "@/components/subscribe-form";
 import { getApiUrl } from "@/lib/config";
 import SocialIconsPreview from "./social-icons";
 import HomePanelPreviews from "./home-panel-preview";
+import { OpenSearchButton } from "@/components/command-search";
 import StyleGuide from "./style-guide";
 import IslandButtons from "./island-buttons";
 import ToastButtons from "./toast-buttons";
@@ -147,6 +148,11 @@ export default function DebugPage() {
           <li id="debug-home-panel">
             <h2>导航首页面板</h2>
             <HomePanelPreviews />
+          </li>
+          <li id="debug-search">
+            <h2>⌘K 搜索</h2>
+            <p className="post-meta">components/command-search.tsx：任何页面按 ⌘K（Windows/Linux 是 Ctrl+K）或点页头的放大镜打开，读真实数据。空着时列出去处和“切换主题”，输入后文章、手记一起搜；↑↓ 选、回车打开、Esc 关</p>
+            <OpenSearchButton>打开搜索</OpenSearchButton>
           </li>
           <li id="debug-murmurs">
             <h2>碎碎念</h2>
