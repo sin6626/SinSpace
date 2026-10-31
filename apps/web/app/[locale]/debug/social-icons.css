@@ -8,35 +8,7 @@
   margin-top: 0;
 }
 
-/* 试用：平时单色，悬停/键盘聚焦时换成品牌色（淡淡的品牌色圆底 + 品牌色图标），覆盖首屏原来的强调色底 */
-.home-hero-socials.debug-social-hover a:focus-visible {
-  background: color-mix(in srgb, var(--brand) 16%, transparent);
-  color: var(--brand);
-}
-
-@media (hover: hover) {
-  .home-hero-socials.debug-social-hover a:hover {
-    background: color-mix(in srgb, var(--brand) 16%, transparent);
-    color: var(--brand);
-  }
-}
-
-/* 深色品牌在熄灯时：品牌色圆底 + 白色图标，再描一圈细光，免得黑底圆融进夜空 */
-:root[data-theme="dark"] .home-hero-socials.debug-social-hover li[data-dark] a:focus-visible {
-  background: var(--brand);
-  color: #fff;
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.2);
-}
-
-@media (hover: hover) {
-  :root[data-theme="dark"] .home-hero-socials.debug-social-hover li[data-dark] a:hover {
-    background: var(--brand);
-    color: #fff;
-    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.2);
-  }
-}
-
-/* 品牌色对比：只改图标颜色，底和悬停效果同首屏 */
+/* 全彩对比：一直显示品牌色 */
 .debug-social-brand a {
   color: var(--brand);
 }

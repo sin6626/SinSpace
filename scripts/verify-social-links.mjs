@@ -23,6 +23,7 @@ const sets = { 'simple-icons': require('@iconify-json/simple-icons/icons.json'),
 for (const link of socialLinks(Object.fromEntries(socialPlatformKeys.map((key) => [key, key === 'email' ? 'a@b.cn' : 'sin'])))) {
   const [prefix, name] = link.icon.split(':')
   assert.ok(sets[prefix]?.icons[name], `${link.label} 的图标 ${link.icon} 应当在已装的图标集里`)
+  assert.match(link.color, /^#[0-9A-F]{6}$|^var\(--[\w-]+\)$/, `${link.label} 要有悬停用的品牌色`)
 }
 
 const hrefs = (ids) => plain(socialLinks(ids)).map((link) => link.href)
@@ -32,5 +33,6 @@ assert.deepEqual(hrefs({ x: 'javascript:alert(1)' }), ['https://x.com/javascript
 assert.deepEqual(hrefs({ youtube: '@sin', twitter: 'sin', steam: '76561197960287930' }), ['https://www.youtube.com/@sin', 'https://x.com/sin', 'https://steamcommunity.com/profiles/76561197960287930'], 'YouTube 去掉开头的 @；旧键名 twitter 按 X；Steam 17 位数字 ID 走 /profiles/')
 assert.deepEqual(hrefs({ email: 'sin@example.com', netease: '12345' }), ['mailto:sin@example.com', 'https://music.163.com/#/user/home?id=12345'])
 assert.deepEqual(hrefs({ email: 'not-an-email', github: '', zhihu: 'a b', myspace: 'sin', weibo: 123 }), [], '无效邮箱、空值、含空格、不认识的平台、非字符串都跳过')
-assert.deepEqual(plain(socialLinks({ GitHub: 'sin' }))[0], { key: 'github', label: 'GitHub', icon: 'simple-icons:github', href: 'https://github.com/sin' }, '键名不区分大小写')
+assert.deepEqual(plain(socialLinks({ GitHub: 'sin' }))[0], { key: 'github', label: 'GitHub', icon: 'simple-icons:github', color: '#181717', dark: true, href: 'https://github.com/sin' }, '键名不区分大小写；GitHub 是深色品牌')
+assert.deepEqual(plain(socialLinks(Object.fromEntries(socialPlatformKeys.map((key) => [key, key === 'email' ? 'a@b.cn' : 'sin'])))).filter((link) => link.dark).map((link) => link.key), ['github', 'douyin', 'v2ex', 'x', 'steam'], '深色品牌：GitHub、抖音、V2EX、X、Steam')
 console.log('PASS social links: admin and web platforms match, every icon installed, id/link/email/alias handling')

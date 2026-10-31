@@ -1,6 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import { unstable_rethrow } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, type CSSProperties } from "react";
 import { getOwner, getSiteDescription, getSiteLikes, getSiteSettings, getSubscribeOptions, siteDescription, siteName } from "../lib/blog-data";
 import { getApiUrl } from "../lib/config";
 import type { SocialLink } from "../lib/social";
@@ -27,12 +27,12 @@ async function loadOwner() {
   }
 }
 
-// 首屏的社交图标一排（多了会换行）；/debug 用同一个组件预览图标很多时的样子
+// 首屏的社交图标一排（多了会换行），平时单色、悬停换成品牌色；/debug 用同一个组件预览图标很多时的样子
 export function HeroSocialList({ socials }: { socials: SocialLink[] }) {
   return (
     <ul className="home-hero-socials">
       {socials.map((social) => (
-        <li key={social.href}>
+        <li key={social.href} data-dark={social.dark ? "" : undefined} style={{ "--brand": social.color } as CSSProperties}>
           <a href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label} title={social.label}>
             <SocialIcon icon={social.icon} label={social.label} />
           </a>

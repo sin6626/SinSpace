@@ -241,17 +241,32 @@
   height: 1.125rem;
 }
 
+/* 悬停或键盘聚焦：换成平台自己的颜色（淡淡的品牌色圆底 + 品牌色图标），--brand 由 HeroSocialList 按平台写在 li 上 */
 @media (hover: hover) {
   .home-hero-socials a:hover {
-    background: var(--primary);
-    color: var(--primary-foreground);
+    background: color-mix(in srgb, var(--brand) 16%, transparent);
+    color: var(--brand);
     transform: translateY(-2px);
+  }
+
+  /* 品牌色接近黑色的（GitHub、X、抖音、Steam、V2EX）熄灯时：品牌色圆底 + 白色图标，再描一圈细光，免得融进夜空 */
+  :root[data-theme="dark"] .home-hero-socials li[data-dark] a:hover {
+    background: var(--brand);
+    color: #fff;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.2);
   }
 }
 
 .home-hero-socials a:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
+  color: var(--brand);
+}
+
+:root[data-theme="dark"] .home-hero-socials li[data-dark] a:focus-visible {
+  background: var(--brand);
+  color: #fff;
 }
 
 /* 头像：300px 圆形，细描边加一圈月光 */

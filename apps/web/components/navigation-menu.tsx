@@ -6,7 +6,7 @@ import { LayoutGroup, MotionConfig, motion } from "motion/react";
 import type { Messages } from "../lib/i18n/messages";
 import Link, { useLocalePathname, useT } from "./locale-provider";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { useIsland } from "../lib/island-store";
 import type { NavigationEntry, getNavigationPanels } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
@@ -21,7 +21,7 @@ export type NavigationState =
     status: "ready";
     pages: NavigationLink[];
     panels: Panels | null;
-    socials: { label: string; href: string; icon: ReactNode }[];
+    socials: { label: string; href: string; icon: ReactNode; color: string; dark: boolean }[];
   };
 
 // 一级导航的顺序：首页、文章、手记、时间线、碎碎念、更多（作品、友链、一言、思考），开发环境末尾再加“调试”。
@@ -112,7 +112,7 @@ function HomePanel({ state, pathname }: { state: Extract<NavigationState, { stat
           {state.socials.length > 0 && (
             <ul className="nav-socials">
               {state.socials.map((social) => (
-                <li key={social.href}>
+                <li key={social.href} data-dark={social.dark ? "" : undefined} style={{ "--brand": social.color } as CSSProperties}>
                   <a href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label} title={social.label}>{social.icon}</a>
                 </li>
               ))}

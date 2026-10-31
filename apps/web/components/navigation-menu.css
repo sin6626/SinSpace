@@ -428,17 +428,33 @@
   color: var(--muted-foreground);
   transition: color var(--duration-fast), background-color var(--duration-fast);
 
+  /* 悬停或键盘聚焦换成平台自己的颜色，规则同首屏（home-hero.css）：--brand 由 li 上的行内样式给出 */
   @media (hover: hover) {
     &:hover {
-      background: color-mix(in srgb, var(--foreground) 8%, transparent);
-      color: var(--foreground);
+      background: color-mix(in srgb, var(--brand) 16%, transparent);
+      color: var(--brand);
     }
   }
 
   &:focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
+    background: color-mix(in srgb, var(--brand) 16%, transparent);
+    color: var(--brand);
   }
+}
+
+/* 品牌色接近黑色的在熄灯时：品牌色圆底 + 白色图标 */
+@media (hover: hover) {
+  :root[data-theme="dark"] .nav-socials li[data-dark] a:hover {
+    background: var(--brand);
+    color: #fff;
+  }
+}
+
+:root[data-theme="dark"] .nav-socials li[data-dark] a:focus-visible {
+  background: var(--brand);
+  color: #fff;
 }
 
 .nav-page-grid {
