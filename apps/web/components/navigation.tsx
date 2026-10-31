@@ -38,6 +38,8 @@ async function NavigationData({ account }: { account?: ReactNode }) {
       pages: links(data.pageMeta, "title", "/"),
       panels,
       socials: (owner?.socials ?? []).map((social) => ({ ...social, icon: <SocialIcon icon={social.icon} label={social.label} size={15} /> })),
+      // 微信、QQ 名片（点开看二维码和号码），排在直达链接后面
+      contacts: (owner?.contacts ?? []).map((card) => ({ card, icon: <SocialIcon icon={card.icon} label={card.label} size={15} /> })),
     };
   } catch (error) {
     unstable_rethrow(error);

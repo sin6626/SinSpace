@@ -45,7 +45,8 @@ try {
   await sleep(700)
   assert.equal((await hover(hero('GitHub'))).color, 'rgb(24, 23, 23)', '开灯时 GitHub 悬停直接用品牌色')
 
-  // 真实导航的“首页”面板：社交图标悬停同样换成品牌色；只显示能直接跳转的，没有微信、QQ（用站长后台里的真实社交链接）
+  // 真实导航的“首页”面板（用站长后台里的真实社交链接）：社交图标悬停同样换成品牌色；微信、QQ 名片在竖线后面，
+  // 点开的卡片挂在导航弹层里——鼠标移到卡片上（在面板外面）面板也不收起，点别处卡片关闭
   await b.goto(`${base}/notes`)
   const trigger = await b.evaluate(`(() => { const t = [...document.querySelectorAll('.navigation-List .navigation-Trigger')].find((el) => el.textContent.trim().startsWith('首页')); const r = t.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 } })()`)
   await b.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: trigger.x, y: trigger.y + 80 })
@@ -54,7 +55,6 @@ try {
   await sleep(900)
   const navTitles = await b.evaluate(`[...document.querySelectorAll('.navigation-Popup .nav-socials a')].map((a) => a.title)`)
   assert.ok(navTitles.length > 0, '导航面板里有社交图标')
-  assert.equal(navTitles.some((title) => ['微信', 'QQ'].includes(title)), false, `导航面板只显示能直接跳转的：${navTitles}`)
   const navIcon = `.navigation-Popup .nav-socials a[title="${navTitles[0]}"]`
   const navBox = await b.evaluate(`(() => { const r = document.querySelector(${JSON.stringify(navIcon)}).getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 } })()`)
   const navIdle = await b.evaluate(`getComputedStyle(document.querySelector(${JSON.stringify(navIcon)})).color`)
@@ -62,6 +62,24 @@ try {
   await sleep(450)
   const navHover = await b.evaluate(`getComputedStyle(document.querySelector(${JSON.stringify(navIcon)})).color`)
   assert.notEqual(navHover, navIdle, '导航面板里悬停换成品牌色')
+
+  const navOrder = await b.evaluate(`[...document.querySelectorAll('.navigation-Popup .nav-socials > li')].map((li) => li.classList.contains('nav-socials-divider') ? '|' : li.querySelector('a, button').getAttribute('title'))`)
+  assert.deepEqual(navOrder.slice(-3), ['|', '微信', 'QQ'], `导航面板里名片在竖线后面：${navOrder}`)
+  const qq = await b.evaluate(`(() => { const r = document.querySelector('.navigation-Popup .nav-socials button[title="QQ"]').getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 } })()`)
+  await b.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: qq.x, y: qq.y })
+  for (const type of ['mousePressed', 'mouseReleased']) await b.send('Input.dispatchMouseEvent', { type, x: qq.x, y: qq.y, button: 'left', buttons: type === 'mousePressed' ? 1 : 0, clickCount: 1 })
+  await sleep(600)
+  const navCard = await b.evaluate(`(() => { const c = document.querySelector('.navigation-Popup .contact-card'); if (!c) return null; const r = c.getBoundingClientRect(), p = document.querySelector('.navigation-Popup .nav-panel').getBoundingClientRect(); return { id: c.querySelector('.contact-card-id span')?.textContent, x: r.x + r.width / 2, y: r.y + r.height / 2, outside: r.bottom > p.bottom } })()`)
+  assert.ok(navCard, 'QQ 名片弹出，并且挂在导航弹层里')
+  assert.equal(navCard.id, '3554989283')
+  // 鼠标从图标慢慢移到卡片中间（卡片超出面板下沿），面板和卡片都还在
+  for (let step = 1; step <= 6; step++) await b.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: qq.x + ((navCard.x - qq.x) * step) / 6, y: qq.y + ((navCard.y - qq.y) * step) / 6 })
+  await sleep(800)
+  assert.deepEqual(await b.evaluate(`({ panel: !!document.querySelector('.navigation-Popup .nav-panel.is-home'), card: !!document.querySelector('.contact-card') })`), { panel: true, card: true }, `鼠标移到卡片上（卡片超出面板：${navCard.outside}）面板不收起`)
+  await b.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 })
+  await b.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 })
+  await sleep(500)
+  assert.equal(await b.evaluate(`!!document.querySelector('.contact-card')`), false, 'Esc 关闭名片')
   assert.deepEqual(b.errors, [], '页面不应当有报错')
   console.log('PASS 社交图标：平时单色、悬停换品牌色（首屏与导航面板），深色品牌熄灯时白色图标；微信、QQ 名片在竖线后、点开看二维码和号码')
 } finally {

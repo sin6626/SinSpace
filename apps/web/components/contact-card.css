@@ -1,6 +1,10 @@
-/* 首屏名片（微信、QQ）：触发按钮和首屏其他社交图标同样大小、同样的悬停品牌色（home-hero.css 里按 a 和 button 一起写） */
+/* 名片（微信、QQ）的触发按钮：和旁边的社交图标同样大小、同样的悬停品牌色（home-hero.css、navigation-menu.css 里按 a 和 button 一起写）；
+   这里只去掉按钮自带的灰底、内边距和边框 */
 .contact-trigger {
+  padding: 0;
   border: 0;
+  background: transparent;
+  font: inherit;
   cursor: pointer;
 }
 

@@ -531,7 +531,8 @@
   list-style: none;
 }
 
-.nav-socials a {
+/* 链接和微信、QQ 名片按钮（contact-card.tsx 的 .contact-trigger）同样大小、同样的悬停品牌色 */
+.nav-socials :is(a, button) {
   display: grid;
   place-items: center;
   width: 1.75rem;
@@ -554,6 +555,21 @@
     background: color-mix(in srgb, var(--brand) 16%, transparent);
     color: var(--brand);
   }
+
+  /* 名片打开时按钮保持品牌色 */
+  &[data-popup-open] {
+    background: color-mix(in srgb, var(--brand) 16%, transparent);
+    color: var(--brand);
+  }
+}
+
+/* 直达链接和微信、QQ 名片之间的竖线（同首屏） */
+.nav-socials-divider {
+  align-self: center;
+  width: 1px;
+  height: 1rem;
+  margin-inline: var(--space-1);
+  background: var(--border-strong);
 }
 
 /* 品牌色接近黑色的在熄灯时：品牌色圆底 + 白色图标 */

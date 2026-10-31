@@ -10,6 +10,8 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import { useIsland } from "../lib/island-store";
 import type { NavigationEntry, getNavigationPanels } from "../lib/blog-data";
 import { formatDate } from "../lib/date";
+import type { SocialCard } from "../lib/social";
+import ContactCard from "./contact-card";
 import MobileMenu from "./mobile-menu";
 import "./navigation-menu.css";
 
@@ -23,6 +25,8 @@ export type NavigationState =
     pages: NavigationLink[];
     panels: Panels | null;
     socials: { label: string; href: string; icon: ReactNode; color: string; dark: boolean }[];
+    // 微信、QQ 这类没有网页主页的“名片”，点开看二维码和号码
+    contacts?: { card: SocialCard; icon: ReactNode }[];
   };
 
 // 一级导航的顺序：首页、文章、手记、时间线、碎碎念、更多（作品、友链、一言、思考），开发环境末尾再加“调试”。
@@ -97,12 +101,20 @@ function PanelFooter({ href, label, aside }: { href: string; label: string; asid
 // 首页面板（海报大字，2026-10-31 定）：左边一个旧式数字的大字“第几夜”（建站天数），篇数和字数在下面上下排开、撑满左栏；
 // 右边后台页面（页面名 + 后台填的副标题 + 箭头；5 个起分两栏、13 个起分三栏，面板跟着变宽），社交账号在页面下面、多了换行。
 // 原来“此间三个数字 + 页面网格”和 Innei 太像。
-type HomePanelProps = { pages: NavigationLink[]; socials: Extract<NavigationState, { status: "ready" }>["socials"]; stats?: Panels["stats"]; pathname: string };
+type Ready = Extract<NavigationState, { status: "ready" }>;
+type HomePanelProps = { pages: NavigationLink[]; socials: Ready["socials"]; contacts?: Ready["contacts"]; stats?: Panels["stats"]; pathname: string };
 
-function HomePanel({ pages, socials, stats, pathname }: HomePanelProps) {
+function HomePanel({ pages, socials, contacts = [], stats, pathname }: HomePanelProps) {
   const t = useT().nav;
+  // 名片卡片挂进导航弹层（.navigation-Popup，不裁切内容）：鼠标移到卡片上仍算在面板里，面板不会收起。
+  // 调试页把面板直接摆在页面上、没有弹层，就挂在面板自己身上。
+  const panel = useRef<HTMLDivElement>(null);
+  const [cardHost, setCardHost] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setCardHost(panel.current?.closest<HTMLElement>(".navigation-Popup") ?? panel.current);
+  }, []);
   return (
-    <div className="nav-panel is-home">
+    <div className="nav-panel is-home" ref={panel}>
       {stats?.days && (
         <section className="nav-panel-side nav-night">
           <p className="nav-night-count" aria-label={t.nightLabel(stats.days)}>
@@ -130,11 +142,17 @@ function HomePanel({ pages, socials, stats, pathname }: HomePanelProps) {
             ))}
           </ul>
         ) : <p className="nav-panel-empty">{t.noPages}</p>}
-        {socials.length > 0 && (
+        {(socials.length > 0 || contacts.length > 0) && (
           <ul className="nav-socials">
             {socials.map((social) => (
               <li key={social.href} data-dark={social.dark ? "" : undefined} style={{ "--brand": social.color } as CSSProperties}>
                 <a href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label} title={social.label}>{social.icon}</a>
+              </li>
+            ))}
+            {socials.length > 0 && contacts.length > 0 && <li className="nav-socials-divider" aria-hidden="true" />}
+            {contacts.map(({ card, icon }) => (
+              <li key={card.key} style={{ "--brand": card.color } as CSSProperties}>
+                <ContactCard card={card} icon={icon} container={cardHost} side="bottom" />
               </li>
             ))}
           </ul>
@@ -272,7 +290,7 @@ export default function BlogNavigation({ state, account }: { state: NavigationSt
       <MotionConfig reducedMotion="user">
       <LayoutGroup id="navigation">
       <NavigationMenu.List className="navigation-List">
-        {linkItem(t.home, "/", pathname === "/", ready && <HomePanel pages={ready.pages} socials={ready.socials} stats={ready.panels?.stats} pathname={pathname} />)}
+        {linkItem(t.home, "/", pathname === "/", ready && <HomePanel pages={ready.pages} socials={ready.socials} contacts={ready.contacts} stats={ready.panels?.stats} pathname={pathname} />)}
         {linkItem(t.posts, "/posts", isCurrent(pathname, "/posts") || pathname.startsWith("/categories/"), panels && (
           <GroupPanel className="is-posts" label={t.categories} groups={panels.categories} fallback={[]} pathname={pathname}
             footer={<PanelFooter href="/posts" label={t.allPosts} aside={t.postCount(panels.postCount)} />} />

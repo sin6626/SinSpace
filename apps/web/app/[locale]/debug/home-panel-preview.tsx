@@ -1,6 +1,7 @@
 import { SocialIcon } from "@/components/iconify-icon";
 import { HomePanelPreview } from "@/components/navigation-menu";
-import { socialLinks, socialPlatformKeys } from "@/lib/social";
+import { getApiUrl } from "@/lib/config";
+import { socialCards, socialLinks, socialPlatformKeys } from "@/lib/social";
 import "./home-panel-preview.css";
 
 // 调试页“导航首页面板”：真实的 HomePanel，直接摆在页面上。一份是现在的规模，一份是以后页面、社交账号都很多时的样子。
@@ -45,16 +46,22 @@ const toSocials = (ids: Record<string, string>) => socialLinks(ids).map((social)
 const fewSocials = toSocials({ github: "sin6626", bilibili: "sin6626", x: "sin6626" });
 const sampleIds: Record<string, string> = { email: "sin@example.com", steam: "76561197960287930", discord: "123456789012345678" };
 const manySocials = toSocials(Object.fromEntries(socialPlatformKeys.map((key) => [key, sampleIds[key] ?? "sin6626"])));
+// 微信、QQ 名片示例（不是真号码，二维码用头像图占位），在直达链接后面、竖线隔开，点开看卡片
+const sampleQr = `${getApiUrl()}/objects/avatar/Sin.jpg`;
+const contacts = socialCards({ wechat: { qr: sampleQr }, qq: { id: "10001", qr: sampleQr } }).map((card) => ({
+  card,
+  icon: <SocialIcon icon={card.icon} label={card.label} size={15} />,
+}));
 
 export default function HomePanelPreviews() {
   return (
     <>
-      <p className="post-meta">现在的规模：{fewPages.length} 个页面、{fewSocials.length} 个社交账号</p>
-      <div className="debug-home-panel"><HomePanelPreview pages={fewPages} socials={fewSocials} stats={stats} /></div>
+      <p className="post-meta">现在的规模：{fewPages.length} 个页面、{fewSocials.length} 个社交账号 + 微信、QQ 名片</p>
+      <div className="debug-home-panel"><HomePanelPreview pages={fewPages} socials={fewSocials} contacts={contacts} stats={stats} /></div>
       <p className="post-meta">以后很多：{manyPages.length} 个页面（有的没写副标题、有一个名字和副标题都很长）、{manySocials.length} 个社交账号（后台能选的全部）</p>
-      <div className="debug-home-panel"><HomePanelPreview pages={manyPages} socials={manySocials} stats={stats} /></div>
+      <div className="debug-home-panel"><HomePanelPreview pages={manyPages} socials={manySocials} contacts={contacts} stats={stats} /></div>
       <p className="post-meta">再多：{lotsPages.length} 个页面（13 个起分三栏）、{manySocials.length} 个社交账号</p>
-      <div className="debug-home-panel"><HomePanelPreview pages={lotsPages} socials={manySocials} stats={stats} /></div>
+      <div className="debug-home-panel"><HomePanelPreview pages={lotsPages} socials={manySocials} contacts={contacts} stats={stats} /></div>
     </>
   );
 }

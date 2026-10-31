@@ -6,9 +6,10 @@ import type { SocialCard } from "../lib/social";
 import { useT } from "./locale-provider";
 import "./contact-card.css";
 
-// 首屏的微信、QQ 名片：这类平台没有网页主页，点图标弹出一张小卡片，放二维码和号码（可复制）。
+// 微信、QQ 名片（首屏和导航“首页”面板共用）：这类平台没有网页主页，点图标弹出一张小卡片，放二维码和号码（可复制）。
 // 图标由服务端渲染好传进来（Iconify 只在服务端用）；点外面或按 Esc 关闭。
-export default function ContactCard({ card, icon }: { card: SocialCard; icon: ReactNode }) {
+// container：卡片挂在哪个元素里，默认 body。在导航面板里要挂进面板的弹层，否则鼠标移到卡片上算离开面板、面板连同卡片一起收起。
+export default function ContactCard({ card, icon, container, side = "top" }: { card: SocialCard; icon: ReactNode; container?: HTMLElement | null; side?: "top" | "bottom" }) {
   const t = useT().contactCard;
   const [copied, setCopied] = useState(false);
 
@@ -33,8 +34,8 @@ export default function ContactCard({ card, icon }: { card: SocialCard; icon: Re
       <Popover.Trigger className="contact-trigger" aria-label={t.open(card.label)} title={card.label} onPointerEnter={prefetch} onFocus={prefetch}>
         {icon}
       </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Positioner className="contact-card-positioner" side="top" sideOffset={14} collisionPadding={16}>
+      <Popover.Portal container={container}>
+        <Popover.Positioner className="contact-card-positioner" side={side} sideOffset={14} collisionPadding={16}>
           <Popover.Popup className="contact-card" style={{ "--brand": card.color } as CSSProperties}>
             <Popover.Title className="contact-card-title">
               <span className="contact-card-icon" aria-hidden="true">{icon}</span>
