@@ -270,9 +270,11 @@ export async function getSiteDescription(lang: ContentLang = "zh") {
 
 // 站点主题配置（后台配置片段 theme/sin-space，格式见 lib/theme-config.ts）。Core 保存片段不发 Webhook 事件，缓存设短一些；
 // 片段还没建时返回 null，页面用写死的默认值。SDK 返回的对象带方法，缓存前转成普通 JSON。
+// stale 至少 300：外文页面的根布局 generateMetadata 经 getSiteDescription 读它，Next 只把 stale ≥ 5 分钟的缓存放进预渲染外壳，
+// 短了 metadata 会被当成动态，整页静态的 /en/debug 就报 “encountered URL data in generateMetadata()”（e2e dev-issues.mjs）。
 export async function getThemeConfig(): Promise<unknown> {
   "use cache";
-  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheLife({ stale: 300, revalidate: 300, expire: 3600 });
   cacheTag("blog:theme");
   const data = await orNotFound(getApiClient().snippet.getByReferenceAndName<unknown>("theme", "sin-space"));
   return data === null ? null : JSON.parse(JSON.stringify(data));
