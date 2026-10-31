@@ -69,6 +69,7 @@ const en: Messages = {
   },
   footer: {
     links: "Footer links",
+    motto: "The stars overhead are the stars within.",
     timeline: "Timeline",
     friends: "Friends",
     online: (count: number) => `${count} ${count === 1 ? "person is" : "people are"} here right now`,

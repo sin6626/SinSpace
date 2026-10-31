@@ -59,8 +59,11 @@ try {
   await browser.goto(`${base}/en/posts`, 4500);
   const posts = await browser.evaluate(`[...document.querySelectorAll("main .post-categories a")].filter((a) => a.checkVisibility()).map((a) => a.textContent.trim())`);
   assert.ok(posts.includes("Ramblings") && posts.includes("Technology"), `分类名应是译文：${posts.join(", ")}`);
-  const motto = await browser.evaluate(`document.querySelector(".site-footer-motto").textContent.trim()`);
-  assert.equal(motto, "Even late at night, the moon and stars keep me company.");
+  const footerMotto = await browser.evaluate(`document.querySelector(".site-footer-motto").textContent.trim()`);
+  assert.equal(footerMotto, "The stars overhead are the stars within.", "页脚那句话应是英文");
+  await browser.goto(`${base}/en`, 4500);
+  const motto = await browser.evaluate(`document.querySelector(".home-hero-scroll small").textContent.trim()`);
+  assert.equal(motto, "Even late at night, the moon and stars keep me company.", "首屏底部的站点描述应是译文");
   await browser.goto(`${base}/en/murmurs`, 4500);
   assert.equal(await browser.evaluate(`[...document.querySelectorAll(".murmur-body")].every((body) => body.getAttribute("lang") === "zh-CN")`), true, "碎碎念标为中文");
   assert.deepEqual(browser.errors, [], `页面报错：${browser.errors.join("\n")}`);

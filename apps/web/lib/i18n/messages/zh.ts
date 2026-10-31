@@ -70,6 +70,7 @@ const zh = {
   },
   footer: {
     links: "页脚链接",
+    motto: "头顶的星空，是心里的星空。",
     timeline: "时间线",
     friends: "友链",
     online: (count: number) => `此刻有 ${count} 人在这里`,

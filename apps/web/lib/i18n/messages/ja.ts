@@ -69,6 +69,7 @@ const ja: Messages = {
   },
   footer: {
     links: "フッターリンク",
+    motto: "頭上の星空は、心の中の星空。",
     timeline: "タイムライン",
     friends: "リンク",
     online: (count: number) => `いま ${count} 人がここにいます`,
