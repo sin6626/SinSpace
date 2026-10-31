@@ -1,0 +1,188 @@
+/* 调试页：导航“首页”面板的候选排版（home-panel-drafts.tsx）。外框照导航弹层的样子（半透明夜色、细边框、柔光），方便对比。 */
+.draft-panels {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-8);
+  margin-top: var(--space-4);
+}
+
+.draft-panels figure {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.draft-popup {
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background-color: var(--glass-popup);
+  backdrop-filter: blur(20px) saturate(150%);
+  color: var(--foreground);
+  box-shadow: var(--shadow-popup);
+}
+
+.draft-small {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+}
+
+.draft-page {
+  display: grid;
+  gap: 0.125rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color var(--duration-fast);
+
+  @media (hover: hover) {
+    &:hover {
+      background: var(--accent);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+.draft-page-title {
+  display: block;
+  font-size: var(--text-sm);
+}
+
+/* 社交账号沿用导航面板的圆形图标（.nav-socials），这里去掉它原来上面那条分隔线 */
+.draft-socials.nav-socials {
+  margin: 0;
+  padding: 0;
+  border-top: 0;
+}
+
+/* ---------- 方案一：三段 ---------- */
+.draft-stacked {
+  display: grid;
+  width: 30rem;
+
+  > * {
+    margin: 0;
+    padding: var(--space-4) var(--space-5, 1.25rem);
+  }
+
+  > * + * {
+    border-top: 1px solid var(--glass-border);
+  }
+}
+
+.draft-night {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-base);
+  letter-spacing: 0.08em;
+
+  b {
+    font-family: var(--font-latin), sans-serif;
+    font-size: 1.75rem;
+    font-weight: 300;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.draft-stacked-pages {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  list-style: none;
+
+  .draft-page {
+    margin-inline: calc(var(--space-3) * -1);
+  }
+}
+
+/* ---------- 方案 C：海报大字 ---------- */
+.draft-poster {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  width: 32rem;
+}
+
+.draft-poster-side {
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-6);
+  padding: var(--space-5, 1.25rem) var(--space-6);
+  border-right: 1px solid var(--glass-border);
+}
+
+.draft-poster-night {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0;
+
+  b {
+    font-family: var(--font-latin), sans-serif;
+    font-size: 4.25rem;
+    font-weight: 200;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  span {
+    margin-top: 0.35rem;
+    color: var(--muted-foreground);
+    font-size: var(--text-sm);
+    letter-spacing: 0.3em;
+    writing-mode: vertical-rl;
+  }
+}
+
+.draft-poster-foot {
+  display: grid;
+  gap: 0.125rem;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--glass-border);
+}
+
+.draft-poster-main {
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-3);
+}
+
+.draft-poster-pages {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.draft-poster-page {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+
+  .draft-page-title {
+    font-size: var(--text-base);
+  }
+
+  svg {
+    color: var(--muted-foreground);
+    transition: transform var(--duration-fast), color var(--duration-fast);
+  }
+
+  @media (hover: hover) {
+    &:hover svg {
+      color: var(--foreground);
+      transform: translateX(2px);
+    }
+  }
+}
+
+.draft-poster-main .draft-socials {
+  justify-content: flex-end;
+}
