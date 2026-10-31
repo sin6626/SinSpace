@@ -33,6 +33,7 @@ import { useLayout } from '~/layouts/content'
 import { SettingsRow, SettingsSection } from '~/layouts/settings-layout'
 import type { UserModel } from '~/models/user'
 import { deepDiff } from '~/utils'
+import { SocialCardField, toCardValue } from './social-card-field'
 
 export const TabUser = defineComponent(() => {
   const data = ref({} as UserModel)
@@ -110,12 +111,15 @@ export const TabUser = defineComponent(() => {
     socialPlatforms.find((platform) => platform.key === key)?.hint ??
     '输入链接或 ID…'
 
+  // 微信、QQ 这类“名片”平台存 { id, qr }，其余存字符串
+  const isCard = (key: string) =>
+    socialPlatforms.some(
+      (platform) => platform.key === key && 'card' in platform,
+    )
+
   const socialEntries = computed(() => {
     const ids = data.value.socialIds || {}
-    return Object.entries(ids).map(([key, value]) => ({
-      key,
-      value: String(value),
-    }))
+    return Object.entries(ids).map(([key, value]) => ({ key, value }))
   })
 
   const usedSocialKeys = computed(
@@ -127,20 +131,33 @@ export const TabUser = defineComponent(() => {
     const availableKey =
       socialOptions.find((o) => !usedSocialKeys.value.has(o.value))?.value || ''
     if (!availableKey) return
-    data.value.socialIds = { ...currentIds, [availableKey]: '' }
+    data.value.socialIds = {
+      ...currentIds,
+      [availableKey]: isCard(availableKey) ? {} : '',
+    }
   }
 
   // 换平台时保持这一行的位置不变（原来删掉再加，会跑到最后一行，前台图标顺序也跟着变）
   const updateSocialKey = (oldKey: string, newKey: string) => {
     if (oldKey === newKey) return
+    // 在“链接”和“名片”两类之间切换时，号码/链接文字保留
+    const convert = (value: unknown) =>
+      isCard(newKey)
+        ? toCardValue(value)
+        : typeof value === 'string'
+          ? value
+          : (toCardValue(value).id ?? '')
     data.value.socialIds = Object.fromEntries(
       Object.entries(data.value.socialIds || {}).map(([key, value]) =>
-        key === oldKey ? [newKey, value] : [key, value],
+        key === oldKey ? [newKey, convert(value)] : [key, value],
       ),
     )
   }
 
-  const updateSocialValue = (key: string, value: string) => {
+  const updateSocialValue = (
+    key: string,
+    value: string | { id?: string; qr?: string },
+  ) => {
     data.value.socialIds = { ...data.value.socialIds, [key]: value }
   }
 
@@ -349,13 +366,21 @@ export const TabUser = defineComponent(() => {
                       }))}
                       onUpdateValue={(newKey) => updateSocialKey(key, newKey)}
                     />
-                    <NInput
-                      class="min-w-0 flex-1"
-                      value={value}
-                      onInput={(v) => updateSocialValue(key, v)}
-                      placeholder={socialHint(key)}
-                      inputProps={{ spellcheck: false }}
-                    />
+                    {isCard(key) ? (
+                      <SocialCardField
+                        value={value}
+                        hint={socialHint(key)}
+                        onUpdate={(card) => updateSocialValue(key, card)}
+                      />
+                    ) : (
+                      <NInput
+                        class="min-w-0 flex-1"
+                        value={String(value ?? '')}
+                        onInput={(v) => updateSocialValue(key, v)}
+                        placeholder={socialHint(key)}
+                        inputProps={{ spellcheck: false }}
+                      />
+                    )}
                     <button
                       type="button"
                       class="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border-0 bg-transparent text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:text-neutral-500 dark:hover:bg-red-900/20 dark:hover:text-red-400"

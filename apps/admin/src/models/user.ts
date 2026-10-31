@@ -5,7 +5,8 @@ export interface UserModel {
   mail?: string
   url?: string
   name: string
-  socialIds?: Record<string, string | number>
+  // 微信、QQ 这类“名片”平台存 { id, qr }（号码 + 二维码地址），见 constants/social.ts
+  socialIds?: Record<string, string | number | { id?: string; qr?: string }>
   username: string
   role?: 'reader' | 'owner'
   email?: string

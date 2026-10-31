@@ -1,5 +1,6 @@
 // 后台“设置 → 用户 → 社交链接”能选的平台。key 和前台 apps/web/lib/social.ts 一一对应（scripts/verify-social-links.mjs 检查），
 // 前台按 key 显示品牌图标并拼出主页地址；hint 是输入框里的提示：填 ID 或直接贴完整链接都可以。
+// card: true 的是没有网页主页的平台（微信、QQ），存 { id?, qr? }：号码 + 上传到图床的二维码，前台点图标弹出名片。
 export const socialPlatforms = [
   { key: 'github', label: 'GitHub', hint: '用户名，如 sin6626，或主页链接' },
   {
@@ -45,4 +46,11 @@ export const socialPlatforms = [
   },
   { key: 'discord', label: 'Discord', hint: '用户数字 ID，或主页链接' },
   { key: 'email', label: '邮箱', hint: '邮箱地址' },
+  {
+    key: 'wechat',
+    label: '微信',
+    hint: '微信号（可不填，只放二维码）',
+    card: true,
+  },
+  { key: 'qq', label: 'QQ', hint: 'QQ 号（可不填，只放二维码）', card: true },
 ] as const

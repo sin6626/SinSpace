@@ -33,7 +33,15 @@ const platforms: Record<string, Platform> = {
 // 旧数据里可能用 twitter 作键名（Shiro 时代），按 X 处理
 const aliases: Record<string, string> = { twitter: "x" };
 
-export const socialPlatformKeys = Object.keys(platforms);
+// 没有网页主页、点了没地方跳的平台（“名片”）：值是 { id?, qr? }（号码、二维码图片地址）或只填号码的字符串。
+// 首屏和直达链接之间用竖线隔开，点图标弹出名片（二维码 + 号码 + 复制）；导航“首页”面板不显示这一类。
+// 二维码由后台上传到图床，Core 保存个人资料时登记为已引用（apps/core 的 owner-images.util.ts）。
+const cardPlatforms: Record<string, Omit<Platform, "url">> = {
+  wechat: { label: "微信", icon: "simple-icons:wechat", color: "#07C160" },
+  qq: { label: "QQ", icon: "simple-icons:qq", color: "#1EBAFC" },
+};
+
+export const socialPlatformKeys = [...Object.keys(platforms), ...Object.keys(cardPlatforms)];
 
 export type SocialLink = { key: string; label: string; href: string; icon: string; color: string; dark: boolean };
 
@@ -51,5 +59,20 @@ export function socialLinks(ids: unknown): SocialLink[] {
     // 填的是 ID：去掉问号后面的跟踪参数（如 B 站的 spm）和开头的 @，不能含空白或斜杠
     const id = text.split("?")[0].replace(/^@/, "");
     return /^[^\s/#]+$/.test(id) ? [{ ...base, href: platform.url(encodeURIComponent(id)) }] : [];
+  });
+}
+
+export type SocialCard = { key: string; label: string; icon: string; color: string; dark: boolean; id?: string; qr?: string };
+
+export function socialCards(ids: unknown): SocialCard[] {
+  if (!ids || typeof ids !== "object") return [];
+  return Object.entries(ids as Record<string, unknown>).flatMap(([rawKey, value]) => {
+    const key = rawKey.toLowerCase();
+    const platform = cardPlatforms[key];
+    if (!platform) return [];
+    const record = typeof value === "string" ? { id: value } : value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+    const id = typeof record.id === "string" ? record.id.trim() || undefined : undefined;
+    const qr = typeof record.qr === "string" && /^https?:\/\/[^\s]+$/i.test(record.qr.trim()) ? record.qr.trim() : undefined;
+    return id || qr ? [{ key, label: platform.label, icon: platform.icon, color: platform.color, dark: false, id, qr }] : [];
   });
 }
