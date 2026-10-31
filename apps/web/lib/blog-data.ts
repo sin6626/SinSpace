@@ -3,7 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { getApiClient } from "./api";
 import { safeUrl } from "./safe-url";
 import { excerpt, readingMinutes } from "./excerpt";
-import { socialLinks } from "./social";
+import { socialCards, socialLinks } from "./social";
 import { parseContentTranslations } from "./theme-config";
 
 // 站名和描述以后台 SEO 设置为准（getSiteSettings），这两个值只是读取失败时的兜底。
@@ -109,7 +109,9 @@ export async function getOwner() {
     avatar: safeUrl(user.avatar ?? undefined),
     introduce: user.introduce?.trim() || undefined,
     aboutHref: about?.slug ? `/${encodeURIComponent(about.slug)}` : undefined,
+    // 能直接跳转的社交链接（首屏、导航面板）和微信、QQ 这类名片（只在首屏，点开看二维码和号码）
     socials: socialLinks(user.socialIds),
+    contacts: socialCards(user.socialIds),
   };
 }
 

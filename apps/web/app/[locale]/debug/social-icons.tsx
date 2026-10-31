@@ -1,13 +1,17 @@
 import type { CSSProperties } from "react";
 import { HeroSocialList } from "@/components/home-hero";
 import { SocialIcon } from "@/components/iconify-icon";
-import { socialLinks, socialPlatformKeys } from "@/lib/social";
+import { getApiUrl } from "@/lib/config";
+import { socialCards, socialLinks, socialPlatformKeys } from "@/lib/social";
 import "./social-icons.css";
 
 // 调试页“社交图标”：后台能选的平台全部填上示例账号，看首屏和导航“首页”面板在图标很多时的样子，
 // 网站上平时单色、悬停换成品牌色（2026-10-31 用户选定）；另附一排全彩版本做对比。
 const sampleIds: Record<string, string> = { email: "sin@example.com", steam: "76561197960287930", discord: "123456789012345678" };
 const samples = socialLinks(Object.fromEntries(socialPlatformKeys.map((key) => [key, sampleIds[key] ?? "sin6626"])));
+// 名片示例（不是真号码）：微信只放二维码，QQ 号码 + 二维码；二维码用头像图占位
+const sampleQr = `${getApiUrl()}/objects/avatar/Sin.jpg`;
+const sampleContacts = socialCards({ wechat: { qr: sampleQr }, qq: { id: "10001", qr: sampleQr } });
 
 export default function SocialIconsPreview() {
   return (
@@ -15,6 +19,11 @@ export default function SocialIconsPreview() {
       <p className="post-meta">首屏（home-hero.tsx 的 HeroSocialList，真实组件）：后台能选的 {samples.length} 个平台全部填上时，左栏最宽 42rem，放不下会换行；平时单色，鼠标移上去（或 Tab 聚焦）换成平台自己的颜色，GitHub、X、抖音、Steam、V2EX 这种深色品牌熄灯时是品牌色圆底 + 白色图标</p>
       <div className="debug-social-hero">
         <HeroSocialList socials={samples} />
+      </div>
+
+      <p className="post-meta">首屏加上微信、QQ 这类“名片”（没有网页主页）：竖线后面，点图标弹出二维码和号码（可复制），点外面或 Esc 关闭；导航面板不显示这一类。示例图用头像占位</p>
+      <div className="debug-social-hero" id="debug-social-cards">
+        <HeroSocialList socials={samples.slice(0, 3)} contacts={sampleContacts} />
       </div>
 
       <p className="post-meta">对比：一直显示品牌色的全彩版本（只在调试页，网站上没用）。深色的 GitHub、X、抖音、Steam、V2EX 在夜空上发暗，只靠圆底勉强看得出</p>

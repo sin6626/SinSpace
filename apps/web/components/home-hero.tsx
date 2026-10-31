@@ -3,7 +3,8 @@ import { unstable_rethrow } from "next/navigation";
 import { Suspense, type CSSProperties } from "react";
 import { getOwner, getSiteDescription, getSiteLikes, getSiteSettings, getSubscribeOptions, siteDescription, siteName } from "../lib/blog-data";
 import { getApiUrl } from "../lib/config";
-import type { SocialLink } from "../lib/social";
+import type { SocialCard, SocialLink } from "../lib/social";
+import ContactCard from "./contact-card";
 import { getLocale, getT } from "../lib/i18n/server";
 import IconifyIcon, { SocialIcon } from "./iconify-icon";
 import ScrollHint from "./scroll-hint";
@@ -27,15 +28,23 @@ async function loadOwner() {
   }
 }
 
-// 首屏的社交图标一排（多了会换行），平时单色、悬停换成品牌色；/debug 用同一个组件预览图标很多时的样子
-export function HeroSocialList({ socials }: { socials: SocialLink[] }) {
+// 首屏的社交图标一排（多了会换行），平时单色、悬停换成品牌色；/debug 用同一个组件预览图标很多时的样子。
+// 能直接跳转的平台在前；微信、QQ 这类没有网页主页的“名片”在竖线后面，点图标弹出二维码和号码。
+export function HeroSocialList({ socials, contacts = [] }: { socials: SocialLink[]; contacts?: SocialCard[] }) {
+  const brand = (item: SocialLink | SocialCard) => ({ "data-dark": item.dark ? "" : undefined, style: { "--brand": item.color } as CSSProperties });
   return (
     <ul className="home-hero-socials">
       {socials.map((social) => (
-        <li key={social.href} data-dark={social.dark ? "" : undefined} style={{ "--brand": social.color } as CSSProperties}>
+        <li key={social.href} {...brand(social)}>
           <a href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label} title={social.label}>
             <SocialIcon icon={social.icon} label={social.label} />
           </a>
+        </li>
+      ))}
+      {socials.length > 0 && contacts.length > 0 && <li className="home-hero-socials-divider" aria-hidden="true" />}
+      {contacts.map((card) => (
+        <li key={card.key} {...brand(card)}>
+          <ContactCard card={card} icon={<SocialIcon icon={card.icon} label={card.label} />} />
         </li>
       ))}
     </ul>
@@ -44,7 +53,7 @@ export function HeroSocialList({ socials }: { socials: SocialLink[] }) {
 
 async function Socials() {
   const owner = await loadOwner();
-  return owner?.socials.length ? <HeroSocialList socials={owner.socials} /> : null;
+  return owner && (owner.socials.length || owner.contacts.length) ? <HeroSocialList socials={owner.socials} contacts={owner.contacts} /> : null;
 }
 
 async function Portrait() {

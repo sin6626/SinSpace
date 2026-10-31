@@ -36,6 +36,9 @@ try {
 
   await b.goto(`${admin}/#/setting?group=user`, 6000)
   const rows = `[...document.querySelectorAll('.divide-y > .flex')]`
+  // 真实资料里已经有 QQ 时先在页面上删掉那一行（保存请求被拦截，不会真的删），保证下面能重新选 QQ
+  await b.evaluate(`(() => { const row = ${rows}.find((el) => el.querySelector('.n-base-selection')?.textContent.trim() === 'QQ'); row?.querySelector(':scope > button')?.click() })()`)
+  await sleep(300)
   const before = await b.evaluate(`${rows}.length`)
   // 添加一行，平台换成 QQ（下拉可输入筛选）
   await b.evaluate(`[...document.querySelectorAll('button')].find((el) => el.textContent.trim() === '添加').click()`)

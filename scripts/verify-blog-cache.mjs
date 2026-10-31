@@ -49,7 +49,7 @@ const api = {
 const module = { exports: {} }
 vm.runInNewContext(code, {
   module, exports: module.exports,
-  require: (id) => id === 'server-only' ? {} : id === './excerpt' ? { excerpt: (value) => value ?? '', readingMinutes: () => 1 } : id === './social' ? { socialLinks: () => [] } : id === './theme-config' ? { parseContentTranslations: () => ({ projects: {} }) } : id === './safe-url' ? { safeUrl: (value) => value && /^https?:\/\//i.test(value) ? value : undefined } : id === './api' ? { getApiClient: () => api } : id === 'next/cache' ? { cacheLife: (value) => lifetimes.push(value), cacheTag: (...value) => tags.push(...value) } : require(id),
+  require: (id) => id === 'server-only' ? {} : id === './excerpt' ? { excerpt: (value) => value ?? '', readingMinutes: () => 1 } : id === './social' ? { socialLinks: () => [], socialCards: () => [] } : id === './theme-config' ? { parseContentTranslations: () => ({ projects: {} }) } : id === './safe-url' ? { safeUrl: (value) => value && /^https?:\/\//i.test(value) ? value : undefined } : id === './api' ? { getApiClient: () => api } : id === 'next/cache' ? { cacheLife: (value) => lifetimes.push(value), cacheTag: (...value) => tags.push(...value) } : require(id),
 })
 const cache = module.exports
 const navigation = await cache.getNavigationData()

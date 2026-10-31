@@ -311,6 +311,13 @@ const ja: Messages = {
     prev: "前の画像",
     next: "次の画像",
   },
+  contactCard: {
+    open: (name: string) => `${name}：QR コードを読み取るか ID をコピー`,
+    qrAlt: (name: string) => `${name} の QR コード`,
+    copy: "コピー",
+    copied: "コピーしました",
+    hint: "QR コードを読み取るか、ID をコピーして検索してください",
+  },
   comments: {
     label: "コメント",
     heading: "コメント",

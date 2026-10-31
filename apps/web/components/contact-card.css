@@ -1,0 +1,104 @@
+/* 首屏名片（微信、QQ）：触发按钮和首屏其他社交图标同样大小、同样的悬停品牌色（home-hero.css 里按 a 和 button 一起写） */
+.contact-trigger {
+  border: 0;
+  cursor: pointer;
+}
+
+.contact-card-positioner {
+  z-index: var(--z-popup);
+}
+
+/* 卡片：浅色纸面（二维码要在白底上才好扫），顶部一条品牌色细线 */
+.contact-card {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  width: 15rem;
+  padding: var(--space-4);
+  border: 1px solid var(--glass-border);
+  border-top: 3px solid var(--brand);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-popup);
+  color: var(--foreground);
+  /* 打开时 Base UI 把焦点放到卡片上，卡片本身不画焦点框（里面的复制按钮有自己的） */
+  outline: 0;
+  transform-origin: var(--transform-origin);
+  transition: opacity var(--duration-base) var(--ease-out), scale var(--duration-base) var(--ease-out);
+}
+
+.contact-card[data-starting-style],
+.contact-card[data-ending-style] {
+  opacity: 0;
+  scale: 0.96;
+}
+
+.contact-card-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-self: stretch;
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.contact-card-icon {
+  display: grid;
+  color: var(--brand);
+}
+
+.contact-card-icon svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* 二维码图片本身带白底卡片（截图裁出来的），这里只限宽、加圆角。加载完之前先按竖卡常见的 2:3 占位（淡底），
+   免得卡片先是一小条、图到了再突然撑高；加载完按图片自己的比例 */
+.contact-card-qr {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: auto 2 / 3;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+}
+
+.contact-card-id {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  justify-self: stretch;
+  margin: 0;
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  user-select: all;
+}
+
+.contact-card-hint {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  text-align: center;
+}
+
+.contact-card-arrow {
+  width: 14px;
+  height: 7px;
+  background: var(--surface);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+.contact-card-arrow[data-side="bottom"] {
+  rotate: 180deg;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-card {
+    transition: none;
+  }
+}

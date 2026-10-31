@@ -311,6 +311,14 @@ const zh = {
     prev: "上一张",
     next: "下一张",
   },
+  // 首屏的微信、QQ 名片（没有网页主页的平台，点图标弹出二维码和号码）
+  contactCard: {
+    open: (name: string) => `${name}：扫码或复制号码`,
+    qrAlt: (name: string) => `${name}二维码`,
+    copy: "复制",
+    copied: "已复制",
+    hint: "扫一扫，或复制号码去搜索",
+  },
   comments: {
     label: "评论",
     heading: "评论",

@@ -225,7 +225,7 @@
   margin-top: 7rem;
 }
 
-.home-hero-socials a {
+.home-hero-socials :is(a, button) {
   display: grid;
   place-items: center;
   width: 2.25rem;
@@ -236,6 +236,20 @@
   transition: background-color var(--duration-base), color var(--duration-base), transform var(--duration-base) var(--ease-out);
 }
 
+/* 名片打开时（微信、QQ 的弹出卡片）按钮保持品牌色 */
+.home-hero-socials button[data-popup-open] {
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
+  color: var(--brand);
+}
+
+/* 直达链接和名片（微信、QQ）之间的竖线 */
+.home-hero-socials-divider {
+  align-self: center;
+  width: 1px;
+  height: 1.25rem;
+  background: var(--border-strong);
+}
+
 .home-hero-socials svg {
   width: 1.125rem;
   height: 1.125rem;
@@ -243,28 +257,28 @@
 
 /* 悬停或键盘聚焦：换成平台自己的颜色（淡淡的品牌色圆底 + 品牌色图标），--brand 由 HeroSocialList 按平台写在 li 上 */
 @media (hover: hover) {
-  .home-hero-socials a:hover {
+  .home-hero-socials :is(a, button):hover {
     background: color-mix(in srgb, var(--brand) 16%, transparent);
     color: var(--brand);
     transform: translateY(-2px);
   }
 
   /* 品牌色接近黑色的（GitHub、X、抖音、Steam、V2EX）熄灯时：品牌色圆底 + 白色图标，再描一圈细光，免得融进夜空 */
-  :root[data-theme="dark"] .home-hero-socials li[data-dark] a:hover {
+  :root[data-theme="dark"] .home-hero-socials li[data-dark] :is(a, button):hover {
     background: var(--brand);
     color: #fff;
     box-shadow: 0 0 0 1px rgb(255 255 255 / 0.2);
   }
 }
 
-.home-hero-socials a:focus-visible {
+.home-hero-socials :is(a, button):focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
   background: color-mix(in srgb, var(--brand) 16%, transparent);
   color: var(--brand);
 }
 
-:root[data-theme="dark"] .home-hero-socials li[data-dark] a:focus-visible {
+:root[data-theme="dark"] .home-hero-socials li[data-dark] :is(a, button):focus-visible {
   background: var(--brand);
   color: #fff;
 }

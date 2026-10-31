@@ -311,6 +311,13 @@ const en: Messages = {
     prev: "Previous image",
     next: "Next image",
   },
+  contactCard: {
+    open: (name: string) => `${name}: scan the code or copy the ID`,
+    qrAlt: (name: string) => `${name} QR code`,
+    copy: "Copy",
+    copied: "Copied",
+    hint: "Scan the code, or copy the ID and search for it",
+  },
   comments: {
     label: "Comments",
     heading: "Comments",
