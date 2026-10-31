@@ -62,7 +62,7 @@ const notoSerif = Noto_Serif_SC({
 // 之后在站内怎么跳都保持；几个标签页各开一种互不影响，方便并排对比。默认夜紫，墨黑、银河在 <html data-palette> 上覆盖颜色变量。
 const themeScript = `try{var t=localStorage.getItem("theme"),d=document.documentElement;if(t==="light")d.dataset.theme="light";var q=new URLSearchParams(location.search).get("palette");if(q==="ink"||q==="night"||q==="galaxy")sessionStorage.setItem("palette",q);var p=sessionStorage.getItem("palette");if(p==="ink"||p==="galaxy")d.dataset.palette=p}catch(e){}`;
 
-// 子页面的标题会套用模板，例如“文章 - Sin’s Space”。站名、描述取后台 SEO 设置；
+// 子页面的标题会套用模板，例如“文章 - Sin’s Yozora”。站名是后台“个人资料”的名字拼上 Yozora，描述取后台 SEO 设置；
 // metadataBase 取后台“网站地址”，让分享链接、RSS 自动发现等相对地址变成完整网址；读取失败时省略。
 // 三种语言都在构建时生成（cacheComponents 要求根路由参数至少列出一个值）
 export function generateStaticParams() {

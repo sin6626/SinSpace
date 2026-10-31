@@ -1,6 +1,6 @@
-# SinPersonalSpace
+# Yozora
 
-个人博客学习项目，使用 Next.js 前端与 Mix Space Core 后端，由 pnpm workspace 管理。
+Sin’s Yozora（夜空）：个人博客学习项目，使用 Next.js 前端与 Mix Space Core 后端，由 pnpm workspace 管理。
 
 ```sh
 pnpm install --frozen-lockfile

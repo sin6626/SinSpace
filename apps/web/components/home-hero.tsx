@@ -1,10 +1,11 @@
 import { ChevronDown } from "lucide-react";
 import { unstable_rethrow } from "next/navigation";
 import { Suspense, type CSSProperties } from "react";
-import { getOwner, getSiteDescription, getSiteLikes, getSiteSettings, getSubscribeOptions, siteDescription, siteName } from "../lib/blog-data";
+import { getOwner, getSiteDescription, getSiteLikes, getSiteSettings, getSubscribeOptions, siteDescription, siteName, siteOwnerName } from "../lib/blog-data";
 import { getApiUrl } from "../lib/config";
 import type { SocialCard, SocialLink } from "../lib/social";
 import ContactCard from "./contact-card";
+import OwnerName from "./owner-name";
 import { getLocale, getT } from "../lib/i18n/server";
 import IconifyIcon, { SocialIcon } from "./iconify-icon";
 import ScrollHint from "./scroll-hint";
@@ -106,7 +107,8 @@ export default async function HomeHero() {
                 <strong className="home-hero-name">
                   <MascotLayer layer="back" />
                   <MascotLayer layer="blink" />
-                  Sin
+                  {/* 站长名字读后台；丛雨的对位是按“Sin”三个字母调的（home-hero.css），改成别的名字手的位置要重调 */}
+                  <Suspense fallback={siteOwnerName}><OwnerName /></Suspense>
                   <MascotLayer layer="front" />
                   <span className="home-hero-star" aria-hidden="true" />
                 </strong>

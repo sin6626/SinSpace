@@ -1,8 +1,10 @@
 import { Heart, Moon } from "lucide-react";
 import Link from "./locale-provider";
 import { Suspense } from "react";
+import { siteOwnerName } from "../lib/blog-data";
 import { getT } from "../lib/i18n/server";
 import FooterSky from "./footer-sky";
+import OwnerName from "./owner-name";
 import { OnlineCount } from "./notifications";
 import "./site-footer.css";
 
@@ -21,7 +23,7 @@ export default async function SiteFooter() {
             {t.motto}
           </p>
           <p className="site-footer-sign">
-            © 2026 Sin · Made with <Heart size={12} aria-label="love" /> under the stars
+            © 2026 <Suspense fallback={siteOwnerName}><OwnerName /></Suspense> · Made with <Heart size={12} aria-label="love" /> under the stars
           </p>
         </div>
         <div className="site-footer-side">
