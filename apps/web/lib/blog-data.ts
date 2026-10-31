@@ -6,8 +6,13 @@ import { excerpt, readingMinutes } from "./excerpt";
 import { socialCards, socialLinks } from "./social";
 import { parseContentTranslations } from "./theme-config";
 
-// 站名和描述以后台 SEO 设置为准（getSiteSettings），这两个值只是读取失败时的兜底。
-export const siteName = "Sin’s Space";
+// 站名 = 站长名字 + ’s Yozora（2026-10-31 站长定）：Yozora（夜空）是站名本身，固定写在这里；前面的名字读后台“个人资料”，
+// 站长在后台改名后，页头、浏览器标题、RSS、订阅浮层、首屏问候、页脚落款一起变。描述以后台 SEO 设置为准。
+// siteOwnerName、siteName、siteDescription 只是读取失败时的兜底。
+export const siteBrand = "Yozora";
+export const siteOwnerName = "Sin";
+export const siteNameOf = (owner: string) => `${owner}’s ${siteBrand}`;
+export const siteName = siteNameOf(siteOwnerName);
 export const siteDescription = "夜深里也有月亮和星星陪我作伴";
 
 // "use cache" 函数抛出的错误会丢掉 SDK 附带的 HTTP status，
@@ -57,20 +62,21 @@ export async function getNavigationData(lang: ContentLang = "zh") {
 }
 
 // 站点级设置。对外地址取后台“网站地址”（Core 的 url.webUrl），sitemap、RSS 的完整链接都以它为准，不在前端写死域名；
-// 评论开关取后台“评论设置”（是否关闭评论、是否允许游客评论）；站名和一句话描述取后台 SEO 设置，前端不写死。
+// 评论开关取后台“评论设置”（是否关闭评论、是否允许游客评论）；站名用后台“个人资料”的名字拼上 Yozora，一句话描述取后台 SEO 设置。
 export async function getSiteSettings() {
   "use cache";
-  // 改站名、描述、评论设置都没有 Webhook 事件，后台改完 5 分钟内生效。
+  // 改个人资料、描述、评论设置都没有 Webhook 事件，后台改完 5 分钟内生效。
   // stale 至少 300 秒：Next 只把 stale ≥ 5 分钟的缓存放进预渲染外壳，太短的话根布局的 generateMetadata 会被当成动态数据，
   // 整页静态的路由（/debug）会报 “encountered URL data in generateMetadata()”。回归测试 scripts/e2e/dev-issues.mjs。
   cacheLife({ stale: 300, revalidate: 300, expire: 3600 });
   cacheTag("blog:navigation");
-  const { url, commentOptions, seo } = await getApiClient().aggregate.getAggregateData();
+  const { url, commentOptions, seo, user } = await getApiClient().aggregate.getAggregateData();
   const site = new URL(url.webUrl);
   if (!["http:", "https:"].includes(site.protocol)) throw new Error("后台网站地址必须是 HTTP(S)。");
   return {
     siteUrl: site.href.replace(/\/$/, ""),
-    name: seo?.title?.trim() || siteName,
+    ownerName: user?.name?.trim() || siteOwnerName,
+    name: siteNameOf(user?.name?.trim() || siteOwnerName),
     description: seo?.description?.trim() || siteDescription,
     comments: { disabled: Boolean(commentOptions?.disableComment), allowGuest: commentOptions?.allowGuestComment !== false },
   };
@@ -140,6 +146,29 @@ async function listExcerpt(id: string, summary: string | null | undefined, text:
   return body ? { text: body, source: "text" } : null;
 }
 
+// 列表里的一篇文章：普通列表（getPosts）和标签、搜索的结果（getMatchedPosts）共用这一种样子
+const postSelect = ["title", "summary", "text", "created", "categoryId", "slug", "pin", "tags", "count"] satisfies NonNullable<NonNullable<Parameters<ReturnType<typeof getApiClient>["post"]["getList"]>[2]>["select"]>;
+type ListedPost = Awaited<ReturnType<ReturnType<typeof getApiClient>["post"]["getList"]>>["data"][number];
+
+async function postEntry(post: ListedPost, lang: ContentLang) {
+  return {
+    id: post.id,
+    title: post.title,
+    slug: post.slug,
+    summary: post.summary,
+    excerpt: await listExcerpt(post.id, post.summary, post.text, lang),
+    stats: { minutes: readingMinutes(post.text), reads: post.count?.read ?? 0, likes: post.count?.like ?? 0 },
+    tags: (post.tags ?? []).slice(0, 3),
+    created: post.created,
+    categoryId: post.categoryId,
+    // Core 把置顶文章排在最前，页面需要标出来，否则看起来像排序错了。
+    pinned: Boolean(post.pin),
+    // 外文页面上这篇还没有译文，标题和摘录仍是中文
+    original: lang !== "zh" && !(post as { isTranslated?: boolean }).isTranslated,
+    category: post.category ? { name: post.category.name, slug: post.category.slug } : null,
+  };
+}
+
 // 外文页面（lang 为 en / ja）由 Core 把已有译文换进标题、正文、摘要、标签和分类名，摘录和阅读时长也按译文算。
 export async function getPosts(page: number, categoryId?: string, lang: ContentLang = "zh") {
   "use cache";
@@ -148,27 +177,56 @@ export async function getPosts(page: number, categoryId?: string, lang: ContentL
   const { data, pagination } = await getApiClient(lang).post.getList(page, 10, {
     categoryIds: categoryId ? [categoryId] : undefined,
     // text 只在服务端用来算摘录和阅读时长，不返回给页面
-    select: ["title", "summary", "text", "created", "categoryId", "slug", "pin", "tags", "count"],
+    select: postSelect,
   });
+  return { data: await Promise.all(data.map((post) => postEntry(post, lang))), pagination: { ...pagination } };
+}
+
+// 标签、话题、搜索的结果和普通列表一样每页 10 条（Core 的分页字段同名，列表组件不用区分）
+function paginate<T>(items: T[], page: number) {
+  const size = 10;
+  const totalPage = Math.max(1, Math.ceil(items.length / size));
   return {
-    data: await Promise.all(data.map(async (post) => ({
-      id: post.id,
-      title: post.title,
-      slug: post.slug,
-      summary: post.summary,
-      excerpt: await listExcerpt(post.id, post.summary, post.text, lang),
-      stats: { minutes: readingMinutes(post.text), reads: post.count?.read ?? 0, likes: post.count?.like ?? 0 },
-      tags: (post.tags ?? []).slice(0, 3),
-      created: post.created,
-      categoryId: post.categoryId,
-      // Core 把置顶文章排在最前，页面需要标出来，否则看起来像排序错了。
-      pinned: Boolean(post.pin),
-      // 外文页面上这篇还没有译文，标题和摘录仍是中文
-      original: lang !== "zh" && !(post as { isTranslated?: boolean }).isTranslated,
-      category: post.category ? { name: post.category.name, slug: post.category.slug } : null,
-    }))),
-    pagination: { ...pagination },
+    data: items.slice((page - 1) * size, page * size),
+    pagination: { total: items.length, size, currentPage: page, totalPage, hasPrevPage: page > 1, hasNextPage: page < totalPage },
   };
+}
+
+// Core 的标签、话题、搜索接口只给 id 和标题，结果要完整条目（摘要、统计），所以先取全部文章做成索引再按 id 挑出来。
+// ponytail: 每次缓存过期都把全部文章取一遍（每页 50 篇），文章上千篇时改成让 Core 直接按标签分页、搜索返回正文片段。
+async function getPostIndex(lang: ContentLang) {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("blog:posts", "blog:categories", "blog:ai");
+  const client = getApiClient(lang);
+  const first = await client.post.getList(1, 50, { select: postSelect });
+  const rest = await Promise.all(Array.from({ length: first.pagination.totalPage - 1 }, (_, i) => client.post.getList(i + 2, 50, { select: postSelect })));
+  return Promise.all([first, ...rest].flatMap(({ data }) => data).map((post) => postEntry(post, lang)));
+}
+
+// Core 的搜索支持 size（最多 50），SDK 的类型里没写；按相关度排好的前 50 条。
+const searchIds = (type: "post" | "note", keyword: string) =>
+  getApiClient().search.proxy(type).get<{ data: { id: string }[] }>({ params: { keyword, size: 50 } }).then(({ data }) => data.map(({ id }) => id));
+
+function pick<T extends { id: string }>(index: T[], ids: string[]) {
+  const byId = new Map(index.map((entry) => [entry.id, entry]));
+  return ids.flatMap((id) => byId.get(id) ?? []);
+}
+
+// 文章的筛选：标签或搜索（分类走 getPosts，同一时间只生效一个）。标签名按中文原名原样传给 Core（有的带空格），
+// 没有文章时 Core 返回 404，当作没有结果；外文页面显示译文条目。
+export type PostMatch = { tag: string } | { keyword: string };
+export async function getMatchedPosts(match: PostMatch, page: number, lang: ContentLang = "zh") {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("blog:posts", "blog:categories", "blog:ai");
+  const [ids, index] = await Promise.all([
+    "tag" in match
+      ? orNotFound(getApiClient().category.getTagByName(match.tag)).then((result) => (result?.data ?? []).map(({ id }) => id))
+      : searchIds("post", match.keyword),
+    getPostIndex(lang),
+  ]);
+  return paginate(pick(index, ids), page);
 }
 
 // 详情的正文译文由页面另取（getArticleTranslation），这里是中文原文；lang 只把面包屑里的分类名换成译文。
@@ -193,28 +251,57 @@ export async function getPost(category: string, slug: string, lang: ContentLang 
   };
 }
 
+// 列表里的一篇手记：普通列表（getNotes）和话题、搜索的结果（getMatchedNotes）共用。手记没有手写摘要字段：AI 摘要 → 正文开头
+type ListedNote = Awaited<ReturnType<ReturnType<typeof getApiClient>["note"]["getList"]>>["data"][number];
+
+async function noteEntry(note: ListedNote, lang: ContentLang) {
+  return {
+    id: note.id,
+    nid: note.nid,
+    title: note.title,
+    created: note.created,
+    mood: note.mood,
+    weather: note.weather,
+    topic: note.topic?.name ?? null,
+    original: lang !== "zh" && !(note as { isTranslated?: boolean }).isTranslated,
+    excerpt: await listExcerpt(note.id, null, note.text, lang),
+    stats: { minutes: readingMinutes(note.text), reads: note.count?.read ?? 0, likes: note.count?.like ?? 0 },
+  };
+}
+
 // 外文页面由 Core 把已有译文换进标题、正文、心情、天气和话题名。
 export async function getNotes(page: number, lang: ContentLang = "zh") {
   "use cache";
   cacheLife({ stale: 60, revalidate: 60, expire: 300 });
   cacheTag("blog:notes", "blog:ai");
   const { data, pagination } = await getApiClient(lang).note.getList(page, 10);
-  return {
-    // 手记没有手写摘要字段：AI 摘要 → 正文开头
-    data: await Promise.all(data.map(async (note) => ({
-      id: note.id,
-      nid: note.nid,
-      title: note.title,
-      created: note.created,
-      mood: note.mood,
-      weather: note.weather,
-      topic: note.topic?.name ?? null,
-      original: lang !== "zh" && !(note as { isTranslated?: boolean }).isTranslated,
-      excerpt: await listExcerpt(note.id, null, note.text, lang),
-      stats: { minutes: readingMinutes(note.text), reads: note.count?.read ?? 0, likes: note.count?.like ?? 0 },
-    }))),
-    pagination: { ...pagination },
-  };
+  return { data: await Promise.all(data.map((note) => noteEntry(note, lang))), pagination: { ...pagination } };
+}
+
+// 同 getPostIndex：公开列表里的全部手记（加密手记不在里面，话题和搜索结果里也就不会出现）。
+async function getNoteIndex(lang: ContentLang) {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("blog:notes", "blog:ai");
+  const client = getApiClient(lang);
+  const first = await client.note.getList(1, 50);
+  const rest = await Promise.all(Array.from({ length: first.pagination.totalPage - 1 }, (_, i) => client.note.getList(i + 2, 50)));
+  return Promise.all([first, ...rest].flatMap(({ data }) => data).map((note) => noteEntry(note, lang)));
+}
+
+// 手记的筛选：话题或搜索（同一时间只生效一个）。ponytail: 话题只取最新 50 篇，超过时再按页向 Core 要。
+export type NoteMatch = { topicId: string } | { keyword: string };
+export async function getMatchedNotes(match: NoteMatch, page: number, lang: ContentLang = "zh") {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("blog:notes", "blog:ai");
+  const [ids, index] = await Promise.all([
+    "topicId" in match
+      ? getApiClient().note.getNoteByTopicId(match.topicId, 1, 50, { sortBy: "created", sortOrder: -1 }).then(({ data }) => data.map(({ id }) => id))
+      : searchIds("note", match.keyword),
+    getNoteIndex(lang),
+  ]);
+  return paginate(pick(index, ids), page);
 }
 
 // 正文译文由页面另取；lang 只把心情、天气、话题和相邻手记的标题换成译文。
@@ -631,21 +718,6 @@ export async function getTags() {
   return data
     .map(({ name, count }) => ({ name, count }))
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-}
-
-// 标签名原样传给 Core（有的标签带空格）；没有文章时 Core 返回 404，这里转成空列表。
-export async function getPostsByTag(name: string, lang: ContentLang = "zh") {
-  "use cache";
-  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
-  cacheTag("blog:posts", "blog:ai");
-  const [result, names] = await Promise.all([orNotFound(getApiClient().category.getTagByName(name)), localizedNames(lang)]);
-  return (result?.data ?? []).map((post) => ({
-    id: post.id,
-    title: names?.titles[post.id] ?? post.title,
-    created: post.created,
-    slug: post.slug,
-    category: post.category ? { name: names?.categories[post.category.slug] ?? post.category.name, slug: post.category.slug } : null,
-  }));
 }
 
 // 话题本身没有文章数，用每个话题第一页的分页总数统计；话题很少，请求数可以接受。

@@ -1,4 +1,4 @@
-/* 列表页顶部的筛选栏（post-sidebar / note-sidebar / sidebar-search）与页脚邮件订阅（subscribe-form）。 */
+/* 列表页顶部的筛选栏（分类/话题一行、标签抽屉 post-sidebar、当前筛选 list-filters、搜索框 sidebar-search）与邮件订阅（subscribe-form）。 */
 /* 列表页：标题和数量在左，小搜索框在右；分类、标签抽屉在下面一行 */
 .list-heading {
   display: flex;
@@ -51,6 +51,42 @@
 
 .list-filters .post-categories {
   margin-bottom: 0;
+}
+
+/* 当前筛选（list-filters.tsx 的 ActiveFilter）：强调色淡底的实线胶囊，右边一个圆形 × */
+.active-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  justify-self: start;
+  margin: 0;
+  padding: 2px 3px 2px var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
+  border-radius: var(--radius-full);
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: var(--text-sm);
+
+  a {
+    display: grid;
+    place-items: center;
+    width: 1.375rem;
+    height: 1.375rem;
+    border-radius: var(--radius-full);
+    color: inherit;
+    transition: background-color var(--duration-fast);
+  }
+
+  a:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@media (hover: hover) {
+  .active-filter a:hover {
+    background: color-mix(in srgb, var(--primary) 18%, transparent);
+  }
 }
 
 .details-section + .details-section {

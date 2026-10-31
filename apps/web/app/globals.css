@@ -1002,3 +1002,33 @@ html:not(:active-view-transition-type(theme))::view-transition-new(site-header) 
   gap: var(--space-3);
   margin-top: var(--space-4);
 }
+
+/* 折叠栏（<details>：标签抽屉、失联友链、思考的评论……）展开、收起时高度和透明度一起过渡（2026-10-31 用户要求折叠栏都要有）。
+   ::details-content 是 <summary> 以外的内容；interpolate-size 让 height 能在 0 和 auto 之间过渡，
+   content-visibility 带 allow-discrete 才能等收起动画播完再隐藏。不支持的浏览器照常直接开合。
+   overflow-clip-margin 给里面链接的焦点框留出位置，不至于被裁掉。 */
+details {
+  interpolate-size: allow-keywords;
+}
+
+details::details-content {
+  height: 0;
+  overflow: clip;
+  overflow-clip-margin: var(--space-1);
+  opacity: 0;
+  transition:
+    height var(--duration-base) var(--ease-out),
+    opacity var(--duration-base) var(--ease-out),
+    content-visibility var(--duration-base) allow-discrete;
+}
+
+details[open]::details-content {
+  height: auto;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  details::details-content {
+    transition: none;
+  }
+}

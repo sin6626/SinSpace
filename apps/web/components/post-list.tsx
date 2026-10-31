@@ -2,9 +2,9 @@ import type { CategoryModel } from "@mx-space/api-client";
 import Link from "./locale-provider";
 import { notFound, unstable_rethrow } from "next/navigation";
 import { Suspense } from "react";
-import { getCategories, getPosts } from "../lib/blog-data";
+import { getCategories, getMatchedPosts, getPosts } from "../lib/blog-data";
 import { readText } from "../lib/search-params";
-import { PostSearch, PostsByTag } from "./post-filter";
+import { ActiveFilter, Pagination, listHref } from "./list-filters";
 import PostTagDrawer from "./post-sidebar";
 import type { ListExcerpt } from "../lib/blog-data";
 import Entry, { EntryTag, type EntryStats } from "./entry";
@@ -59,42 +59,52 @@ export async function PostCard({ post, headingLevel = 2 }: { post: PostCardData;
 export const postHref = (post: { slug?: string; category: { slug: string } | null }) =>
   post.category && post.slug ? `/posts/${encodeURIComponent(post.category.slug)}/${encodeURIComponent(post.slug)}` : null;
 
+// 文章列表的筛选：全部（/posts）、分类（/categories/x）、标签（?tag=）、搜索（?q=），同一时间只生效一个（2026-10-31 与用户约定）。
+// 不管哪一种，都是同一种条目、同样分页，分类那一行一直在；标签和搜索在上方显示一枚可以 × 掉的标记。
+type PostFilter = { kind: "all" } | { kind: "category"; slug: string } | { kind: "tag"; name: string } | { kind: "search"; keyword: string };
+
 export default async function PostList({ searchParams, params }: PostListProps) {
-  const [{ page: rawPage = "1", q, tag }, route, { posts: t, list }] = await Promise.all([searchParams, params, getT()]);
-  const keyword = route ? "" : readText(q);
-  const activeTag = !route && typeof tag === "string" && tag.trim() ? tag.slice(0, 100) : undefined;
-  // 搜索框放在标题右边；标签抽屉要读接口，单独 Suspense，不挡住列表。
-  const search = <SidebarSearch action="/posts" label={t.search} defaultValue={keyword} />;
-  const tags = <Suspense fallback={null}><PostTagDrawer activeTag={activeTag} /></Suspense>;
-  // 搜索和标签只作用于 /posts；标签名原样保留（后台有带空格的标签）。
-  if (keyword) return <PostSearch keyword={keyword} search={search} filters={tags} />;
-  if (activeTag) return <PostsByTag name={activeTag} search={search} filters={tags} />;
+  const [{ page: rawPage = "1", q, tag }, route, { posts: t, list }, locale] = await Promise.all([searchParams, params, getT(), getLocale()]);
   if (typeof rawPage !== "string" || !/^[1-9]\d*$/.test(rawPage)) notFound();
   const page = Number(rawPage);
   if (!Number.isSafeInteger(page)) notFound();
-  let slug: string | undefined;
-  try {
-    slug = route ? decodeURIComponent(route.slug) : undefined;
-  } catch {
-    notFound();
+  let filter: PostFilter = { kind: "all" };
+  if (route) {
+    try {
+      filter = { kind: "category", slug: decodeURIComponent(route.slug) };
+    } catch {
+      notFound();
+    }
+  } else if (readText(q)) {
+    filter = { kind: "search", keyword: readText(q) };
+  } else if (typeof tag === "string" && tag.trim()) {
+    // 标签名原样保留（后台有带空格的标签）
+    filter = { kind: "tag", name: tag.slice(0, 100) };
   }
-  const base = slug === undefined ? "/posts" : `/categories/${encodeURIComponent(slug)}`;
-  const pageHref = (number: number) => number === 1 ? base : `${base}?page=${number}`;
+  const pageHref = (number: number) => filter.kind === "category"
+    ? listHref(`/categories/${encodeURIComponent(filter.slug)}`, {}, number)
+    : listHref("/posts", filter.kind === "tag" ? { tag: filter.name } : filter.kind === "search" ? { q: filter.keyword } : {}, number);
 
   let categories: CategoryModel[];
   let category: CategoryModel | undefined;
   let result: Awaited<ReturnType<typeof getPosts>>;
   try {
-    categories = await getCategories(await getLocale());
-    category = route ? categories.find((item) => item.slug === slug) : undefined;
-    if (route && !category) notFound();
-    result = await getPosts(page, category?.id, await getLocale());
+    categories = await getCategories(locale);
+    if (filter.kind === "category") {
+      const slug = filter.slug;
+      category = categories.find((item) => item.slug === slug);
+      if (!category) notFound();
+    }
+    result = filter.kind === "tag" ? await getMatchedPosts({ tag: filter.name }, page, locale)
+      : filter.kind === "search" ? await getMatchedPosts({ keyword: filter.keyword }, page, locale)
+      : await getPosts(page, category?.id, locale);
     if (page > Math.max(1, result.pagination.totalPage)) notFound();
   } catch (error) {
     unstable_rethrow(error);
     return <LoadError what={t.title} href={pageHref(page)} />;
   }
   const { data: posts, pagination } = result;
+  const empty = { all: t.empty, category: t.emptyCategory, tag: t.tagEmpty, search: t.searchEmpty }[filter.kind];
 
   return (
     <>
@@ -103,19 +113,21 @@ export default async function PostList({ searchParams, params }: PostListProps) 
           <h1>{category?.name ?? t.title}</h1>
           <p className="post-meta">{t.count(pagination.total)}</p>
         </div>
-        {search}
+        <SidebarSearch action="/posts" label={t.search} defaultValue={filter.kind === "search" ? filter.keyword : ""} />
       </header>
       <div className="post-list-content">
         <div className="list-filters">
-        <nav className="post-categories" aria-label={t.categories}>
-          <Link href="/posts" aria-current={!category ? "page" : undefined}>{t.all}</Link>
-          {categories.map((item) => (
-            <Link key={item.id} href={`/categories/${encodeURIComponent(item.slug)}`} aria-current={item.id === category?.id ? "page" : undefined}>
-              {item.name}
-            </Link>
-          ))}
-        </nav>
-        {tags}
+          <nav className="post-categories" aria-label={t.categories}>
+            <Link href="/posts" aria-current={filter.kind === "all" ? "page" : undefined}>{t.all}</Link>
+            {categories.map((item) => (
+              <Link key={item.id} href={`/categories/${encodeURIComponent(item.slug)}`} aria-current={item.id === category?.id ? "page" : undefined}>
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+          {filter.kind === "tag" && <ActiveFilter label={t.tag(filter.name.trim())} clearHref="/posts" />}
+          {filter.kind === "search" && <ActiveFilter label={list.searchQuery(filter.keyword)} clearHref="/posts" />}
+          <Suspense fallback={null}><PostTagDrawer activeTag={filter.kind === "tag" ? filter.name : undefined} /></Suspense>
         </div>
         {posts.length ? (
           <ul className="post-list">
@@ -125,14 +137,8 @@ export default async function PostList({ searchParams, params }: PostListProps) 
               </li>
             ))}
           </ul>
-        ) : <p className="post-empty">{category ? t.emptyCategory : t.empty}</p>}
-        {pagination.totalPage > 1 && (
-          <nav className="post-pagination" aria-label={list.pagination(t.title)}>
-            {pagination.hasPrevPage ? <Link href={pageHref(page - 1)} rel="prev">{list.prev}</Link> : <span>{list.prev}</span>}
-            <span>{list.page(page, pagination.totalPage)}</span>
-            {pagination.hasNextPage ? <Link href={pageHref(page + 1)} rel="next">{list.next}</Link> : <span>{list.next}</span>}
-          </nav>
-        )}
+        ) : <p className="post-empty">{empty}</p>}
+        <Pagination label={t.title} page={page} totalPage={pagination.totalPage} href={pageHref} />
       </div>
     </>
   );

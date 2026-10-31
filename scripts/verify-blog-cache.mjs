@@ -38,7 +38,11 @@ const api = {
       }
     },
   },
-  search: { search: async (type, keyword) => { calls.push(['search', type, keyword]); return type === 'post' ? { data: [{ ...post, text: 'leak' }], pagination: { total: 1 } } : { data: [{ ...note, text: 'leak' }], pagination: { total: 1 } } } },
+  search: {
+    search: async (type, keyword) => { calls.push(['search', type, keyword]); return type === 'post' ? { data: [{ ...post, text: 'leak' }], pagination: { total: 1 } } : { data: [{ ...note, text: 'leak' }], pagination: { total: 1 } } },
+    // 筛选结果按 id 取：Core 按相关度排好的 id（含一条公开列表里没有的）
+    proxy: (type) => ({ get: async ({ params }) => { calls.push(['searchIds', type, params]); return { data: [{ id: 'hidden-id' }, { id: type === 'post' ? 'post-id' : 'note-id' }] } } }),
+  },
   topic: { getAll: async () => ({ data: [{ id: 't1', name: '近况', slug: 'now', introduce: 'unused' }, { id: 't2', name: '空话题', slug: 'empty' }] }) },
   page: { getList: async () => ({ data: [{ id: 'page-id', subtitle: ' about me ' }] }), getBySlug: async () => detailError ? Promise.reject(detailError) : ({ id: 'page-id', title: '关于我', subtitle: 'about me', text: 'page body', contentFormat: 'lexical', content: 'unused JSON', allowComment: true }) },
   post: {
@@ -101,12 +105,22 @@ assert.equal('text' in byTopic.data[0], false)
 assert.equal(calls.at(-1)[4].sortOrder, -1)
 const tagList = await cache.getTags()
 assert.equal(JSON.stringify(tagList), JSON.stringify([{ name: ' 前端', count: 3 }, { name: 'Vue', count: 1 }]))
-const tagged = await cache.getPostsByTag(' 前端')
-assert.equal(calls.at(-1)[1], ' 前端')
-assert.equal('text' in tagged[0], false)
-assert.equal((await cache.getPostsByTag('missing')).length, 0)
-// 比原来多 2 次：文章列表、手记列表各读一次 AI 摘要
-assert.equal(lifetimes.length, 17)
+const plain = (value) => JSON.parse(JSON.stringify(value))
+const tagged = await cache.getMatchedPosts({ tag: ' 前端' }, 1)
+assert.equal(calls.filter((call) => call[0] === 'tag').at(-1)[1], ' 前端', '标签名原样传给 Core')
+assert.equal(tagged.data[0].id, 'post-id')
+assert.equal('text' in tagged.data[0], false, '筛选结果不带正文')
+assert.equal(typeof tagged.data[0].excerpt?.text, 'string', '筛选结果和普通列表同一种条目（有摘要）')
+assert.deepEqual(plain(tagged.pagination), { total: 1, size: 10, currentPage: 1, totalPage: 1, hasPrevPage: false, hasNextPage: false })
+assert.equal((await cache.getMatchedPosts({ tag: 'missing' }, 1)).pagination.total, 0, '标签下没有文章时 Core 返回 404，当作没有结果')
+const searchedPosts = await cache.getMatchedPosts({ keyword: '前端' }, 1)
+assert.deepEqual(plain(calls.filter((call) => call[0] === 'searchIds').at(-1)), ['searchIds', 'post', { keyword: '前端', size: 50 }])
+assert.deepEqual(searchedPosts.data.map((entry) => entry.id), ['post-id'], '公开列表里没有的 id 不出现')
+const topicNotes = await cache.getMatchedNotes({ topicId: 't1' }, 1)
+assert.equal(topicNotes.data[0].nid, 5)
+assert.equal((await cache.getMatchedNotes({ keyword: '近况' }, 2)).data.length, 0, '超出页数时这一页为空（列表页据此 404）')
+// 文章列表、手记列表各读一次 AI 摘要；筛选结果每次调用：getMatched* 与它读的全部条目索引各一次，索引里每条再读一次 AI 摘要
+assert.equal(lifetimes.length, 30)
 assert.ok(lifetimes.every(p => p.revalidate > 0 && p.expire > p.revalidate))
 post.contentFormat = 'lexical'
 assert.equal((await cache.getPost('technology', 'lexical')).content, 'unused JSON', 'Lexical 文章缓存 content 给富文本渲染器')

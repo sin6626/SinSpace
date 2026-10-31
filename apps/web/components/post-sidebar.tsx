@@ -5,7 +5,7 @@ import { getTags } from "../lib/blog-data";
 import { getT } from "../lib/i18n/server";
 import "./details-sidebar.css";
 
-// 文章列表的标签：默认收起，选中某个标签时自动展开。筛选状态只存在地址栏里。
+// 文章列表的标签：默认收起（选中的标签在列表上方另有一枚“标签：xx ×”，不用展开占地方，手机上尤其）。筛选状态只存在地址栏里。
 export default async function PostTagDrawer({ activeTag }: { activeTag?: string }) {
   const { posts: t, list } = await getT();
   let tags: Awaited<ReturnType<typeof getTags>> | null = null;
@@ -15,7 +15,7 @@ export default async function PostTagDrawer({ activeTag }: { activeTag?: string 
     unstable_rethrow(error);
   }
   return (
-    <details className="tag-drawer" open={Boolean(activeTag)}>
+    <details className="tag-drawer">
       <summary><Hash size={14} aria-hidden="true" />{t.byTag}{tags?.length ? <span className="tag-count">{tags.length}</span> : null}<ChevronDown className="tag-drawer-arrow" size={14} aria-hidden="true" /></summary>
       {tags === null ? <p className="details-message" role="alert">{t.tagsFailed}</p> : tags.length ? (
         <ul className="tag-list">

@@ -15,6 +15,7 @@ import { getApiUrl } from "@/lib/config";
 import SocialIconsPreview from "./social-icons";
 import HomePanelPreviews from "./home-panel-preview";
 import { OpenSearchButton } from "@/components/command-search";
+import { ActiveFilter } from "@/components/list-filters";
 import StyleGuide from "./style-guide";
 import IslandButtons from "./island-buttons";
 import ToastButtons from "./toast-buttons";
@@ -112,9 +113,12 @@ export default function DebugPage() {
           </li>
           <li>
             <h2>搜索与筛选</h2>
-            <p className="post-meta">post-filter.tsx、note-filter.tsx 共用 result-list.tsx：无结果、读取失败；右栏 post-sidebar / note-sidebar 读取失败</p>
+            <p className="post-meta">文章、手记列表的标签和搜索结果与普通列表同一种条目（post-list.tsx、note-list.tsx）；当前筛选是 list-filters.tsx 的 ActiveFilter，点 × 回到完整列表。下面依次是标签、搜索的标记，无结果，标签读取失败</p>
+            <div className="list-filters">
+              <ActiveFilter label="标签：Vue" clearHref="/posts" />
+              <ActiveFilter label="搜索“学习”" clearHref="/posts" />
+            </div>
             <p className="post-empty">没有匹配的文章，换个关键词试试。</p>
-            <p className="post-empty" role="alert">读取失败，请稍后重试。</p>
             <p className="post-meta">标签读取失败。</p>
           </li>
           <li>

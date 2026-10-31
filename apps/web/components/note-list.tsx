@@ -1,10 +1,8 @@
 import Link from "./locale-provider";
 import { notFound, unstable_rethrow } from "next/navigation";
-import { Suspense } from "react";
-import { getNotes } from "../lib/blog-data";
+import { getMatchedNotes, getNotes, getTopics } from "../lib/blog-data";
 import { readText } from "../lib/search-params";
-import { NoteSearch, NotesByTopic } from "./note-filter";
-import NoteTopicDrawer from "./note-sidebar";
+import { ActiveFilter, Pagination, listHref } from "./list-filters";
 import Entry, { EntryTag } from "./entry";
 import SidebarSearch from "./sidebar-search";
 import "./details-sidebar.css";
@@ -37,28 +35,43 @@ export async function NoteEntry({ note, headingLevel = 2 }: { note: NoteEntryDat
   );
 }
 
+// 手记列表的筛选：全部、话题（?topic=）、搜索（?q=），同一时间只生效一个。话题像文章的分类一样排成一行（全部手记 / 各话题），
+// 搜索在上方显示一枚可以 × 掉的标记；结果和普通列表同一种条目、同样分页。
+type NoteFilter = { kind: "all" } | { kind: "topic"; slug: string } | { kind: "search"; keyword: string };
+
 export default async function NoteList({ searchParams }: { searchParams: Promise<{ page?: string | string[]; q?: string | string[]; topic?: string | string[] }> }) {
-  const [{ page: rawPage = "1", q, topic }, { notes: t, list }] = await Promise.all([searchParams, getT()]);
-  const keyword = readText(q);
-  const topicSlug = readText(topic, 100);
-  const search = <SidebarSearch action="/notes" label={t.search} defaultValue={keyword} />;
-  const topics = <Suspense fallback={null}><NoteTopicDrawer activeTopic={topicSlug || undefined} /></Suspense>;
-  if (keyword) return <NoteSearch keyword={keyword} search={search} filters={topics} />;
-  if (topicSlug) return <NotesByTopic slug={topicSlug} search={search} filters={topics} />;
+  const [{ page: rawPage = "1", q, topic }, { notes: t, list }, locale] = await Promise.all([searchParams, getT(), getLocale()]);
   if (typeof rawPage !== "string" || !/^[1-9]\d*$/.test(rawPage)) notFound();
   const page = Number(rawPage);
   if (!Number.isSafeInteger(page)) notFound();
-  const pageHref = (number: number) => number === 1 ? "/notes" : `/notes?page=${number}`;
+  const filter: NoteFilter = readText(q) ? { kind: "search", keyword: readText(q) }
+    : readText(topic, 100) ? { kind: "topic", slug: readText(topic, 100) }
+    : { kind: "all" };
+  const pageHref = (number: number) => listHref("/notes", filter.kind === "topic" ? { topic: filter.slug } : filter.kind === "search" ? { q: filter.keyword } : {}, number);
 
+  // 话题读不到时只少了话题那一行，列表照常；正在按话题筛时才算读取失败
+  const topics = await getTopics(locale).catch((error) => {
+    unstable_rethrow(error);
+    return null;
+  });
   let result: Awaited<ReturnType<typeof getNotes>>;
   try {
-    result = await getNotes(page, await getLocale());
+    if (filter.kind === "topic") {
+      if (!topics) throw new Error("话题读取失败");
+      const slug = filter.slug;
+      const current = topics.find((item) => item.slug === slug);
+      if (!current) notFound();
+      result = await getMatchedNotes({ topicId: current.id }, page, locale);
+    } else {
+      result = filter.kind === "search" ? await getMatchedNotes({ keyword: filter.keyword }, page, locale) : await getNotes(page, locale);
+    }
     if (page > Math.max(1, result.pagination.totalPage)) notFound();
   } catch (error) {
     unstable_rethrow(error);
     return <LoadError what={t.title} href={pageHref(page)} />;
   }
   const { data: notes, pagination } = result;
+  const empty = { all: t.empty, topic: t.topicEmpty, search: t.searchEmpty }[filter.kind];
 
   return (
     <>
@@ -67,24 +80,30 @@ export default async function NoteList({ searchParams }: { searchParams: Promise
           <h1>{t.title}</h1>
           <p className="post-meta">{t.count(pagination.total)}</p>
         </div>
-        {search}
+        <SidebarSearch action="/notes" label={t.search} defaultValue={filter.kind === "search" ? filter.keyword : ""} />
       </header>
       <div className="post-list-content">
-        <div className="list-filters">{topics}</div>
+        <div className="list-filters">
+          {topics && topics.length > 0 && (
+            <nav className="post-categories" aria-label={t.topics}>
+              <Link href="/notes" aria-current={filter.kind === "all" ? "page" : undefined}>{t.all}</Link>
+              {topics.map((item) => (
+                <Link key={item.id} href={`/notes?topic=${encodeURIComponent(item.slug)}`} aria-current={filter.kind === "topic" && item.slug === filter.slug ? "page" : undefined}>
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
+          )}
+          {filter.kind === "search" && <ActiveFilter label={list.searchQuery(filter.keyword)} clearHref="/notes" />}
+        </div>
         {notes.length ? (
           <ul className="note-list">
             {notes.map((note) => (
               <li key={note.id}><NoteEntry note={note} /></li>
             ))}
           </ul>
-        ) : <p className="post-empty">{t.empty}</p>}
-        {pagination.totalPage > 1 && (
-          <nav className="post-pagination" aria-label={list.pagination(t.title)}>
-            {pagination.hasPrevPage ? <Link href={pageHref(page - 1)} rel="prev">{list.prev}</Link> : <span>{list.prev}</span>}
-            <span>{list.page(page, pagination.totalPage)}</span>
-            {pagination.hasNextPage ? <Link href={pageHref(page + 1)} rel="next">{list.next}</Link> : <span>{list.next}</span>}
-          </nav>
-        )}
+        ) : <p className="post-empty">{empty}</p>}
+        <Pagination label={t.title} page={page} totalPage={pagination.totalPage} href={pageHref} />
       </div>
     </>
   );
