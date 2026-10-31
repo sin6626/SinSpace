@@ -6,10 +6,13 @@ import {
   READER_COLLECTION_NAME,
 } from '~/constants/db.constant'
 import { ErrorCodeEnum } from '~/constants/error-code.constant'
+import { FileReferenceType } from '~/modules/file/file-reference.model'
+import { FileReferenceService } from '~/modules/file/file-reference.service'
 import { DatabaseService } from '~/processors/database/database.service'
 import { InjectModel } from '~/transformers/model.transformer'
 import { getAvatar } from '~/utils/tool.util'
 import { Types } from 'mongoose'
+import { socialImageUrls } from './owner-images.util'
 import { OwnerProfileModel } from './owner-profile.model'
 import type { OwnerDocument } from './owner.model'
 import { OwnerModel } from './owner.model'
@@ -24,6 +27,7 @@ export class OwnerService {
     private readonly ownerProfileModel: ReturnModelType<
       typeof OwnerProfileModel
     >,
+    private readonly fileReferenceService: FileReferenceService,
   ) {}
 
   private get readersCollection() {
@@ -163,6 +167,15 @@ export class OwnerService {
           },
         },
         { upsert: true },
+      )
+    }
+
+    // 社交链接里微信、QQ 等名片项的二维码：登记为已引用，换掉或删掉的旧图回到待清理
+    if (data.socialIds !== undefined) {
+      await this.fileReferenceService.updateReferencesForDocument(
+        { text: socialImageUrls(data.socialIds).map((url) => `![](${url})`).join('\n') },
+        String(reader._id),
+        FileReferenceType.Owner,
       )
     }
 
