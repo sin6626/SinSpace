@@ -1,7 +1,6 @@
 import type { CSSProperties } from "react";
 import { HeroSocialList } from "@/components/home-hero";
 import { SocialIcon } from "@/components/iconify-icon";
-import "@/components/navigation-menu.css";
 import { socialLinks, socialPlatformKeys } from "@/lib/social";
 import "./social-icons.css";
 
@@ -31,25 +30,7 @@ export default function SocialIconsPreview() {
         </ul>
       </div>
 
-      <p className="post-meta">导航“首页”面板的样子（照真实面板的类名拼出来，数字和页面是示例；社交账号在右下角，悬停同样换成品牌色）</p>
-      <div className="nav-panel is-home debug-social-panel">
-        <section className="nav-panel-side nav-night">
-          <p className="nav-night-count"><b>194</b><span>夜</span></p>
-          <p className="nav-night-foot"><span>24 篇</span><span>7.3 万字</span></p>
-        </section>
-        <section className="nav-panel-main nav-home-main">
-          <p className="nav-panel-empty">（页面列表）</p>
-          <ul className="nav-socials">
-            {samples.map((social) => (
-              <li key={social.key} data-dark={social.dark ? "" : undefined} style={{ "--brand": social.color } as CSSProperties}>
-                <a href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label} title={social.label}>
-                  <SocialIcon icon={social.icon} label={social.label} size={15} />
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
+      <p className="post-meta">导航“首页”面板里图标很多时的样子见下面“导航首页面板”</p>
 
       <p className="post-meta">每个平台填 ID 时拼出的地址（鼠标停在上面的图标上也能看到名字）</p>
       <ul className="debug-social-urls">

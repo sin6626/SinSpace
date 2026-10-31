@@ -13,6 +13,7 @@ import RecentlyAttitude from "@/components/recently-attitude";
 import SubscribeForm from "@/components/subscribe-form";
 import { getApiUrl } from "@/lib/config";
 import SocialIconsPreview from "./social-icons";
+import HomePanelPreviews from "./home-panel-preview";
 import StyleGuide from "./style-guide";
 import IslandButtons from "./island-buttons";
 import ToastButtons from "./toast-buttons";
@@ -142,6 +143,10 @@ export default function DebugPage() {
           <li id="debug-socials">
             <h2>社交图标</h2>
             <SocialIconsPreview />
+          </li>
+          <li id="debug-home-panel">
+            <h2>导航首页面板</h2>
+            <HomePanelPreviews />
           </li>
           <li id="debug-murmurs">
             <h2>碎碎念</h2>

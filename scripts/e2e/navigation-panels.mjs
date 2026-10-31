@@ -3,7 +3,8 @@
 // ③ 首页面板“此间”的篇数和字数不是 0（Core 的 site_info 字段经 SDK 转成驼峰，读错字段名时会全是 0）；
 // ④ 文章面板里鼠标移到另一个分类，右边的“X · 最近”跟着换；⑤ 弹层背景真的有模糊（backdrop-filter 曾被构建工具吞掉）；
 // ⑦ 时间线面板里鼠标移到“手记”，右边换成“手记 · 最近”且只列手记（曾经右边固定是混排的近期动态，悬停不变）；
-// ⑥ 五个面板里的每个链接打开后都不是站内 404（手记面板的话题链接曾用话题名拼地址，而手记页按 slug 筛选，结果全是 404）。
+// ⑥ 五个面板里的每个链接打开后都不是站内 404（手记面板的话题链接曾用话题名拼地址，而手记页按 slug 筛选，结果全是 404）；
+// ⑧ 首页面板在页面很多时分栏、不会拉得很长（/debug 的示例）。
 // 需要先运行 pnpm dev（默认 http://127.0.0.1:2323，可用 WEB_URL 覆盖）。用法：pnpm e2e
 import assert from "node:assert/strict";
 import { openBrowser, sleep } from "../headless-browser.mjs";
@@ -97,7 +98,16 @@ try {
   }
   assert.deepEqual(broken, [], `面板里有链接打开是 404：${broken.join("；")}`);
 
-  console.log(`PASS 面板内 ${hrefs.size} 个链接都能打开；导航顺序、五个悬停面板、第 ${home.nights} 夜（旧式数字）、${home.foot.join(" · ")}、弹层模糊、文章面板随分类切换（${before} → ${after}）`);
+  // ⑧ 页面和社交账号多了以后（/debug 的三份真实 HomePanel：2 / 12 / 18 个页面），页面分 1 / 2 / 3 栏，面板变宽而不是一直往下拉长
+  await browser.goto(`${base}/debug`, 2500);
+  const grow = await browser.evaluate(`[...document.querySelectorAll(".debug-home-panel")].map((box) => {
+    const pages = box.querySelector(".nav-home-pages");
+    return { pages: pages.children.length, columns: getComputedStyle(pages).gridTemplateColumns.split(" ").length, height: Math.round(box.getBoundingClientRect().height) };
+  })`);
+  assert.deepEqual(grow.map(({ columns }) => columns), [1, 2, 3], `首页面板的页面没有随数量分栏：${JSON.stringify(grow)}`);
+  for (const panel of grow) assert.ok(panel.height < 520, `${panel.pages} 个页面时面板高 ${panel.height}px，太高了`);
+
+  console.log(`PASS 面板内 ${hrefs.size} 个链接都能打开；导航顺序、五个悬停面板、第 ${home.nights} 夜（旧式数字）、${home.foot.join(" · ")}、弹层模糊、文章面板随分类切换（${before} → ${after}）、首页面板 ${grow.map(({ pages, columns, height }) => `${pages} 页 ${columns} 栏 ${height}px`).join(" / ")}`);
 } finally {
   browser.close();
 }

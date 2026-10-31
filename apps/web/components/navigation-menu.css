@@ -379,7 +379,7 @@
   }
 }
 
-/* 首页面板：左边旧式数字的大字“第几夜”（建站天数），篇数、字数横排在下面当注脚；右边一行一个页面，社交账号在右下角 */
+/* 首页面板：左边旧式数字的大字“第几夜”（建站天数），篇数、字数横排在下面当注脚；右边是页面，社交账号在页面下面 */
 .nav-night {
   align-content: space-between;
   gap: var(--space-6);
@@ -433,12 +433,22 @@
   gap: var(--space-4);
 }
 
+/* 页面多了以后分栏，面板跟着变宽，不往下拉长：5 个起两栏、13 个起三栏（一行一行从左往右排）。
+   多栏时箭头平时藏起来，悬停那一格才出现，免得满屏箭头。 */
+.nav-panel.is-home:has(.nav-home-pages > li:nth-child(5)) { width: 40rem; }
+.nav-panel.is-home:has(.nav-home-pages > li:nth-child(13)) { width: 52rem; }
+
 .nav-home-pages {
+  --columns: 1;
   display: grid;
-  gap: 2px;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  gap: 2px var(--space-5);
   margin: 0;
   padding: 0;
   list-style: none;
+
+  &:has(> li:nth-child(5)) { --columns: 2; }
+  &:has(> li:nth-child(13)) { --columns: 3; }
 }
 
 .nav-home-page {
@@ -452,7 +462,7 @@
   svg {
     flex: none;
     color: var(--muted-foreground);
-    transition: transform var(--duration-fast), color var(--duration-fast);
+    transition: transform var(--duration-fast), color var(--duration-fast), opacity var(--duration-fast);
   }
 
   @media (hover: hover) {
@@ -467,9 +477,25 @@
   }
 }
 
+.nav-home-pages:has(> li:nth-child(5)) .nav-home-page {
+  svg { opacity: 0; }
+
+  &:hover svg,
+  &:focus-visible svg { opacity: 1; }
+}
+
+/* 名字和副标题各占一行，太长显示省略号（完整的在页面里） */
 .nav-home-page-text {
   display: grid;
   gap: 2px;
+  min-width: 0;
+}
+
+.nav-home-page-title,
+.nav-home-page-note {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .nav-home-page-title {
@@ -481,12 +507,12 @@
   font-size: var(--text-xs);
 }
 
+/* 社交账号在页面列表下面，和页面名左对齐（图标外有一圈悬停圆底，往左挪半圈让图形本身对齐文字）；多了往下换行 */
 .nav-socials {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
   gap: var(--space-2);
-  margin: 0;
+  margin: 0 0 0 calc((1.75rem - 15px) / -2);
   padding: 0;
   list-style: none;
 }

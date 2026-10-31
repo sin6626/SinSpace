@@ -95,10 +95,12 @@ function PanelFooter({ href, label, aside }: { href: string; label: string; asid
 }
 
 // 首页面板（海报大字，2026-10-31 定）：左边一个旧式数字的大字“第几夜”（建站天数），篇数和字数横排在下面当注脚；
-// 右边后台页面一行一个（页面名 + 后台填的副标题 + 箭头），社交账号在右下角。原来“此间三个数字 + 页面网格”和 Innei 太像。
-function HomePanel({ state, pathname }: { state: Extract<NavigationState, { status: "ready" }>; pathname: string }) {
+// 右边后台页面（页面名 + 后台填的副标题 + 箭头；5 个起分两栏、13 个起分三栏，面板跟着变宽），社交账号在页面下面、多了换行。
+// 原来“此间三个数字 + 页面网格”和 Innei 太像。
+type HomePanelProps = { pages: NavigationLink[]; socials: Extract<NavigationState, { status: "ready" }>["socials"]; stats?: Panels["stats"]; pathname: string };
+
+function HomePanel({ pages, socials, stats, pathname }: HomePanelProps) {
   const t = useT().nav;
-  const stats = state.panels?.stats;
   return (
     <div className="nav-panel is-home">
       {stats?.days && (
@@ -114,9 +116,9 @@ function HomePanel({ state, pathname }: { state: Extract<NavigationState, { stat
         </section>
       )}
       <section className="nav-panel-main nav-home-main">
-        {state.pages.length ? (
+        {pages.length ? (
           <ul className="nav-home-pages">
-            {state.pages.map((page) => (
+            {pages.map((page) => (
               <li key={page.href}>
                 <PanelLink href={page.href} className="nav-home-page" current={pathname === page.href}>
                   <span className="nav-home-page-text">
@@ -129,9 +131,9 @@ function HomePanel({ state, pathname }: { state: Extract<NavigationState, { stat
             ))}
           </ul>
         ) : <p className="nav-panel-empty">{t.noPages}</p>}
-        {state.socials.length > 0 && (
+        {socials.length > 0 && (
           <ul className="nav-socials">
-            {state.socials.map((social) => (
+            {socials.map((social) => (
               <li key={social.href} data-dark={social.dark ? "" : undefined} style={{ "--brand": social.color } as CSSProperties}>
                 <a href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label} title={social.label}>{social.icon}</a>
               </li>
@@ -140,6 +142,15 @@ function HomePanel({ state, pathname }: { state: Extract<NavigationState, { stat
         )}
       </section>
     </div>
+  );
+}
+
+// 调试页用：不放进弹层，直接把首页面板摆在页面上（面板里的链接要在 NavigationMenu 的 Root 和一个 List/Content 里）
+export function HomePanelPreview(props: Omit<HomePanelProps, "pathname">) {
+  return (
+    <NavigationMenu.Root>
+      <NavigationMenu.List render={<div />}><HomePanel {...props} pathname="" /></NavigationMenu.List>
+    </NavigationMenu.Root>
   );
 }
 
@@ -262,7 +273,7 @@ export default function BlogNavigation({ state, account }: { state: NavigationSt
       <MotionConfig reducedMotion="user">
       <LayoutGroup id="navigation">
       <NavigationMenu.List className="navigation-List">
-        {linkItem(t.home, "/", pathname === "/", ready && <HomePanel state={ready} pathname={pathname} />)}
+        {linkItem(t.home, "/", pathname === "/", ready && <HomePanel pages={ready.pages} socials={ready.socials} stats={ready.panels?.stats} pathname={pathname} />)}
         {linkItem(t.posts, "/posts", isCurrent(pathname, "/posts") || pathname.startsWith("/categories/"), panels && (
           <GroupPanel className="is-posts" label={t.categories} groups={panels.categories} fallback={[]} pathname={pathname}
             footer={<PanelFooter href="/posts" label={t.allPosts} aside={t.postCount(panels.postCount)} />} />
