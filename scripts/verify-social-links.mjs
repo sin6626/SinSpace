@@ -17,10 +17,10 @@ const plain = (value) => JSON.parse(JSON.stringify(value))
 
 const adminKeys = [...readFileSync(new URL('../apps/admin/src/constants/social.ts', import.meta.url), 'utf8').matchAll(/key: '([\w-]+)'/g)].map((m) => m[1])
 assert.deepEqual(adminKeys, [...socialPlatformKeys], '后台能选的平台要和前台认识的一一对应（顺序也一致）')
-assert.equal(adminKeys.length, 22)
+assert.equal(adminKeys.length, 23)
 
 const sets = { 'simple-icons': require('@iconify-json/simple-icons/icons.json'), mingcute: require('@iconify-json/mingcute/icons.json') }
-for (const link of [...socialLinks(Object.fromEntries(socialPlatformKeys.map((key) => [key, key === 'email' ? 'a@b.cn' : 'sin']))), ...socialCards({ wechat: 'sin', qq: '1' })]) {
+for (const link of [...socialLinks(Object.fromEntries(socialPlatformKeys.map((key) => [key, key === 'email' ? 'a@b.cn' : 'sin']))), ...socialCards({ wechat: 'sin', qq: '1', discord: 'sin', donate: { qr: 'https://s3.example.com/pay.webp' } })]) {
   const [prefix, name] = link.icon.split(':')
   assert.ok(sets[prefix]?.icons[name], `${link.label} 的图标 ${link.icon} 应当在已装的图标集里`)
   assert.match(link.color, /^#[0-9A-F]{6}$|^var\(--[\w-]+\)$/, `${link.label} 要有悬停用的品牌色`)
@@ -42,4 +42,10 @@ assert.deepEqual(plain(socialCards({ github: 'sin', wechat: { qr: 'https://s3.ex
   { key: 'qq', label: 'QQ', icon: 'simple-icons:qq', color: '#1EBAFC', dark: false, id: '3554989283' },
 ])
 assert.deepEqual(plain(socialCards({ wechat: { id: '', qr: 'javascript:alert(1)' }, qq: {} })), [], '号码和二维码都没有（或二维码不是 http(s)）时不显示')
-console.log('PASS social links: admin and web platforms match, every icon installed, id/link/email/alias handling, WeChat/QQ cards')
+// Discord 改为名片（主页链接要登录 Discord 才能看）：旧数据里的字符串当用户名显示，不再拼成链接；赞赏码只放二维码
+assert.deepEqual(hrefs({ discord: '123456789012345678' }), [], 'Discord 不再是直达链接')
+assert.deepEqual(plain(socialCards({ discord: 'sin6626', donate: { qr: 'https://s3.example.com/pay.webp' } })), [
+  { key: 'discord', label: 'Discord', icon: 'simple-icons:discord', color: '#5865F2', dark: false, id: 'sin6626' },
+  { key: 'donate', label: '赞赏', icon: 'mingcute:teacup-fill', color: 'var(--love)', dark: false, qr: 'https://s3.example.com/pay.webp' },
+])
+console.log('PASS social links: admin and web platforms match, every icon installed, id/link/email/alias handling, WeChat/QQ/Discord/donate cards')

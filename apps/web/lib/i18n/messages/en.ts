@@ -317,6 +317,8 @@ const en: Messages = {
     copy: "Copy",
     copied: "Copied",
     hint: "Scan the code, or copy the ID and search for it",
+    donateOpen: (name: string) => `${name}: scan to buy me a tea`,
+    donateHint: "If something here helped you, you can buy me a cup of tea",
   },
   comments: {
     label: "Comments",

@@ -27,18 +27,21 @@ const platforms: Record<string, Platform> = {
   linkedin: { label: "LinkedIn", icon: "simple-icons:linkedin", color: "#0A66C2", url: (id) => `https://www.linkedin.com/in/${id}` },
   // Steam 的个人资料有两种：自定义 ID（/id/xxx）和 17 位数字 ID（/profiles/7656…）
   steam: { label: "Steam", icon: "simple-icons:steam", color: "#000000", url: (id) => (/^\d{17}$/.test(id) ? `https://steamcommunity.com/profiles/${id}` : `https://steamcommunity.com/id/${id}`) },
-  discord: { label: "Discord", icon: "simple-icons:discord", color: "#5865F2", url: (id) => `https://discord.com/users/${id}` },
   email: { label: "邮箱", icon: "mingcute:mail-fill", color: "var(--primary)", url: (id) => `mailto:${id}` },
 };
 // 旧数据里可能用 twitter 作键名（Shiro 时代），按 X 处理
 const aliases: Record<string, string> = { twitter: "x" };
 
 // 没有网页主页、点了没地方跳的平台（“名片”）：值是 { id?, qr? }（号码、二维码图片地址）或只填号码的字符串。
-// 首屏和直达链接之间用竖线隔开，点图标弹出名片（二维码 + 号码 + 复制）；导航“首页”面板不显示这一类。
+// 首屏和导航“首页”面板里排在直达链接后面、竖线隔开，点图标弹出名片（二维码 + 号码 + 复制）。
 // 二维码由后台上传到图床，Core 保存个人资料时登记为已引用（apps/core 的 owner-images.util.ts）。
+// Discord 的主页链接只有登录了 Discord 的人能打开，大家互加用的是用户名，所以也当名片（2026-10-31 用户定）。
+// donate 是赞赏码（微信赞赏码或支付宝收款码），卡片上的说明换成“请我喝杯茶”，品牌色用站点“喜欢”的心形色。
 const cardPlatforms: Record<string, Omit<Platform, "url">> = {
   wechat: { label: "微信", icon: "simple-icons:wechat", color: "#07C160" },
   qq: { label: "QQ", icon: "simple-icons:qq", color: "#1EBAFC" },
+  discord: { label: "Discord", icon: "simple-icons:discord", color: "#5865F2" },
+  donate: { label: "赞赏", icon: "mingcute:teacup-fill", color: "var(--love)" },
 };
 
 export const socialPlatformKeys = [...Object.keys(platforms), ...Object.keys(cardPlatforms)];

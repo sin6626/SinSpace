@@ -6,7 +6,7 @@ import type { SocialCard } from "../lib/social";
 import { useT } from "./locale-provider";
 import "./contact-card.css";
 
-// 微信、QQ 名片（首屏和导航“首页”面板共用）：这类平台没有网页主页，点图标弹出一张小卡片，放二维码和号码（可复制）。
+// 微信、QQ、Discord、赞赏码这类“名片”（首屏和导航“首页”面板共用）：没有网页主页，点图标弹出一张小卡片，放二维码和号码（可复制）。
 // 图标由服务端渲染好传进来（Iconify 只在服务端用）；点外面或按 Esc 关闭。
 // container：卡片挂在哪个元素里，默认 body。在导航面板里要挂进面板的弹层，否则鼠标移到卡片上算离开面板、面板连同卡片一起收起。
 export default function ContactCard({ card, icon, container, side = "top" }: { card: SocialCard; icon: ReactNode; container?: HTMLElement | null; side?: "top" | "bottom" }) {
@@ -29,9 +29,12 @@ export default function ContactCard({ card, icon, container, side = "top" }: { c
     if (card.qr) new Image().src = card.qr;
   };
 
+  // 赞赏码：没有号码，卡片说明换成“请我喝杯茶”
+  const donate = card.key === "donate";
+
   return (
     <Popover.Root>
-      <Popover.Trigger className="contact-trigger" aria-label={t.open(card.label)} title={card.label} onPointerEnter={prefetch} onFocus={prefetch}>
+      <Popover.Trigger className="contact-trigger" aria-label={donate ? t.donateOpen(card.label) : t.open(card.label)} title={card.label} onPointerEnter={prefetch} onFocus={prefetch}>
         {icon}
       </Popover.Trigger>
       <Popover.Portal container={container}>
@@ -53,7 +56,7 @@ export default function ContactCard({ card, icon, container, side = "top" }: { c
                 </button>
               </p>
             )}
-            {!card.qr && <p className="contact-card-hint">{t.hint}</p>}
+            {donate ? <p className="contact-card-hint">{t.donateHint}</p> : !card.qr && <p className="contact-card-hint">{t.hint}</p>}
             <Popover.Arrow className="contact-card-arrow" />
           </Popover.Popup>
         </Popover.Positioner>

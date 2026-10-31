@@ -44,7 +44,6 @@ export const socialPlatforms = [
     label: 'Steam',
     hint: '自定义 ID 或 17 位数字 ID，或主页链接',
   },
-  { key: 'discord', label: 'Discord', hint: '用户数字 ID，或主页链接' },
   { key: 'email', label: '邮箱', hint: '邮箱地址' },
   {
     key: 'wechat',
@@ -53,4 +52,16 @@ export const socialPlatforms = [
     card: true,
   },
   { key: 'qq', label: 'QQ', hint: 'QQ 号（可不填，只放二维码）', card: true },
+  {
+    key: 'discord',
+    label: 'Discord',
+    hint: '用户名（可再放二维码）',
+    card: true,
+  },
+  {
+    key: 'donate',
+    label: '赞赏码',
+    hint: '可不填号码，放微信赞赏码或支付宝收款码',
+    card: true,
+  },
 ] as const

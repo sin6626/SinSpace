@@ -319,6 +319,9 @@ const zh = {
     copy: "复制",
     copied: "已复制",
     hint: "扫一扫，或复制号码去搜索",
+    // 赞赏码（微信赞赏码、支付宝收款码）
+    donateOpen: (name: string) => `${name}：扫码请我喝杯茶`,
+    donateHint: "觉得有用的话，可以请我喝杯茶",
   },
   comments: {
     label: "评论",

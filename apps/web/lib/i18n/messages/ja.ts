@@ -317,6 +317,8 @@ const ja: Messages = {
     copy: "コピー",
     copied: "コピーしました",
     hint: "QR コードを読み取るか、ID をコピーして検索してください",
+    donateOpen: (name: string) => `${name}：QR コードでお茶を一杯`,
+    donateHint: "役に立ったら、お茶を一杯ごちそうしてください",
   },
   comments: {
     label: "コメント",

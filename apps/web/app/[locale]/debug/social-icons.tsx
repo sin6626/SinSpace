@@ -11,7 +11,7 @@ const sampleIds: Record<string, string> = { email: "sin@example.com", steam: "76
 const samples = socialLinks(Object.fromEntries(socialPlatformKeys.map((key) => [key, sampleIds[key] ?? "sin6626"])));
 // 名片示例（不是真号码）：微信只放二维码，QQ 号码 + 二维码；二维码用头像图占位
 const sampleQr = `${getApiUrl()}/objects/avatar/Sin.jpg`;
-const sampleContacts = socialCards({ wechat: { qr: sampleQr }, qq: { id: "10001", qr: sampleQr } });
+const sampleContacts = socialCards({ wechat: { qr: sampleQr }, qq: { id: "10001", qr: sampleQr }, discord: "sin6626", donate: { qr: sampleQr } });
 
 export default function SocialIconsPreview() {
   return (
@@ -21,7 +21,7 @@ export default function SocialIconsPreview() {
         <HeroSocialList socials={samples} />
       </div>
 
-      <p className="post-meta">首屏加上微信、QQ 这类“名片”（没有网页主页）：竖线后面，点图标弹出二维码和号码（可复制），点外面或 Esc 关闭；导航面板不显示这一类。示例图用头像占位</p>
+      <p className="post-meta">首屏加上微信、QQ、Discord、赞赏码这类“名片”（没有网页主页）：竖线后面，点图标弹出二维码和号码（可复制，Discord 只有用户名，赞赏码只有二维码），点外面或 Esc 关闭；导航“首页”面板同样有。示例图用头像占位</p>
       <div className="debug-social-hero" id="debug-social-cards">
         <HeroSocialList socials={samples.slice(0, 3)} contacts={sampleContacts} />
       </div>

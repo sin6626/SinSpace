@@ -30,7 +30,7 @@ try {
     const items = [...document.querySelectorAll('#debug-social-cards .home-hero-socials > li')]
     return items.map((li) => li.classList.contains('home-hero-socials-divider') ? '|' : li.querySelector('a, button').getAttribute('title'))
   })()`)
-  assert.deepEqual(cards, ['GitHub', '哔哩哔哩', '微博', '|', '微信', 'QQ'], '直达链接在前，竖线，名片在后')
+  assert.deepEqual(cards, ['GitHub', '哔哩哔哩', '微博', '|', '微信', 'QQ', 'Discord', '赞赏'], '直达链接在前，竖线，名片在后')
   await b.evaluate(`document.querySelector('#debug-social-cards button[title="QQ"]').scrollIntoView({ block: 'center' })`)
   await b.evaluate(`document.querySelector('#debug-social-cards button[title="QQ"]').click()`)
   await sleep(500)
@@ -40,6 +40,17 @@ try {
   await b.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: 5, y: 5, button: 'left', buttons: 0, clickCount: 1 })
   await sleep(500)
   assert.equal(await b.evaluate(`document.querySelector('.contact-card')`), null, '点外面关闭')
+  // 赞赏码：只有二维码，说明是“请我喝杯茶”；Discord：只有用户名和复制
+  await b.evaluate(`document.querySelector('#debug-social-cards button[title="赞赏"]').click()`)
+  await sleep(500)
+  assert.deepEqual(await b.evaluate(`(() => { const c = document.querySelector('.contact-card'); return { qr: !!c.querySelector('img.contact-card-qr'), id: !!c.querySelector('.contact-card-id'), hint: c.querySelector('.contact-card-hint')?.textContent } })()`), { qr: true, id: false, hint: '觉得有用的话，可以请我喝杯茶' })
+  await b.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 })
+  await sleep(400)
+  await b.evaluate(`document.querySelector('#debug-social-cards button[title="Discord"]').click()`)
+  await sleep(500)
+  assert.deepEqual(await b.evaluate(`(() => { const c = document.querySelector('.contact-card'); return { qr: !!c.querySelector('img.contact-card-qr'), id: c.querySelector('.contact-card-id span')?.textContent } })()`), { qr: false, id: 'sin6626' })
+  await b.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 })
+  await sleep(400)
 
   await b.evaluate(`document.documentElement.dataset.theme = 'light'`)
   await sleep(700)
@@ -81,7 +92,7 @@ try {
   await sleep(500)
   assert.equal(await b.evaluate(`!!document.querySelector('.contact-card')`), false, 'Esc 关闭名片')
   assert.deepEqual(b.errors, [], '页面不应当有报错')
-  console.log('PASS 社交图标：平时单色、悬停换品牌色（首屏与导航面板），深色品牌熄灯时白色图标；微信、QQ 名片在竖线后、点开看二维码和号码')
+  console.log('PASS 社交图标：平时单色、悬停换品牌色（首屏与导航面板），深色品牌熄灯时白色图标；微信、QQ、Discord、赞赏码名片在竖线后、点开看二维码和号码')
 } finally {
   await b.close()
 }

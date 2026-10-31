@@ -46,9 +46,9 @@ const toSocials = (ids: Record<string, string>) => socialLinks(ids).map((social)
 const fewSocials = toSocials({ github: "sin6626", bilibili: "sin6626", x: "sin6626" });
 const sampleIds: Record<string, string> = { email: "sin@example.com", steam: "76561197960287930", discord: "123456789012345678" };
 const manySocials = toSocials(Object.fromEntries(socialPlatformKeys.map((key) => [key, sampleIds[key] ?? "sin6626"])));
-// 微信、QQ 名片示例（不是真号码，二维码用头像图占位），在直达链接后面、竖线隔开，点开看卡片
+// 微信、QQ、Discord、赞赏码名片示例（不是真号码，二维码用头像图占位），在直达链接后面、竖线隔开，点开看卡片
 const sampleQr = `${getApiUrl()}/objects/avatar/Sin.jpg`;
-const contacts = socialCards({ wechat: { qr: sampleQr }, qq: { id: "10001", qr: sampleQr } }).map((card) => ({
+const contacts = socialCards({ wechat: { qr: sampleQr }, qq: { id: "10001", qr: sampleQr }, discord: "sin6626", donate: { qr: sampleQr } }).map((card) => ({
   card,
   icon: <SocialIcon icon={card.icon} label={card.label} size={15} />,
 }));
